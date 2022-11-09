@@ -1,0 +1,220 @@
+[
+  {
+    "Index": 0,
+    "VMName": "AD01",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "server",
+    "Roles": [
+      "AD-Domain-Services",
+      "DNS",
+      "DHCP",
+      "DirectAccess-VPN"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "192.168.10.10",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "127.0.0.1"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": false
+  },
+  {
+    "Index": 0,
+    "VMName": "AD02",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "server",
+    "Roles": [
+      "AD-Domain-Services",
+      "DNS",
+      "DHCP",
+      "DirectAccess-VPN"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "192.168.10.10",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "127.0.0.1"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": false
+  },
+  {
+    "Index": 1,
+    "VMName": "FIL01",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "server",
+    "Roles": [
+      "FS-DFS-Namespace",
+      "FS-DFS-Replication"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [
+      3,
+      "20GB"
+    ],
+    "NonOSDriveLetter": "d:\\",
+    "DFSRootFolder": "dfsroot",
+    "DFSPublicFolder": "public",
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "192.168.10.20",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "192.168.10.10"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": false
+  },
+  {
+    "Index": 2,
+    "VMName": "FIL02",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "server",
+    "Roles": [
+      "FS-DFS-Namespace",
+      "FS-DFS-Replication"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [
+      3,
+      "20GB"
+    ],
+    "NonOSDriveLetter": "d:\\",
+    "DFSRootFolder": "dfsroot",
+    "DFSPublicFolder": "public",
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "192.168.10.21",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "192.168.10.10"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": false
+  },
+  {
+    "Index": 3,
+    "VMName": "MOLNDAL01",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "client",
+    "Roles": [
+      "pc"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "NonOSDriveLetter": "d:\\",
+    "DFSRootFolder": "dfsroot",
+    "DFSPublicFolder": "public",
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "DHCP",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "192.168.10.10"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": false
+  },
+  {
+    "Index": 3,
+    "VMName": "MOLNDAL02",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "client",
+    "Roles": [
+      "pc"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "NonOSDriveLetter": "d:\\",
+    "DFSRootFolder": "dfsroot",
+    "DFSPublicFolder": "public",
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "DHCP",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "192.168.10.10"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": false
+  }
+]
