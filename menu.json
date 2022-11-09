@@ -21,19 +21,19 @@
       "Index": 0,
       "Option": "VM Deployment",
       "ScriptPath": "vm-deployment.ps1",
-      "isSelected": true
+      "isSelected": false
     },
     {
       "Index": 1,
       "Option": "Network Configuration",
       "ScriptPath": "network-config.ps1",
-      "isSelected": true
+      "isSelected": false
     },
     {
       "Index": 2,
       "Option": "Roles-Features Installation",
       "ScriptPath": "roles-features-installation.ps1",
-      "isSelected": false
+      "isSelected": true
     },
     {
       "Index": 3,

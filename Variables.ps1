@@ -56,39 +56,38 @@ function Install-FeaturesAndRoles {
     param($Role)
 
     switch ($Role) {
-        "AD" 
+        "AD-Domain-Services" 
         {
-            $ADInstallState = Get-WindowsFeature -Name AD-Domain-Services | Select-Object -ExpandProperty installstate
-            if ($ADInstallState -cne "Installed") {
-                            
-            Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
-            Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
 
-            Write-Verbose "Configuring New Domain with Name [$DomainName] on VM [$($VM.VMName)]" -Verbose
-            Import-Module ADDSDeployment
+            if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
+                Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
+                Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
 
-            Install-ADDSForest `
-            -CreateDnsDelegation:$false `
-            -DatabasePath "C:\Windows\NTDS" `
-            -DomainMode "WinThreshold" `
-            -DomainName $DomainName `
-            -DomainNetbiosName $DomainNetbiosName `
-            -ForestMode "WinThreshold" `
-            -InstallDns:$true `
-            -LogPath "C:\Windows\NTDS" `
-            -NoRebootOnCompletion:$false `
-            -SysvolPath "C:\Windows\SYSVOL" `
-            -SafeModeAdministratorPassword $ForestRecoveryPwd `
-            -Force:$true
+                Write-Verbose "Configuring New Domain with Name [$DomainName] on VM [$($VM.VMName)]" -Verbose
+                Import-Module ADDSDeployment
+
+                Install-ADDSForest `
+                -CreateDnsDelegation:$false `
+                -DatabasePath "C:\Windows\NTDS" `
+                -DomainMode "WinThreshold" `
+                -DomainName $DomainName `
+                -DomainNetbiosName $DomainNetbiosName `
+                -ForestMode "WinThreshold" `
+                -InstallDns:$true `
+                -LogPath "C:\Windows\NTDS" `
+                -NoRebootOnCompletion:$false `
+                -SysvolPath "C:\Windows\SYSVOL" `
+                -SafeModeAdministratorPassword $ForestRecoveryPwd `
+                -Force:$true
             }
 
         }
 
         "DNS" 
         {  
-            $DNSInstallState = Get-WindowsFeature -Name DNS | Select-Object -ExpandProperty installstate
-            if ($DNSInstallState -cne "Installed") {
-                Write-Verbose "Installing [$Role] on VM [$VMName]" -Verbose
+
+            if (((Get-WindowsFeature -Name DNS).InstallState) -notlike "Installed") {
+                Write-Verbose "Installing [$Role] on VM [$($VM.VMName)]" -Verbose
                 Install-WindowsFeature -Name DNS -IncludeAllSubFeature -IncludeManagementTools
             }
 
@@ -96,58 +95,56 @@ function Install-FeaturesAndRoles {
 
         "DHCP" 
         {
-            $DHCPInstallState = Get-WindowsFeature -Name DHCP | Select-Object -ExpandProperty installstate
-            if ($DHCPInstallState -cne "Installed") {
+            if (((Get-WindowsFeature -Name DHCP).InstallState) -notlike "Installed") {
                 Write-Verbose "Installing [$Role] on VM [$($VM.VMName)]" -Verbose
                 Install-WindowsFeature -Name DHCP -IncludeAllSubFeature -IncludeManagementTools
+            }
 
-                # Selecting the first 3 part of the ip-address (Network-Address)
-                $NetworkAddress = $IPAddress.Split(".")[0,1,2]
-                $tempAddress = $null
-                foreach ($octet in $NetworkAddress) {
-                    $tempAddress += $octet + "."
-                }
-                $NetworkAddress = $tempAddress
-                
-                netsh dhcp add securitygroups
-                Restart-Service dhcpserver
-                Add-DhcpServerInDC -DnsName ($VM.VMName + "." + $DomainName) -IPAddress $VM.IPAddress
-                Get-DhcpServerInDC
-                Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
-                Set-DhcpServerv4DnsSetting -ComputerName ($VM.VMName + "." + $DomainName) -DynamicUpdates "Always" -DeleteDnsRRonLeaseExpiry $True
-                
-                ######### SETTING UP THE SCOPE #########
-                Add-DhcpServerv4Scope -name "$DomainName_staff_ipv4_scope" -StartRange $NetworkAddress.100 -EndRange $NetworkAddress.200 -SubnetMask 255.255.255.0 -State Active
-                Add-DhcpServerv4ExclusionRange -ScopeID $NetworkAddress.0 -StartRange $NetworkAddress.1 -EndRange $NetworkAddress.30
-                Set-DhcpServerv4OptionValue -OptionID 3 -Value $NetworkAddress.1 -ScopeID $NetworkAddress.0 -ComputerName AD01.mstile.se
-                Set-DhcpServerv4OptionValue -DnsDomain AD01.mstile.se -DnsServer $NetworkAddress.10
-            }  
+            if (((Get-DhcpServerv4Scope).Name -notlike "staff_ipv4_scope")) {
+            # Selecting the first 3 part of the ip-address (Network-Address)
+            $NetworkAddress = $VM.IPAddress.Split(".")[0,1,2]
+            $tempAddress = $null
+            foreach ($octet in $NetworkAddress) {
+                $tempAddress += $octet + "."
+            }
+            $NetworkAddress = $tempAddress
+            Write-Host -ForegroundColor green "NetWorkAdress:" $NetworkAddress
+            
+            netsh dhcp add securitygroups
+            Restart-Service dhcpserver
+            Add-DhcpServerInDC -DnsName ($VM.VMName + "." + $DomainName) -IPAddress $VM.IPAddress
+            Get-DhcpServerInDC
+            Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
+            Set-DhcpServerv4DnsSetting -ComputerName ($VM.VMName + "." + $DomainName) -DynamicUpdates "Always" -DeleteDnsRRonLeaseExpiry $True
+        
+            ######### SETTING UP THE SCOPE #########
+            Add-DhcpServerv4Scope -name "staff_ipv4_scope" -StartRange "$($NetworkAddress)100" -EndRange "$($NetworkAddress)200" -SubnetMask 255.255.255.0 -State Active
+            Add-DhcpServerv4ExclusionRange -ScopeID "$($NetworkAddress)0" -StartRange "$($NetworkAddress)1" -EndRange "$($NetworkAddress)30"
+            Set-DhcpServerv4OptionValue -OptionID 3 -Value "$($NetworkAddress)1" -ScopeID "$($NetworkAddress)0" -ComputerName AD01.mstile.se
+            Set-DhcpServerv4OptionValue -DnsDomain AD01.mstile.se -DnsServer "$($NetworkAddress)10"
+        }
+  
 
         }
 
         "DFSNamespace" 
         {
-            $DFSNamespaceInstallState = Get-WindowsFeature -Name FS-DFS-Namespace | Select-Object -ExpandProperty installstate
-            if ($DFSNamespaceInstallState -cne "Installed") {
+            if (((Get-WindowsFeature -Name FS-DFS-Namespace).InstallState) -notlike "Installed") {
                 Write-Verbose "Installing [$Role] on VM [$($VM.VMName)]" -Verbose
                 Install-WindowsFeature -Name FS-DFS-Namespace -IncludeAllSubFeature -IncludeManagementTools
-            }  
-
+            }
         }
 
         "DFSReplication" 
         {
-            $DFSReplicationInstallState = Get-WindowsFeature -Name FS-DFS-Replication | Select-Object -ExpandProperty installstate
-            if ($DFSReplicationInstallState -cne "Installed") {
+            if (((Get-WindowsFeature -Name FS-DFS-Replication).InstallState) -notlike "Installed") {
                 Write-Verbose "Installing [$Role] on VM [$($VM.VMName)]" -Verbose
                 Install-WindowsFeature -Name FS-DFS-Replication -IncludeAllSubFeature -IncludeManagementTools
-            }    
-
+            }
         }
-        "VPN" 
+        "DirectAccess-VPN" 
         {
-            $VPNInstallState = Get-WindowsFeature -Name DirectAccess-VPN | Select-Object -ExpandProperty installstate
-            if ($VPNInstallState -cne "Installed") {
+            if (((Get-WindowsFeature -Name DirectAccess-VPN).InstallState) -notlike "Installed") {
                 Write-Verbose "Installing [$Role] on VM [$($VM.VMName)]" -Verbose
                 Install-WindowsFeature -Name DirectAccess-VPN -IncludeAllSubFeature -IncludeManagementTools
             }

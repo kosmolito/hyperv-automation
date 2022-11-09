@@ -69,6 +69,6 @@ $BackOrExit = Read-Host "Please chose (b) for back, (e) for Exit"
 #########################################################################################################################
 ###################################### DELETING OF THE SELECTED VM IF CONFIRMED  ########################################
 switch ($BackOrExit) {
-    "b" { & $PSScriptRoot\master-script.ps1 }
+    "b" { & $PSScriptRoot\main.ps1 }
     "e" {exit}
 }

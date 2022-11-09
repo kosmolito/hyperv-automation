@@ -46,7 +46,7 @@ $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu.json"
 Clear-Host
 $Menu[0] | Select-Object * -ExcludeProperty isSelected | Out-Host
 
-[validateRange(0,2)]$MenuSelected = Read-Host -Prompt "Please select ONE of the option above"
+$MenuSelected = Read-Host -Prompt "Please select ONE of the option above"
 
 #########################################################################################################################
 ##################################################### VM SELECTION ######################################################
@@ -65,6 +65,7 @@ switch ($MenuSelected[0]) {
         }
         $TemplateMachines | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\template-machines.json"
         $TemplateMachines[$VMSelected] | Format-table -Property VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
+        $VMList = [array]$VMList + [array]$TemplateMachines[$VMSelected] | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
     }
     "1" 
     {
@@ -132,8 +133,6 @@ switch ($MenuSelected[0]) {
 
 #########################################################################################################################
 ############################################### RUNNING THE SCRIPTS CHOSEN ##############################################
-
-$VMList = [array]$VMList + [array]$TemplateMachines[$VMSelected] | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
 
 $Confirmation = read-host "The Following Scripts Will be Run, Do you want to continue? (y/n)"
 if ($Confirmation -eq "y" -or $Confirmation -eq "yes") {

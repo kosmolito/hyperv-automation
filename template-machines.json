@@ -63,7 +63,7 @@
       "127.0.0.1"
     ],
     "SubMaskBit": "24",
-    "isSelected": true
+    "isSelected": false
   },
   {
     "VMName": "FIL01",
@@ -139,7 +139,7 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "isSelected": true
+    "isSelected": false
   },
   {
     "VMName": "MOLNDAL01",
