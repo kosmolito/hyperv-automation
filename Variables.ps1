@@ -239,12 +239,3 @@ $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredenti
 
 $ForestRecoveryPwd = ConvertTo-SecureString -String $Credentials.ForestRecoveryPwd -AsPlainText -Force
 ######################################################################################################
-
-# $Roles = @{
-#     AD = "-Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools";
-#     DNS = "-Name DNS -IncludeAllSubFeature -IncludeManagementTools";
-#     DFSNameSpace = "-Name FS-DFS-Namespace -IncludeAllSubFeature -IncludeManagementTools";
-#     DFSReplication = "-Name FS-DFS-Replication -IncludeAllSubFeature -IncludeManagementTools";
-#     DHCP = "-Name DHCP -IncludeAllSubFeature -IncludeManagementTools";
-#     VPN = "-Name DirectAccess-VPN -IncludeAllSubFeature -IncludeManagementTools"
-# }
