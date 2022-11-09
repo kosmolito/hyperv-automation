@@ -1,4 +1,4 @@
-. .\Variables.ps1
+. .\variables.ps1
 
 $VMName = Read-Host -Prompt "Please enter the name of AD Machine"
 

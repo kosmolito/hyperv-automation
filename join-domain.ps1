@@ -1,4 +1,4 @@
-. .\Variables.ps1
+. .\variables.ps1
 
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
 

@@ -101,7 +101,7 @@ function Install-FeaturesAndRoles {
                 Write-Verbose "Installing [$Role] on VM [$($VM.VMName)]" -Verbose
                 Install-WindowsFeature -Name DHCP -IncludeAllSubFeature -IncludeManagementTools
 
-
+                # Selecting the first 3 part of the ip-address (Network-Address)
                 $NetworkAddress = $IPAddress.Split(".")[0,1,2]
                 $tempAddress = $null
                 foreach ($octet in $NetworkAddress) {
@@ -207,14 +207,10 @@ function New-HardDrive {
 ########################## End of Functions ##########################
 
 $LogDateTime = Get-Date -UFormat %Y-%m-%d-%H%M
-# $OldDeployments = "$PSScriptRoot\old-deployments\$LogDateTime.csv"
-$RequirementFiles = "$PSScriptRoot\Variables.ps1","$PSScriptRoot\scriptlist.txt","$PSScriptRoot\new-vm-list.csv"
 $HostName = hostname
-# [array]$ScriptList = Get-Content -Path "$PSScriptRoot\scriptlist.txt"
-# $DeleteVMScript = "$PSScriptRoot\delete-vm.ps1"
 
-$Choices = Get-Content -Path "$PSScriptRoot\choices.json" | ConvertFrom-Json
-$TemplateMachines = Get-Content -Path "$PSScriptRoot\TemplateMachines.json" | ConvertFrom-Json
+$Menu = Get-Content -Path "$PSScriptRoot\menu.json" | ConvertFrom-Json
+$TemplateMachines = Get-Content -Path "$PSScriptRoot\template-machines.json" | ConvertFrom-Json
 $VMList = Get-Content -Path "$PSScriptRoot\$HostName-inventory.json" | ConvertFrom-Json
 $OldDeployments = Get-Content -Path "$PSScriptRoot\old-deployments\$HostName-old-deployments.json" | ConvertFrom-Json
 $UserList = Import-Csv -path "$PSScriptRoot\domain-users.csv"

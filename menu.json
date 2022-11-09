@@ -20,15 +20,14 @@
     {
       "Index": 0,
       "Option": "VM Deployment",
-      "ScriptPath1": "vm-deployment.ps1",
-      "isSelected": false
+      "ScriptPath": "vm-deployment.ps1",
+      "isSelected": true
     },
     {
       "Index": 1,
       "Option": "Network Configuration",
-      "ScriptPath": "d.ps1",
-      "ScriptPath1": "network-config.ps1",
-      "isSelected": false
+      "ScriptPath": "network-config.ps1",
+      "isSelected": true
     },
     {
       "Index": 2,

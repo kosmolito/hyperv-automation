@@ -1,6 +1,5 @@
 [
   {
-    "Index": 0,
     "VMName": "AD01",
     "VMId": "",
     "CreationTime": "",
@@ -35,7 +34,6 @@
     "isSelected": false
   },
   {
-    "Index": 0,
     "VMName": "AD02",
     "VMId": "",
     "CreationTime": "",
@@ -44,9 +42,7 @@
     "MachineType": "server",
     "Roles": [
       "AD-Domain-Services",
-      "DNS",
-      "DHCP",
-      "DirectAccess-VPN"
+      "DNS"
     ],
     "HasJoinedDomain": "",
     "Path": "",
@@ -61,16 +57,15 @@
     "NetworkSwitches": [
       "pfLAN1"
     ],
-    "IPAddress": "192.168.10.10",
+    "IPAddress": "192.168.10.11",
     "DefGateway": "192.168.10.1",
     "DNSAddress": [
       "127.0.0.1"
     ],
     "SubMaskBit": "24",
-    "isSelected": false
+    "isSelected": true
   },
   {
-    "Index": 1,
     "VMName": "FIL01",
     "VMId": "",
     "CreationTime": "",
@@ -109,7 +104,6 @@
     "isSelected": false
   },
   {
-    "Index": 2,
     "VMName": "FIL02",
     "VMId": "",
     "CreationTime": "",
@@ -145,10 +139,9 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "isSelected": false
+    "isSelected": true
   },
   {
-    "Index": 3,
     "VMName": "MOLNDAL01",
     "VMId": "",
     "CreationTime": "",
@@ -162,9 +155,9 @@
     "Path": "",
     "HardDrives": [],
     "NonOSHardDrivs": [],
-    "NonOSDriveLetter": "d:\\",
-    "DFSRootFolder": "dfsroot",
-    "DFSPublicFolder": "public",
+    "NonOSDriveLetter": "",
+    "DFSRootFolder": "",
+    "DFSPublicFolder": "",
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
@@ -183,7 +176,6 @@
     "isSelected": false
   },
   {
-    "Index": 3,
     "VMName": "MOLNDAL02",
     "VMId": "",
     "CreationTime": "",
@@ -197,9 +189,9 @@
     "Path": "",
     "HardDrives": [],
     "NonOSHardDrivs": [],
-    "NonOSDriveLetter": "d:\\",
-    "DFSRootFolder": "dfsroot",
-    "DFSPublicFolder": "public",
+    "NonOSDriveLetter": "",
+    "DFSRootFolder": "",
+    "DFSPublicFolder": "",
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
