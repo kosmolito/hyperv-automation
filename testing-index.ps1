@@ -1,11 +1,76 @@
-. .\variables.ps1
+# $Menu = "From TEMPLATE FILE","Interactive Mode"
 
+# $Menu | format-table
+# $MenuSelection = Read-Host "Please select ONE of the option"
+
+# "AD-Domain-Services",
+# "DNS",
+# "DHCP",
+# "DirectAccess-VPN"
+
+# $TempVM = @{
+#     VMName = [string]"AD01"
+#     VMId = [string]""
+#     CreationTime = ""
+#     DeletionTime = ""
+#     isCore = $false
+#     MachineType = [string]"server"
+#     Roles = [array]
+#     HasJoinedDomain = $false
+#     Path = [string]""
+#     HardDrives = [array]""
+#     NonOSHardDrivs = [array]""
+#     ComputerName = [string]""
+#     ProcessorCount = [int32]2
+#     MemoryStartup = 2147483648
+#     MemoryMinimum = 2147483648
+#     MemoryMaximum = 4294967296
+#     CheckpointType = [int32]2
+#     NetworkSwitches = [array]"pfLAN1"
+#     IPAddress = [string]"192.168.10.10"
+#     DefGateway = [string]"192.168.10.1"
+#     DNSAddress = [array]"127.0.0.1"
+#     SubMaskBit = "24"
+#     isSelected = $true
+#   }
+
+
+
+
+
+# switch ($MenuSelection) {
+#     "0" {  }
+#     "1" 
+#     {
+#         $MenuSelection = Read-Host "What Type of Machines server/client"
+#         $TempVM.MachineType = $MenuSelection
+#         $TempVM.MachineType | Out-Host
+#         $MenuSelection = Read-Host "Amount of server machines"
+#         $MenuSelection = Read-Host "Will the server(s) have GUI? default (yes)"
+#         $MenuSelection = Read-Host "Name of server(s) separated by coma (,)"
+#         $MenuSelection = Read-Host "Amount of client machines"
+
+
+
+
+#     }
+# }
+
+$Menu = Get-Content -Path "$PSScriptRoot\menu copy.json" | ConvertFrom-Json
+$HostName = "DESKWIN10PRO11"
+
+# $VM = @{
+#     VMPath = ""
+
+# }
+
+# If the HostName matches the items in menu.json file, take these file/folder information for VM and Template Path
 if (($menu[2].Hostname -match $HostName).count -eq 1) {
     $VMPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).VMPath
     $ServerTemplateCorePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateCorePath
     $ServerTemplateGuiPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateGuiPath
     $ClientTemplatePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ClientTemplatePath
-} 
+}
 # If there Multiple host with the same Hostnames, the selection will be done here
 elseif (($menu[2].Hostname -match $HostName).count -gt 1) {
     Clear-Host
@@ -18,7 +83,9 @@ elseif (($menu[2].Hostname -match $HostName).count -gt 1) {
     $ClientTemplatePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName})[$HostSelection].ClientTemplatePath
     Clear-Host
     ($Menu[2] | Where-Object {$_.HostName -like $HostName})[$HostSelection] | Format-List HostName,VMPath,ServerTemplateCorePath,ServerTemplateGuiPath,ClientTemplatePath
-} else {
+}
+
+else {
     Write-Host -ForegroundColor red "Cannot find VM Path or Template Path"
     $TempHostName = $HostName
     $TempVMPath = Read-Host "Enter the path where you want to store your VM"
@@ -56,74 +123,30 @@ elseif (($menu[2].Hostname -match $HostName).count -gt 1) {
     $Menu[2]
     Write-Host -ForegroundColor red "After"
     $Menu[2] = [array]$Menu[2] + [array]$TempHost
-    $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu.json"
+    $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu copy.json"
 }
 
-foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
-    Write-Verbose "Starting VM Creation Process...." -Verbose
+# switch ($HostName) {
 
-    if ($VM.MachineType -like "server") {
-        if ($VM.isCore -eq $true) { $TemplatePath = $ServerTemplateCorePath } 
-        else { $TemplatePath = $ServerTemplateGuiPath }
-    } else { $TemplatePath = $ClientTemplatePath }
+#     "DESKWIN10PRO"
+#     {
+#         $VMPath = "C:\hyper-v"
+#         if ($VM.MachineType -like "server") {
+#             if ($VM.Core -like "yes") { $TemplatePath = "D:\hyper-v\TEMPLATES\sysprep-srv19-core.vhdx" } 
+#             else { $TemplatePath = "D:\hyper-v\TEMPLATES\sysprep-srv19.vhdx"}
+#         } else { $TemplatePath = "D:\hyper-v\TEMPLATES\sysprep-win10pro.vhdx" }
+#     }
+#     "pc"
+#     {
+#         $VMPath = "D:\hyper-v"
+#         if ($VM.MachineType -like "server") {
+#             if ($VM.Core -like "yes") { $TemplatePath = "D:\hyper-v\TEMPLATES\srv-19\sysprep-srv19-core.vhdx" } 
+#             else { $TemplatePath = "D:\hyper-v\TEMPLATES\srv-19\sysprep-srv19.vhdx"}
+#         } else { $TemplatePath = "D:\hyper-v\TEMPLATES\win-10-pro\sysprep_win10pro.vhdx" }
+#     }
 
-    #Set the parent VHDX as Read-Only for protection
-    Set-ItemProperty -Path $TemplatePath -Name IsReadOnly -Value $true
-
-    # Check if the folder already exist in 
-    If ((Test-Path ($VMPath + "\" + $VM.VMName)) -eq $true){
-        $VMPath + "\" + $VM.VMName
-        Write-host -ForegroundColor Red $VM.VMName "Folder Already Exist"
-    exit
-    }
-
-    # Check if the Parent/template Disk Exist
-    If ((Test-Path ($TemplatePath)) -eq $false){
-        $TemplatePath
-        Write-host -ForegroundColor Red $VM.VMName "COULD NOT FIND TEMPLATE. EXITING."
-    exit
-    }
-
-    # Provision New VM
-    $VHD = New-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx") -ParentPath $TemplatePath -Differencing
-
-    Write-Verbose "Deploying VM [$($VM.VMName)]" -Verbose
-    new-vm -Name $VM.VMName -Path $VMPath  -VHDPath $VHD.Path -BootDevice VHD -Generation 2
-
-    $VM.VMId = (get-vm $VM.VMName).VMId.Guid
-    $VM.CreationTime = $LogDateTime
-    Set-VMProcessor $VM.VMName -Count $VM.ProcessorCount
-    Set-VMMemory $VM.VMName -DynamicMemoryEnabled $true -MinimumBytes $VM.MemoryMinimum -StartupBytes $VM.MemoryStartup -MaximumBytes $VM.MemoryMaximum
-    Set-VM -Name $VM.VMName -CheckpointType Disabled
-    Set-VMFirmware $VM.VMName -EnableSecureBoot Off
-
-    Remove-VMNetworkAdapter -VMName $VM.VMName -Name "Network Adapter"
-    foreach ($NetworkSwitch in $VM.NetworkSwitches) {
-        Add-VMNetworkAdapter -VMName $VM.VMName -Name "Network Adapter" -SwitchName $NetworkSwitch
-    }
-
-    $VM.HasJoinedDomain = $False
-
-    # If both index 0 and index 1 on the machine is filled, create the hard-drives then
-    if ($($VM.NonOSHardDrivs[0]) -and $($VM.NonOSHardDrivs[1]) ) {
-        Write-Verbose "Creating Non OS VHD.... for $($VM.VMName)" -Verbose
-        $HardDriveAmount = [int32]$VM.NonOSHardDrivs[0]
-        $HardDriveSize = [UInt64]$VM.NonOSHardDrivs[1]
-
-        for ($i = 0; $i -lt $HardDriveAmount; $i++) {
-            ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + "DATA" + $i + ".vhdx")
-            $NonOSHardDrive = New-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + "DATA" + $i + ".vhdx") -SizeBytes $HardDriveSize -Dynamic
-            Write-Verbose "Attaching [$($NonOSHardDrive.Path)] Disk to [$($VM.VMName)]" -Verbose
-            Add-VMHardDiskDrive -VMName $VM.VMName -Path $NonOSHardDrive.Path
-        }
-    }
-
-    # [array]$VM.HardDrives = $Null
-    $TemVM = Get-VM -Name $VM.VMName
-    foreach ($HardDrive in $TemVM) {
-        $VM.HardDrives = [array]$TemVM.HardDrives.Path
-    }
-}
-
-$VMList | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
-Write-Verbose "VM Creation Process Completed." -Verbose
+#     default 
+#     {
+#         Write-Host -ForegroundColor red "cannot locate Path and Templates. Exiting!"
+#     }
+# }

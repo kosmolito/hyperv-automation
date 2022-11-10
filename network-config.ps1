@@ -1,5 +1,4 @@
 . .\variables.ps1
-# $VMList = Import-Csv -path "$PSScriptRoot\vm-to-deploy.csv"
 $VMList = Get-Content -Path "$PSScriptRoot\$HostName-inventory.json" | ConvertFrom-Json
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     Write-Verbose "Network Configuration Process Starting..." -Verbose

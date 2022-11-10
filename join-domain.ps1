@@ -1,5 +1,4 @@
 . .\variables.ps1
-
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
 
     if ($VM.HasJoinedDomain) {

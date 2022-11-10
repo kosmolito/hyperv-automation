@@ -1,56 +1,63 @@
 [
   [
     {
-      "Index": 0,
       "Option": "Provision New VM",
       "isSelected": false
     },
     {
-      "Index": 1,
       "Option": "Configure Existing VM",
       "isSelected": false
     },
     {
-      "Index": 2,
       "Option": "Delete Exisiting VM",
       "isSelected": false
     }
   ],
   [
     {
-      "Index": 0,
       "Option": "VM Deployment",
       "ScriptPath": "vm-deployment.ps1",
       "isSelected": false
     },
     {
-      "Index": 1,
       "Option": "Network Configuration",
       "ScriptPath": "network-config.ps1",
       "isSelected": false
     },
     {
-      "Index": 2,
       "Option": "Roles-Features Installation",
       "ScriptPath": "roles-features-installation.ps1",
-      "isSelected": true
+      "isSelected": false
     },
     {
-      "Index": 3,
       "Option": "Joining Domain",
       "ScriptPath": "join-domain.ps1",
       "isSelected": false
     },
     {
-      "Index": 4,
       "Option": "Add New AD Users",
       "ScriptPath": "adding-adusers.ps1",
       "isSelected": false
     },
     {
-      "Index": 5,
       "Option": "Misc Functions",
       "isSelected": false
+    }
+  ],
+  [
+    {
+      "HostName": "pc",
+      "VMPath": "D:\\hyper-v",
+      "ServerTemplateCorePath": "D:\\hyper-v\\TEMPLATES\\srv-19\\sysprep-srv19-core.vhdx",
+      "ServerTemplateGuiPath": "D:\\hyper-v\\TEMPLATES\\srv-19\\sysprep-srv19.vhdx",
+      "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\win-10-pro\\sysprep_win10pro.vhdx"
+    },
+    {
+      "HostName": "DESKWIN10PRO",
+      "VMPath": "C:\\hyper-v",
+      "ServerTemplateCorePath": "D:\\hyper-v\\TEMPLATES\\srv-19\\sysprep-srv19-core.vhdx",
+      "ServerTemplateGuiPath": "D:\\hyper-v\\TEMPLATES\\srv-19\\sysprep-srv19.vhdx",
+      "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\win-10-pro\\sysprep_win10pro.vhdx"
     }
   ]
 ]

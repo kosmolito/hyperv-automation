@@ -44,7 +44,7 @@ $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu.json"
 ######################################################## MAIN MENU ######################################################
 
 Clear-Host
-$Menu[0] | Select-Object * -ExcludeProperty isSelected | Out-Host
+$Menu[0] | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Option | Out-Host
 
 $MenuSelected = Read-Host -Prompt "Please select ONE of the option above"
 
@@ -102,13 +102,14 @@ switch ($MenuSelected[0]) {
         Clear-Host
         Write-Host -ForegroundColor red "New VM Selected To Provision"
         $TemplateMachines[$VMSelected] | Format-table Index,VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
-        $Menu[1] | Format-Table Index,option | Out-Host
+        $Menu[1] | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Option | Out-Host
 
         $MenuSelected = Read-Host "Please select the script to run`nMultiple scripts can be chosen eg. 0,2,5 (exit for exit)"
         $MenuSelected = $MenuSelected.split(',') | ForEach-Object {Invoke-Expression $_}
         foreach ($Script in $Menu[1][$MenuSelected]) {
             $Script.isSelected = $True
         }
+
         $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu.json"
         $Menu[1][$MenuSelected] | Format-Table option
     }
@@ -118,13 +119,14 @@ switch ($MenuSelected[0]) {
         Clear-Host
         Write-Host -ForegroundColor red "Existing VM Selected To Configure"
         $VMList[$VMSelected] | Format-table -Property VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
-        $Menu[1][1..$Menu[1].Length] | Format-Table Index,option | Out-Host
+        $Menu[1][1..$Menu[1].Length] | ForEach-Object {$index=1} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Option | Out-Host
 
         $MenuSelected = Read-Host "Please select the script to run`nMultiple scripts can be chosen eg. 0,2,5 (exit for exit)"
         $MenuSelected = $MenuSelected.split(',') | ForEach-Object {Invoke-Expression $_}
         foreach ($Script in $Menu[1][$MenuSelected]) {
             $Script.isSelected = $True
         }
+
         $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu.json"
         $Menu[1][$MenuSelected] | Format-Table option
 
