@@ -208,5 +208,141 @@
     ],
     "SubMaskBit": "24",
     "isSelected": false
+  },
+  {
+    "VMName": "TEST01",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "client",
+    "Roles": [
+      "pc"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "NonOSDriveLetter": "",
+    "DFSRootFolder": "",
+    "DFSPublicFolder": "",
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "192.168.10.80",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "192.168.10.10"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": true
+  },
+  {
+    "VMName": "TEST02",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "client",
+    "Roles": [
+      "pc"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "NonOSDriveLetter": "",
+    "DFSRootFolder": "",
+    "DFSPublicFolder": "",
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "192.168.10.81",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "192.168.10.10"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": true
+  },
+  {
+    "VMName": "TEST03",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "client",
+    "Roles": [
+      "pc"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "NonOSDriveLetter": "",
+    "DFSRootFolder": "",
+    "DFSPublicFolder": "",
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "192.168.10.82",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "192.168.10.10"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": true
+  },
+  {
+    "VMName": "TEST04",
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "client",
+    "Roles": [
+      "pc"
+    ],
+    "HasJoinedDomain": "",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "NonOSDriveLetter": "",
+    "DFSRootFolder": "",
+    "DFSPublicFolder": "",
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "IPAddress": "192.168.10.83",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "192.168.10.10"
+    ],
+    "SubMaskBit": "24",
+    "isSelected": true
   }
 ]
