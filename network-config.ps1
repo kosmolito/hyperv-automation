@@ -66,4 +66,3 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     }
     Write-Verbose "Network Configuration Completed for VM [$($VM.VMName)]." -Verbose
 }
-$VMList | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
