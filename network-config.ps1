@@ -1,19 +1,21 @@
 . .\variables.ps1
-$VMList = Get-Content -Path "$PSScriptRoot\$HostName-inventory.json" | ConvertFrom-Json
+
+# Starting the VM Parallel to speed up the process
+$VMList | Where-Object {$_.isSelected -eq $true} | Foreach-Object -Parallel {
+    if (((get-vm $_.VMName).State) -like "Off") {
+        Write-Verbose "[$($_.VMName)] is turned off. Starting Machine..." -Verbose
+        Start-vm -Name $_.VMName
+    }
+}
+
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     Write-Verbose "Network Configuration Process Starting..." -Verbose
-
-    if (((get-vm $VM.VMName).State) -like "Off") {
-        Write-Verbose "[$($VM.VMName)] is turned off. Starting Machine..." -Verbose
-        Start-vm -Name $VM.VMName
-    }
 
     if ($VM.MachineType -like "server") {
         $Credential = $ServerLocalCredential
     } else {
         $Credential = $ClientCredential
     }
-
 
     # We wait until PowerShell is working within the guest VM before moving on.
     Write-Verbose "Waiting for PowerShell to start on VM [$($VM.VMName)]" -Verbose
