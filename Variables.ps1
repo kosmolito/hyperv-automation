@@ -127,7 +127,7 @@ function Install-FeaturesAndRoles {
 
         }
 
-        "DFSNamespace" 
+        "FS-DFS-Namespace" 
         {
             if (((Get-WindowsFeature -Name FS-DFS-Namespace).InstallState) -notlike "Installed") {
                 Write-Verbose "Installing [$Role] on VM [$($VM.VMName)]" -Verbose
@@ -205,6 +205,11 @@ function New-HardDrive {
 
 $LogDateTime = Get-Date -UFormat %Y-%m-%d-%H%M
 $HostName = hostname
+
+if (!(test-path "$PSScriptRoot\old-deployments")) {
+	New-Item -Path "$PSScriptRoot\old-deployments" -ItemType Directory
+	New-Item -Path "$PSScriptRoot\old-deployments\$HostName-old-deployments.json" -ItemType File
+}
 
 $Menu = Get-Content -Path "$PSScriptRoot\menu.json" | ConvertFrom-Json
 $TemplateMachines = Get-Content -Path "$PSScriptRoot\template-machines.json" | ConvertFrom-Json
