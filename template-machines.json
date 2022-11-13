@@ -241,7 +241,7 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "isSelected": true
+    "isSelected": false
   },
   {
     "VMName": "TEST02",
@@ -275,7 +275,7 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "isSelected": true
+    "isSelected": false
   },
   {
     "VMName": "TEST03",
@@ -309,7 +309,7 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "isSelected": true
+    "isSelected": false
   },
   {
     "VMName": "TEST04",
@@ -343,6 +343,6 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "isSelected": true
+    "isSelected": false
   }
 ]
