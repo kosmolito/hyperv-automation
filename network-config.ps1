@@ -27,10 +27,10 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
 
         $HostName = hostname
-        $IPVType = "IPv4" 
+        $IPVType = "IPv4"
+        # Retrieve the network adapter
+        $Netadapter = Get-NetAdapter | Where-Object {$_.Status -eq "up"}
         if ($using:VM.IPAddress -notlike "DHCP") {
-            # Retrieve the network adapter
-            $Netadapter = Get-NetAdapter | Where-Object {$_.Status -eq "up"}
             # Remove existing IP config from the adapter.
                 If (($Netadapter | Get-NetIPConfiguration).IPv4Address.IPAddress) {
                 $Netadapter | Remove-NetIPAddress -AddressFamily $IPVType -Confirm:$false
