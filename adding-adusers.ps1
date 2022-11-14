@@ -15,7 +15,7 @@ Invoke-Command -VMName $VMName -Credential $DomainCredential -ScriptBlock {
     foreach ($User in $using:UserList) {
     Add-TheADUser `
     -FirstName $User.FirstName -LastName $User.LastName -UserPassword $User.UserPassword -OU $User.OU `
-    -DomainName $User.DomainName -SecurityGroups $User.SecurityGroups
+    -DomainName $using:Credentials.DomainName -SecurityGroups $User.SecurityGroups
     }
     Write-Verbose "User creation process finished." -Verbose
 }
