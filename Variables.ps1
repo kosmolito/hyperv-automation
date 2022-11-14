@@ -135,7 +135,7 @@ function Install-FeaturesAndRoles {
             }
         }
 
-        "DFSReplication" 
+        "FS-DFS-Replication" 
         {
             if (((Get-WindowsFeature -Name FS-DFS-Replication).InstallState) -notlike "Installed") {
                 Write-Verbose "Installing [$Role] on VM [$($VM.VMName)]" -Verbose
