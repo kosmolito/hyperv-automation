@@ -1,6 +1,6 @@
 . .\variables.ps1
 
-$FileSrvSelection = "Enter the name of the file server"
+$FileSrvSelection = read-host "Enter the name of the file server"
 $VM = $VMList | Where-Object {($_.VMName -Like $FileSrvSelection) -and ($_.Roles -contains "FS-DFS-Namespace")}
 while ($VM.Count -ne 1) {
     $FileSrvSelection = Read-Host "The information you provided is not correct. Please enter the name of the file server"
