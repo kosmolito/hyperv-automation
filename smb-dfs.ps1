@@ -55,9 +55,15 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
 
     # Folders needed: DFS (for root folder), public, Ekonomi, Sales, 
     # Folders needed: DFS (for root folder), public, Ekonomi, Sales,
+
+    foreach ($Folder in $($VM.DFSPublicFolders)) {
+        [array]$DFSFolders += $VM.NonOSDriveLetter + $Folder
+    }
+
+    $DFSPublicFolder = $DFSPublicFolder[0]
     [array]$DFSRootFolder = $VM.NonOSDriveLetter + $VM.DFSRootFolder
-    [array]$DFSPublicFolder = $VM.NonOSDriveLetter + $VM.DFSPublicFolder
-    [array]$SMBFolders = $DFSRootFolder + $DFSPublicFolder
+
+    [array]$SMBFolders = $DFSRootFolder + $DFSFolders
     [array]$NonSMBFolders = "$DFSPublicFolder\sales","$DFSPublicFolder\ekonomi","$DFSPublicFolder\bd"
     [array]$AllFolders = $SMBFolders + $NonSMBFolders
 
@@ -114,14 +120,16 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
     ############################################# DFS NameSpace ##############################################
 
     $DFSRootFolderName = $DFSRootFolder.split("\")[1]
-    $DFSPublicFolderName = $DFSPublicFolder.split("\")[1]
     # Create DFS Root Folder
     if ((test-path "\\$DomainName\share")) {
        Write-Host -ForegroundColor yellow "DfnsNameSpace Root \\$DomainName\share already exist"
     } else { New-DfsnRoot -Path "\\$DomainName\share" -TargetPath "\\$($VM.VMName)\$DFSRootFolderName" -Type DomainV2 -EnableAccessBasedEnumeration $true }
 
-    # Create New folder under the root folder
-    if ((test-path "\\$DomainName\share\$DFSPublicFolderName")) {
-        Write-Host -ForegroundColor yellow "DfnsNameSpace folder \\$DomainName\share\$DFSPublicFolderName already exist"
-     } else { New-DfsnFolder -Path "\\$DomainName\share\$DFSPublicFolderName" -TargetPath "\\$($VM.VMName)\$DFSPublicFolderName" -EnableTargetFailback $True }
+    # Create New folders under the root folder
+    foreach ($Folder in $($DFSFolders)) {
+        $DFSFolderName = $Folder.split("\")[1]
+        if ((test-path "\\$DomainName\share\$DFSFolderName")) {
+            Write-Host -ForegroundColor yellow "DfnsNameSpace folder \\$DomainName\share\$DFSFolderName already exist"
+        } else { New-DfsnFolder -Path "\\$DomainName\share\$DFSFolderName" -TargetPath "\\$($VM.VMName)\$DFSFolderName" -EnableTargetFailback $True }
+    }
 }
