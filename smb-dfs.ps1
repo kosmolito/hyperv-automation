@@ -26,6 +26,7 @@ while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {“Test”} -
 Write-Verbose "PowerShell Connected to VM [$($VM.VMName)]. Moving On...." -Verbose
 Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
     $DomainName = $using:DomainName
+    $DomainNetbiosName = $using:DomainNetbiosName
     $VM = $using:VM
 
     ##########################################################################################################
@@ -60,9 +61,8 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
         [array]$DFSFolders += $VM.NonOSDriveLetter + $Folder
     }
 
-    $DFSPublicFolder = $DFSPublicFolder[0]
     [array]$DFSRootFolder = $VM.NonOSDriveLetter + $VM.DFSRootFolder
-
+    $DFSPublicFolder = $DFSFolders[0]
     [array]$SMBFolders = $DFSRootFolder + $DFSFolders
     [array]$NonSMBFolders = "$DFSPublicFolder\sales","$DFSPublicFolder\ekonomi","$DFSPublicFolder\bd"
     [array]$AllFolders = $SMBFolders + $NonSMBFolders
@@ -99,6 +99,40 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
         $Acl = Get-Acl -Path $FolderPath
         $Acl.Access | Where-Object {$_.IdentityReference -eq "BUILTIN\Users"} | ForEach-Object { $acl.RemoveAccessRuleSpecific($_) }
         Set-Acl $FolderPath $Acl
+
+        # Special permission for folder-redirection folder
+        if (($FolderName -like "folder-redirection")) {
+
+            $DomainAdmins = "$DomainNetbiosName\Domain Admins"
+            $identity = "$DomainNetbiosName\SEC_Public"
+
+            $Acl = get-acl $FolderPath
+            $acl.SetAccessRuleProtection($isProtected,$preserveInheritance)
+
+            #   Set required NTFS permissions to folder
+            #   CREATOR OWNER - Full Control (Apply onto: Subfolders and Files Only) 
+            $inherit = [system.security.accesscontrol.InheritanceFlags]"ContainerInherit, ObjectInherit"
+            $propagation = [system.security.accesscontrol.PropagationFlags]"InheritOnly"
+            $accessrule = New-Object system.security.AccessControl.FileSystemAccessRule("CREATOR OWNER", "FullControl", $inherit, $propagation, "Allow")
+            $acl.AddAccessRule($accessrule)
+
+            # System - Full Control (Apply onto: This Folder, Subfolders and Files)
+            $inherit = [system.security.accesscontrol.InheritanceFlags]"ContainerInherit, ObjectInherit"
+            $propagation = [system.security.accesscontrol.PropagationFlags]"NoPropagateInherit"
+            $accessrule = New-Object system.security.AccessControl.FileSystemAccessRule("NT AUTHORITY\SYSTEM", "FullControl", $inherit, $propagation, "Allow")
+            $acl.AddAccessRule($accessrule)
+
+            # Domain Admins - Full Control (Apply onto: This Folder Only)
+            $accessrule = New-Object system.security.AccessControl.FileSystemAccessRule($DomainAdmins, "FullControl", "Allow")
+            $acl.AddAccessRule($accessrule)
+
+            # Everyone - Create Folder/Append Data, List Folder/Read Data, Traverse Folders/Execute File (Apply onto: This Folder Only) 
+            $accessrule = New-Object system.security.AccessControl.FileSystemAccessRule($identity, "CreateDirectories, ListDirectory, Traverse", "Allow")
+            $acl.AddAccessRule($accessrule)
+
+            # Apply permissions to folder
+            set-acl -aclobject $acl $FolderPath
+        }
 
         # Grant Permission to the Domain Users, in this  case only ReadAndExecute
         # The permission is only applied to this folder/object and not subfolders,
