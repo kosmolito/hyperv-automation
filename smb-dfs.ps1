@@ -88,6 +88,9 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
 
         Start-Sleep -Seconds 1
 
+        $DomainAdmins = "$DomainNetbiosName\Domain Admins"
+        $identity = "$DomainNetbiosName\SEC_Public"
+
         # Disabling The inheritance
         $Acl = Get-Acl -Path $FolderPath
         $isProtected = $true
@@ -103,8 +106,7 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
         # Special permission for folder-redirection folder
         if (($FolderName -like "folder-redirection")) {
 
-            $DomainAdmins = "$DomainNetbiosName\Domain Admins"
-            $identity = "$DomainNetbiosName\SEC_Public"
+
 
             $Acl = get-acl $FolderPath
             $acl.SetAccessRuleProtection($isProtected,$preserveInheritance)
@@ -157,7 +159,7 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
     # Create DFS Root Folder
     if ((test-path "\\$DomainName\share")) {
        Write-Host -ForegroundColor yellow "DfnsNameSpace Root \\$DomainName\share already exist"
-    } else { New-DfsnRoot -Path "\\$DomainName\share" -TargetPath "\\$($VM.VMName)\$DFSRootFolderName" -Type DomainV2 -EnableAccessBasedEnumeration $true }
+    } else { New-DfsnRoot -Path "\\$DomainName\share" -TargetPath "\\$($VM.VMName)\$DFSRootFolderName" -Type DomainV2 -EnableAccessBasedEnumeration $True -GrantAdminAccounts $DomainAdmins }
 
     # Create New folders under the root folder
     foreach ($Folder in $($DFSFolders)) {

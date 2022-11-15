@@ -6,4 +6,4 @@
 /pc-inventory.json
 /DESKWIN10PRO-inventory.json
 /testing-index.ps1
-/testing-stuff*
+/testing-stuff/**

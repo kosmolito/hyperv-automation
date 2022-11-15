@@ -49,7 +49,7 @@ if ($DeleteConfirmation -notlike "yes") {
 
         if (((get-vm $ExistingVM.VMName).State) -notlike "Off") {
             Write-Verbose "[$($ExistingVM.VMName)] is running, turning off the machine.." -Verbose
-            Stop-vm -Name $ExistingVM.VMName
+            Stop-vm -Name $ExistingVM.VMName -Force
         }
 
         Write-Verbose "Deleting [$($ExistingVM.VMName)] and its components.." -Verbose

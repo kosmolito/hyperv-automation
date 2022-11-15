@@ -7,7 +7,7 @@
     "isCore": false,
     "MachineType": "server",
     "Roles": [
-      "AD-Domain-Services",
+      "AD-Domain-Services-Primary",
       "DNS",
       "DHCP",
       "DirectAccess-VPN"
@@ -41,7 +41,7 @@
     "isCore": false,
     "MachineType": "server",
     "Roles": [
-      "AD-Domain-Services",
+      "AD-Domain-Services-Secondary",
       "DNS"
     ],
     "HasJoinedDomain": "",
@@ -60,7 +60,7 @@
     "IPAddress": "192.168.10.11",
     "DefGateway": "192.168.10.1",
     "DNSAddress": [
-      "127.0.0.1"
+      "192.168.10.10"
     ],
     "SubMaskBit": "24",
     "isSelected": false
@@ -72,6 +72,7 @@
     "DeletionTime": "",
     "isCore": false,
     "MachineType": "server",
+    "ChildDomainName": "stockholm",
     "Roles": [
       "FS-DFS-Namespace",
       "FS-DFS-Replication"
@@ -85,7 +86,11 @@
     ],
     "NonOSDriveLetter": "d:\\",
     "DFSRootFolder": "dfsroot",
-    "DFSPublicFolders": ["public","folder-redirection","bg-image"],
+    "DFSPublicFolders": [
+      "public",
+      "folder-redirection",
+      "bg-image"
+    ],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
@@ -123,7 +128,11 @@
     ],
     "NonOSDriveLetter": "d:\\",
     "DFSRootFolder": "dfsroot",
-    "DFSPublicFolders": ["public","folder-redirection","bg-image"],
+    "DFSPublicFolders": [
+      "public",
+      "folder-redirection",
+      "bg-image"
+    ],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,

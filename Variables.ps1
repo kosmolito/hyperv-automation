@@ -38,7 +38,6 @@ function Add-TheADUser {
     -Surname $LastName `
     -DisplayName $FullName `
     -Name $FullName `
-    -EmployeeID $username `
     -SamAccountName $username `
     -UserPrincipalName $username"@"$DomainName `
     -PasswordNeverExpires $true `
@@ -56,7 +55,7 @@ function Install-FeaturesAndRoles {
     param($Role)
 
     switch ($Role) {
-        "AD-Domain-Services" 
+        "AD-Domain-Services-Primary" 
         {
 
             if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
@@ -75,11 +74,43 @@ function Install-FeaturesAndRoles {
                 -ForestMode "WinThreshold" `
                 -InstallDns:$true `
                 -LogPath "C:\Windows\NTDS" `
-                -NoRebootOnCompletion:$false `
+                -NoRebootOnCompletion:$true `
                 -SysvolPath "C:\Windows\SYSVOL" `
                 -SafeModeAdministratorPassword $ForestRecoveryPwd `
                 -Force:$true
             }
+
+        }
+
+        "AD-Domain-Services-Secondary" 
+        {
+
+            # if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
+                Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
+                Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
+
+                Write-Verbose "Configuring Child AD under [$DomainName] on VM [$($VM.VMName)]" -Verbose
+                Import-Module ADDSDeployment
+
+                Import-Module ADDSDeployment
+                Install-ADDSDomain `
+                -NoGlobalCatalog:$false `
+                -CreateDnsDelegation:$true `
+                -Credential $DomainCredential `
+                -DatabasePath "C:\Windows\NTDS" `
+                -DomainMode "WinThreshold" `
+                -DomainType "ChildDomain" `
+                -InstallDns:$true `
+                -LogPath "C:\Windows\NTDS" `
+                -NewDomainName $VM.ChildDomainName `
+                -NewDomainNetbiosName $VM.ChildDomainName.ToUpper() `
+                -ParentDomainName $DomainName `
+                -NoRebootOnCompletion:$false `
+                -SiteName "Default-First-Site-Name" `
+                -SysvolPath "C:\Windows\SYSVOL" `
+                -SafeModeAdministratorPassword $ForestRecoveryPwd `
+                -Force:$true
+            # }
 
         }
 
