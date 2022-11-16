@@ -7,10 +7,18 @@ $OU = $RAWOU -split ","
 $RAWSecurityGroups = Read-Host -Prompt "Insert security groups separated by a comma:"
 $SecurityGroup = $RAWSecurityGroups -split ","
 
-Remove-Item -Path generated.csv
+try
+{
+	Remove-Item -Path generated.csv
+}
+catch
+{
+	continue
+}
+
 Add-Content -Path generated.csv -Value '"FirstName","LastName","UserPassword","SecurityGroups","OU"'
 
-for ($i = 0; $i -lt $howmany; $i++)
+foreach ($i in $howmany)
 {
 	$firstrandom = Get-Random -Maximum $FirstName.Count
 	$lastrandom = Get-Random -Maximum $LastName.Count
