@@ -18,7 +18,7 @@ catch
 
 Add-Content -Path generated.csv -Value '"FirstName","LastName","UserPassword","SecurityGroups","OU"'
 
-foreach ($i in $howmany)
+for ($i = 0; $i -lt $howmany; $i++)
 {
 	$firstrandom = Get-Random -Maximum $FirstName.Count
 	$lastrandom = Get-Random -Maximum $LastName.Count
