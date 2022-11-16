@@ -2,7 +2,7 @@
 $LastName = Get-Content last-names.txt
 $howmany = Read-Host -Prompt "How many users are to be created?"
 $UserPassword = Read-Host -Prompt "Insert the password for the users:"
-$RAWOU = Read-Host -Prompt "Insert the name of the OUs separated by comma:"
+$RAWOU = Read-Host -Prompt "Insert the name of the OUs separated by a comma:"
 $OU = $RAWOU -split ","
 $RAWSecurityGroups = Read-Host -Prompt "Insert security groups separated by a comma:"
 $SecurityGroup = $RAWSecurityGroups -split ","
