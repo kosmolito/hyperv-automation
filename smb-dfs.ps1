@@ -25,6 +25,7 @@ while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {“Test”} -
 
 Write-Verbose "PowerShell Connected to VM [$($VM.VMName)]. Moving On...." -Verbose
 Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
+    $UserList = $using:UserList
     $DomainName = $using:DomainName
     $DomainNetbiosName = $using:DomainNetbiosName
     $VM = $using:VM
@@ -83,13 +84,12 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
         if($FolderPath -like $SMBStatus.Path) {
             write-host -ForegroundColor Yellow "$Folder folder is shared already!"
         } else {
-            New-SmbShare -Name $FolderName -Path $Folder -FolderEnumerationMode AccessBased | Out-Null
+            New-SmbShare -Name $FolderName -Path $Folder -FolderEnumerationMode AccessBased -FullAccess "Everyone" | Out-Null
         }
 
         Start-Sleep -Seconds 1
-
         $DomainAdmins = "$DomainNetbiosName\Domain Admins"
-        $identity = "$DomainNetbiosName\SEC_Public"
+        $identity = "$DomainNetbiosName\SEC_Gemensam"
 
         # Disabling The inheritance
         $Acl = Get-Acl -Path $FolderPath
@@ -139,7 +139,6 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
         # Grant Permission to the Domain Users, in this  case only ReadAndExecute
         # The permission is only applied to this folder/object and not subfolders,
         # if the permission will be for subfolders, change the inheritance to "ContainerInherit, ObjectInherit"
-        $identity = "$DomainNetbiosName\SEC_Public"
         $rights = 'ReadAndExecute,Synchronize' #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
         $inheritance = "none"#'ContainerInherit, ObjectInherit' #Other options: [enum]::GetValues('System.Security.AccessControl.Inheritance')
         $propagation = 'None' #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
