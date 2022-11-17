@@ -17,7 +17,7 @@
     {
       "Option": "VM Deployment",
       "ScriptPath": "vm-deployment.ps1",
-      "isSelected": true
+      "isSelected": false
     },
     {
       "Option": "Network Configuration",
@@ -27,7 +27,7 @@
     {
       "Option": "Roles-Features Installation",
       "ScriptPath": "roles-features-installation.ps1",
-      "isSelected": false
+      "isSelected": true
     },
     {
       "Option": "Joining Domain",

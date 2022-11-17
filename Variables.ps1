@@ -61,7 +61,14 @@ function Install-FeaturesAndRoles {
             if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
                 Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
                 Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
+            }
 
+            try
+            {
+                Get-ADComputer -filter *
+            }
+            catch
+            {
                 Write-Verbose "Configuring New Domain with Name [$DomainName] on VM [$($VM.VMName)]" -Verbose
                 Import-Module ADDSDeployment
 
@@ -74,7 +81,7 @@ function Install-FeaturesAndRoles {
                 -ForestMode "WinThreshold" `
                 -InstallDns:$true `
                 -LogPath "C:\Windows\NTDS" `
-                -NoRebootOnCompletion:$true `
+                -NoRebootOnCompletion:$false `
                 -SysvolPath "C:\Windows\SYSVOL" `
                 -SafeModeAdministratorPassword $ForestRecoveryPwd `
                 -Force:$true
@@ -85,14 +92,20 @@ function Install-FeaturesAndRoles {
         "AD-Domain-Services-Secondary" 
         {
 
-            # if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
+            if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
                 Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
                 Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
+            }
 
-                Write-Verbose "Configuring Child AD under [$DomainName] on VM [$($VM.VMName)]" -Verbose
+            try
+            {
+                Get-ADComputer -filter *
+            }
+            catch
+            {
+                Write-Verbose "Configuring Child DC under [$DomainName] on VM [$($VM.VMName)]" -Verbose
                 Import-Module ADDSDeployment
-
-                Import-Module ADDSDeployment
+                
                 Install-ADDSDomain `
                 -NoGlobalCatalog:$false `
                 -CreateDnsDelegation:$true `
@@ -102,16 +115,15 @@ function Install-FeaturesAndRoles {
                 -DomainType "ChildDomain" `
                 -InstallDns:$true `
                 -LogPath "C:\Windows\NTDS" `
-                -NewDomainName $VM.ChildDomainName `
-                -NewDomainNetbiosName $VM.ChildDomainName.ToUpper() `
+                -NewDomainName $($VM.ChildDomainName) `
+                -NewDomainNetbiosName $($VM.ChildDomainName).ToUpper() `
                 -ParentDomainName $DomainName `
                 -NoRebootOnCompletion:$false `
                 -SiteName "Default-First-Site-Name" `
                 -SysvolPath "C:\Windows\SYSVOL" `
                 -SafeModeAdministratorPassword $ForestRecoveryPwd `
                 -Force:$true
-            # }
-
+            }
         }
 
         "DNS" 
@@ -152,7 +164,7 @@ function Install-FeaturesAndRoles {
             Add-DhcpServerv4Scope -name "staff_ipv4_scope" -StartRange "$($NetworkAddress)100" -EndRange "$($NetworkAddress)200" -SubnetMask 255.255.255.0 -State Active
             Add-DhcpServerv4ExclusionRange -ScopeID "$($NetworkAddress)0" -StartRange "$($NetworkAddress)1" -EndRange "$($NetworkAddress)30"
             Set-DhcpServerv4OptionValue -OptionID 3 -Value "$($NetworkAddress)1" -ScopeID "$($NetworkAddress)0" -ComputerName AD01.mstile.se
-            Set-DhcpServerv4OptionValue -DnsDomain AD01.mstile.se -DnsServer "$($NetworkAddress)10"
+            Set-DhcpServerv4OptionValue -DnsDomain (Get-ADComputer -filter *).DNSHostName -DnsServer $VM.IPAddress
         }
   
 
