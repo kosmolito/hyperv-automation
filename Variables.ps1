@@ -231,15 +231,27 @@ function New-HardDrive {
 
 }
 
-
 ########################## End of Functions ##########################
 
 $LogDateTime = Get-Date -UFormat %Y-%m-%d-%H%M
 $HostName = hostname
 
+# Create files if its exist
+if (!(test-path "$PSScriptRoot\$HostName-inventory.json")) {
+    New-Item -Path "$PSScriptRoot\$HostName-inventory.json" -ItemType File | Out-Null
+}
+
 if (!(test-path "$PSScriptRoot\old-deployments")) {
-	New-Item -Path "$PSScriptRoot\old-deployments" -ItemType Directory
-	New-Item -Path "$PSScriptRoot\old-deployments\$HostName-old-deployments.json" -ItemType File
+	New-Item -Path "$PSScriptRoot\old-deployments" -ItemType Directory | Out-Null
+	New-Item -Path "$PSScriptRoot\old-deployments\$HostName-old-deployments.json" -ItemType File | Out-Null
+}
+
+if (!(test-path "$PSScriptRoot\credentials.csv")) {
+    Copy-Item "$PSScriptRoot\example-credentials.csv" -Destination "$PSScriptRoot\credentials.csv" | Out-Null
+}
+
+if (!(test-path "$PSScriptRoot\domain-users.csv")) {
+    Copy-Item "$PSScriptRoot\example-domain-users.csv" -Destination "$PSScriptRoot\domain-users.csv" | Out-Null
 }
 
 $Menu = Get-Content -Path "$PSScriptRoot\menu.json" | ConvertFrom-Json
@@ -250,7 +262,7 @@ $UserList = Import-Csv -path "$PSScriptRoot\domain-users.csv"
 
 
 ################################## Credentials ##################################
-$Credentials = Import-Csv -path "$PSScriptRoot\Credentials.csv"
+$Credentials = Import-Csv -path "$PSScriptRoot\credentials.csv"
 $DomainName = $Credentials.DomainName
 $DomainNetbiosName = $DomainName.Split(".")[0]
 

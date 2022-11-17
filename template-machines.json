@@ -182,7 +182,7 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "isSelected": false
+    "isSelected": true
   },
   {
     "VMName": "MOLNDAL02",

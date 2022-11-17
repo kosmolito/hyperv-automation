@@ -1,9 +1,4 @@
 . .\variables.ps1
-$HostName = hostname
-$TemplateMachines = Get-Content -Path "$PSScriptRoot\template-machines.json" | ConvertFrom-Json
-$Menu = Get-Content -Path "$PSScriptRoot\menu.json" | ConvertFrom-Json
-$VMList = Get-Content -Path "$PSScriptRoot\$HostName-inventory.json" | ConvertFrom-Json
-
 #########################################################################################################################
 ################# COMPARE THE VMList VM WITH EXISTING VM IN THE SYSTEM. KEEP ONLY THE EXISTING MACHINES #################
 
@@ -28,16 +23,21 @@ foreach ($VM in $TemplateMachines) {
 }
 $TemplateMachines | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\template-machines.json"
 
-foreach ($VM in $VMList) {
-    $VM.isSelected = $false
+if (!($VMList -like $Null)) {
+    foreach ($VM in $VMList) {
+        $VM.isSelected = $false
+    }
+    $VMList | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
 }
-$VMList | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
 
 foreach ($Array in $Menu) {
     foreach ($Item in $Array) {
-        $Item.isSelected = $false
+        if ($Item -match "isSelected") {
+            $Item.isSelected = $False
+        }
     }
 }
+
 $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu.json"
 
 #########################################################################################################################
