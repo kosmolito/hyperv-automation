@@ -40,13 +40,13 @@ switch ($selection)
     $RandomNameList = Import-Csv "$PSScriptRoot\random-names.csv"
     $UserAmount = Read-Host -Prompt "How many users are to be created?"
     $UserPassword = Read-Host -Prompt "Insert the password for the users"
-    $RAWGeneralSecurityGroup = Read-Host -Prompt "Insert the general security group name, eg. SEC_Public"
-    $RAWSecurityGroups = Read-Host -Prompt "Insert other security groups separated by a comma"
-    $RawOU = Read-Host -Prompt "Insert the name of the OUs separated by a comma"
-    $OU = $RawOU -split ","
-    $SecurityGroup = $RAWSecurityGroups -split ","
-    $FilePath = "$PSScriptRoot\random-generated-users.csv"
+    $RAWGeneralSecurityGroup = Read-Host -Prompt "Insert general security group name, eg. Public"
+    $RAWSecurityGroups = Read-Host -Prompt "Insert other security groups separated by a comma, eg. Sales,Ekonomi"
+    $SecurityGroup = $RAWSecurityGroups.split(",")
+    $RawOU = Read-Host -Prompt "Insert the name of the OUs separated by a comma eg. site1_users,site2_users"
+    $OU = $RawOU.split(",")
     
+    $FilePath = "$PSScriptRoot\random-generated-users.csv"
     if (test-path ($FilePath)) {
     Remove-Item -Path $FilePath
     }
@@ -60,7 +60,7 @@ switch ($selection)
             FirstName = $RandomNameList.FirstName[$RandomFirstName]
             LastName = $RandomNameList.LastName[$RandomLastName]
             UserPassword = $UserPassword
-            SecurityGroups = $RAWGeneralSecurityGroup + "," + $SecurityGroup[$RandomSecurityGroup]
+            SecurityGroups = "SEC_$($RAWGeneralSecurityGroup)" + "," + "SEC_$($SecurityGroup[$RandomSecurityGroup])"
             OU = $OU[$RandomOU]
             } | Export-Csv -Path $FilePath -Append -Encoding ASCII
         $UserList = import-csv -Path $FilePath
@@ -88,6 +88,7 @@ Invoke-Command -VMName $VMName -Credential $DomainCredential -ScriptBlock {
     Add-TheADUser `
     -FirstName $User.FirstName -LastName $User.LastName -UserPassword $User.UserPassword -OU $User.OU `
     -DomainName $using:Credentials.DomainName -SecurityGroups $User.SecurityGroups
+    Write-Host ($user.FirstName + "." + $user.LastName) "created." -ForegroundColor Green
     }
     Write-Verbose "User creation process finished." -Verbose
 }
