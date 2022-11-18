@@ -8,7 +8,8 @@ The idea of this project is to speed up the VM deployments. Instead of creating 
 - [x] Roles and features installation and confuration
 
 ## requirements
-
+* . (IMPORTANT) Powershell 7x and up
+    * The conversion of .JSON file in Powershell earlier than 7 is different, causing error. 
 * .vhdx sysprep images.
 
 The scripts are deploying the VM as differencing disk and the parent disk needs to be present at all time. This can be changed in vm-deployments.ps1 file.
