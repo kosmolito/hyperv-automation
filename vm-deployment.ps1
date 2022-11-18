@@ -28,19 +28,19 @@ elseif (($menu[2].Hostname -match $HostName).count -gt 1) {
     }
 
     $TempServerTemplateCorePath = Read-Host "Enter .vhdx TEMPLATE path for server19 CORE (Enter for none)"
-    while (!(test-path ($TempVMPath)) -or $TempServerTemplateCorePath -notlike "" ) {
+    while (!(test-path ($TempServerTemplateCorePath)) -or $TempServerTemplateCorePath -notlike "" ) {
         Write-Host -ForegroundColor red "The file does not exist!"
         $TempServerTemplateCorePath = Read-Host "Enter .vhdx TEMPLATE path for server19 CORE (Enter for none)"
     }
 
     $TempServerTemplateGuiPath = Read-Host "Enter .vhdx TEMPLATE path for server19 Desktop Experience (Enter for none)"
-    while (!(test-path ($TempVMPath)) -or $TempServerTemplateGuiPath -notlike "" ) {
+    while (!(test-path ($TempServerTemplateGuiPath)) -or $TempServerTemplateGuiPath -notlike "" ) {
         Write-Host -ForegroundColor red "The file does not exist!"
         $TempServerTemplateGuiPath = Read-Host "Enter .vhdx TEMPLATE path for server19 Desktop Experience (Enter for none)"
     }
 
     $TempClientTemplatePath = Read-Host "Enter .vhdx TEMPLATE path for Windows 10 (Enter for none)"
-    while (!(test-path ($TempVMPath)) -or $TempClientTemplatePath -notlike "" ) {
+    while (!(test-path ($TempClientTemplatePath)) -or $TempClientTemplatePath -notlike "" ) {
         Write-Host -ForegroundColor red "The file does not exist!"
         $TempClientTemplatePath = Read-Host "Enter .vhdx TEMPLATE path for Windows 10 (Enter for none)"
     }
