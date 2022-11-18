@@ -55,12 +55,15 @@ elseif (($menu[2].Hostname -match $HostName).count -gt 1) {
         ServerTemplateGuiPath = $TempServerTemplateGuiPath
         ClientTemplatePath = $TempClientTemplatePath
     }
-    Write-Host -ForegroundColor red "Before"
-    $Menu[2]
-    Write-Host -ForegroundColor red "After"
     $Menu[2] = [array]$Menu[2] + [array]$TempHost
     $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu.json"
+    Start-Sleep -Seconds 1
 }
+
+$VMPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).VMPath
+$ServerTemplateCorePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateCorePath
+$ServerTemplateGuiPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateGuiPath
+$ClientTemplatePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ClientTemplatePath
 
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     Write-Verbose "Starting VM Creation Process...." -Verbose
