@@ -97,12 +97,10 @@ function Install-FeaturesAndRoles {
                 Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
             }
 
-            try
-            {
+            try {
                 Get-ADComputer -filter *
             }
-            catch
-            {
+            catch {
                 Write-Verbose "Configuring Child DC under [$DomainName] on VM [$($VM.VMName)]" -Verbose
                 Import-Module ADDSDeployment
                 
@@ -151,23 +149,29 @@ function Install-FeaturesAndRoles {
                 $tempAddress += $octet + "."
             }
             $NetworkAddress = $tempAddress
-            Write-Host -ForegroundColor green "NetWorkAdress:" $NetworkAddress
             
-            netsh dhcp add securitygroups
-            Restart-Service dhcpserver
-            Add-DhcpServerInDC -DnsName ($VM.VMName + "." + $DomainName) -IPAddress $VM.IPAddress
-            Get-DhcpServerInDC
-            Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
-            Set-DhcpServerv4DnsSetting -ComputerName ($VM.VMName + "." + $DomainName) -DynamicUpdates "Always" -DeleteDnsRRonLeaseExpiry $True
-        
-            ######### SETTING UP THE SCOPE #########
-            Add-DhcpServerv4Scope -name "staff_ipv4_scope" -StartRange "$($NetworkAddress)100" -EndRange "$($NetworkAddress)200" -SubnetMask 255.255.255.0 -State Active
-            Add-DhcpServerv4ExclusionRange -ScopeID "$($NetworkAddress)0" -StartRange "$($NetworkAddress)1" -EndRange "$($NetworkAddress)30"
-            Set-DhcpServerv4OptionValue -OptionID 3 -Value "$($NetworkAddress)1" -ScopeID "$($NetworkAddress)0" -ComputerName AD01.mstile.se
-            Set-DhcpServerv4OptionValue -DnsDomain (Get-ADComputer -filter *).DNSHostName -DnsServer $VM.IPAddress
-        }
-  
+            try {
 
+                (Get-ADComputer -Filter * | Where-Object {$_.Name -like $($VM.VMName)}).DnsHostName
+
+                netsh dhcp add securitygroups
+                Restart-Service dhcpserver
+                Add-DhcpServerInDC -DnsName ($VM.VMName + "." + $DomainName) -IPAddress $VM.IPAddress
+                Get-DhcpServerInDC
+                Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
+                Set-DhcpServerv4DnsSetting -ComputerName ($VM.VMName + "." + $DomainName) -DynamicUpdates "Always" -DeleteDnsRRonLeaseExpiry $True
+            
+                ######### SETTING UP THE SCOPE #########
+                Add-DhcpServerv4Scope -name "staff_ipv4_scope" -StartRange "$($NetworkAddress)100" -EndRange "$($NetworkAddress)200" -SubnetMask 255.255.255.0 -State Active
+                Add-DhcpServerv4ExclusionRange -ScopeID "$($NetworkAddress)0" -StartRange "$($NetworkAddress)1" -EndRange "$($NetworkAddress)30"
+                Set-DhcpServerv4OptionValue -OptionID 3 -Value "$($NetworkAddress)1" -ScopeID "$($NetworkAddress)0" -ComputerName AD01.mstile.se
+                Set-DhcpServerv4OptionValue -DnsDomain (Get-ADComputer -filter *).DNSHostName -DnsServer $VM.IPAddress
+            }
+
+            catch {
+                Write-Verbose "Active Directory Role could not be found!" -Verbose
+            }
+            }
         }
 
         "FS-DFS-Namespace" 
