@@ -1,6 +1,6 @@
 . .\variables.ps1
 
-if (($menu[2].Hostname -match $HostName).count -eq 1) {
+if (($menu[2].Hostname -contains $HostName)) {
     $VMPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).VMPath
     $ServerTemplateCorePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateCorePath
     $ServerTemplateGuiPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateGuiPath
@@ -19,31 +19,34 @@ elseif (($menu[2].Hostname -match $HostName).count -gt 1) {
     Clear-Host
     ($Menu[2] | Where-Object {$_.HostName -like $HostName})[$HostSelection] | Format-List HostName,VMPath,ServerTemplateCorePath,ServerTemplateGuiPath,ClientTemplatePath
 } else {
+
     Write-Host -ForegroundColor red "Cannot find VM Path or Template Path"
     $TempHostName = $HostName
     $TempVMPath = Read-Host "Enter the path where you want to store your VM"
-    while (!(test-path ($TempVMPath))) {
+    while (!(test-path $TempVMPath)) {
         Write-Host -ForegroundColor red "The folder does not exist!"
         $TempVMPath = Read-Host "Enter the path where you want to store your VM"
     }
-
+    
     $TempServerTemplateCorePath = Read-Host "Enter .vhdx TEMPLATE path for server19 CORE (Enter for none)"
-    while (!(test-path ($TempVMPath)) -or $TempServerTemplateCorePath -notlike "" ) {
+    while (!(test-path $TempServerTemplateCorePath) -xor ($TempServerTemplateCorePath -like "")) {
         Write-Host -ForegroundColor red "The file does not exist!"
         $TempServerTemplateCorePath = Read-Host "Enter .vhdx TEMPLATE path for server19 CORE (Enter for none)"
     }
-
+    
     $TempServerTemplateGuiPath = Read-Host "Enter .vhdx TEMPLATE path for server19 Desktop Experience (Enter for none)"
-    while (!(test-path ($TempVMPath)) -or $TempServerTemplateGuiPath -notlike "" ) {
+        while (!(test-path $TempServerTemplateGuiPath) -xor ($TempServerTemplateGuiPath -like "")) {
         Write-Host -ForegroundColor red "The file does not exist!"
         $TempServerTemplateGuiPath = Read-Host "Enter .vhdx TEMPLATE path for server19 Desktop Experience (Enter for none)"
     }
-
+    
     $TempClientTemplatePath = Read-Host "Enter .vhdx TEMPLATE path for Windows 10 (Enter for none)"
-    while (!(test-path ($TempVMPath)) -or $TempClientTemplatePath -notlike "" ) {
+    while (!(test-path $TempClientTemplatePath) -xor ($TempClientTemplatePath -like "")) {
         Write-Host -ForegroundColor red "The file does not exist!"
         $TempClientTemplatePath = Read-Host "Enter .vhdx TEMPLATE path for Windows 10 (Enter for none)"
     }
+
+
     # Creating a Temporary Object to store the iformation and later on save it to menu.json file for persistence
     $TempHost = @{
         HostName = $TempHostName
