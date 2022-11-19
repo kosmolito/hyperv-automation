@@ -8,7 +8,7 @@ The idea of this project is to speed up the VM deployments. Instead of creating 
 - [x] Roles and features installation and confuration
 
 ## requirements
-* . (IMPORTANT) Powershell 7x and up
+*   (IMPORTANT) Powershell 7x and up
     * The conversion of .JSON file in Powershell earlier than 7 is different, causing error. 
 * .vhdx sysprep images.
 
