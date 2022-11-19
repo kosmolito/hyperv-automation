@@ -38,7 +38,7 @@ switch ($selection)
     '3' 
     {
     $RandomNameList = Import-Csv "$PSScriptRoot\random-names.csv"
-    $UserAmount = Read-Host -Prompt "How many users are to be created?"
+    [ValidateRange(1, 500)]$UserAmount = Read-Host -Prompt "How many users are to be created? (Max 500)"
     $UserPassword = Read-Host -Prompt "Insert the password for the users"
     $RAWGeneralSecurityGroup = Read-Host -Prompt "Insert general security group name, eg. Public"
     $RAWSecurityGroups = Read-Host -Prompt "Insert other security groups separated by a comma, eg. Sales,Ekonomi"
