@@ -84,11 +84,13 @@ Write-Verbose "PowerShell Connected to VM [$VMName]. Moving On...." -Verbose
 Invoke-Command -VMName $VMName -Credential $DomainCredential -ScriptBlock {
     Set-Content function:Add-TheADUser -Value $using:AddTheADUser
     Write-Verbose "User creation process starting..." -Verbose
+    $i = 1
     foreach ($User in $using:UserList) {
     Add-TheADUser `
     -FirstName $User.FirstName -LastName $User.LastName -UserPassword $User.UserPassword -OU $User.OU `
     -DomainName $using:Credentials.DomainName -SecurityGroups $User.SecurityGroups
-    Write-Host ($user.FirstName + "." + $user.LastName) "created." -ForegroundColor Green
+    Write-Host ($user.FirstName + "." + $user.LastName) "created: $($i) of $($UserList) total"  -ForegroundColor Green
+    $i++
     }
     Write-Verbose "User creation process finished." -Verbose
 }
