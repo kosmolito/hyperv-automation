@@ -40,7 +40,8 @@
       "isSelected": false
     },
     {
-      "Option": "Misc Functions",
+      "Option": "SMB DFS Creation",
+      "ScriptPath": "smb-dfs.ps1",
       "isSelected": false
     }
   ]

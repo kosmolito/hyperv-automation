@@ -1,11 +1,6 @@
 /json
 /single-functions
-/old-deployments
 /[Cc]redentials.csv
-/domain-users.csv
-/pc-inventory.json
-/DESKWIN10PRO-inventory.json
 /testing-index.ps1
 /testing-stuff/**
-/random-generated-users.csv
 /testing*
