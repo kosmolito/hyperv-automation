@@ -59,7 +59,7 @@ if ($DeleteConfirmation -notlike "yes") {
         Write-Host -ForegroundColor green "$($ExistingVM.VMName) are deleted!"
     }
 }
-$OldDeployments | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\old-deployments\$HostName-old-deployments.json"
+$OldDeployments | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\old-deployments.json"
 
 
 Write-Host -ForegroundColor green "All Selected VM Machines are deleted."

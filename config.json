@@ -1,0 +1,18 @@
+[
+  {
+    "HostName": "DESKWIN10PRO",
+    "VMPath": "C:\\hyper-v",
+    "ServerTemplateCorePath": "D:\\hyper-v\\TEMPLATES\\sysprep-srv19-core.vhdx",
+    "ServerTemplateGuiPath": "D:\\hyper-v\\TEMPLATES\\sysprep-srv19.vhdx",
+    "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\sysprep-win10pro.vhdx",
+    "VMSwitchedConfigured": true
+  },
+  {
+    "ServerTemplateCorePath": "D:\\hyper-v\\TEMPLATES\\srv-19\\sysprep-srv19-core.vhdx",
+    "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\win-10-pro\\sysprep_win10pro.vhdx",
+    "VMPath": "D:\\hyper-v",
+    "HostName": "pc",
+    "VMSwitchedConfigured": true,
+    "ServerTemplateGuiPath": "D:\\hyper-v\\TEMPLATES\\srv-19\\sysprep-srv19.vhdx"
+  }
+]

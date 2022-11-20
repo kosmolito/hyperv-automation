@@ -1,23 +1,23 @@
 . .\variables.ps1
 Clear-Host
-if (($menu[2].Hostname -contains $HostName)) {
-    $VMPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).VMPath
-    $ServerTemplateCorePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateCorePath
-    $ServerTemplateGuiPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateGuiPath
-    $ClientTemplatePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ClientTemplatePath
+if (($ConfigFile[0].Hostname -contains $HostName)) {
+    $VMPath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName}).VMPath
+    $ServerTemplateCorePath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName}).ServerTemplateCorePath
+    $ServerTemplateGuiPath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName}).ServerTemplateGuiPath
+    $ClientTemplatePath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName}).ClientTemplatePath
 } 
 # If there Multiple host with the same Hostnames, the selection will be done here
-elseif (($menu[2].Hostname -match $HostName).count -gt 1) {
+elseif (($ConfigFile[0].Hostname -match $HostName).count -gt 1) {
     Clear-Host
     Write-Host "There are multiple Host with the same Names"
-    $Menu[2] | Where-Object {$_.HostName -like $HostName} | ForEach-Object {$index=0} {$_; $index++} | Format-List -Property @{Label="Index";Expression={$index}},HostName,VMPath,ServerTemplateCorePath,ServerTemplateGuiPath,ClientTemplatePath
+    $ConfigFile[0] | Where-Object {$_.HostName -like $HostName} | ForEach-Object {$index=0} {$_; $index++} | Format-List -Property @{Label="Index";Expression={$index}},HostName,VMPath,ServerTemplateCorePath,ServerTemplateGuiPath,ClientTemplatePath
     [int32]$HostSelection = Read-Host "Select ONE of the option above"
-    $VMPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName})[$HostSelection].VMPath
-    $ServerTemplateCorePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName})[$HostSelection].ServerTemplateCorePath
-    $ServerTemplateGuiPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName})[$HostSelection].ServerTemplateGuiPath
-    $ClientTemplatePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName})[$HostSelection].ClientTemplatePath
+    $VMPath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName})[$HostSelection].VMPath
+    $ServerTemplateCorePath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName})[$HostSelection].ServerTemplateCorePath
+    $ServerTemplateGuiPath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName})[$HostSelection].ServerTemplateGuiPath
+    $ClientTemplatePath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName})[$HostSelection].ClientTemplatePath
     Clear-Host
-    ($Menu[2] | Where-Object {$_.HostName -like $HostName})[$HostSelection] | Format-List HostName,VMPath,ServerTemplateCorePath,ServerTemplateGuiPath,ClientTemplatePath
+    ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName})[$HostSelection] | Format-List HostName,VMPath,ServerTemplateCorePath,ServerTemplateGuiPath,ClientTemplatePath
 } else {
 
     Write-Host -ForegroundColor red "Cannot find VM Path or Template Path"
@@ -56,13 +56,13 @@ elseif (($menu[2].Hostname -match $HostName).count -gt 1) {
         ClientTemplatePath = $TempClientTemplatePath
         VMSwitchedConfigured = $False
     }
-    $Menu[2] = [array]$Menu[2] + [array]$TempHost
-    $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu.json"
+    $ConfigFile[0] = [array]$ConfigFile[0] + [array]$TempHost
+    $ConfigFile | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\config.json"
     Start-Sleep -Seconds 1
 }
 
 
-if (($Menu[2] | Where-Object HostName -like $HostName).VMSwitchedConfigured -eq $false) {
+if (($ConfigFile[0] | Where-Object HostName -like $HostName).VMSwitchedConfigured -eq $false) {
     $NetworkSwitchCount = 0
     foreach ($VM in $TemplateMachines) {
         if ((Get-VMSwitch).Name -like $VM.NetworkSwitches) {
@@ -93,17 +93,17 @@ if (($Menu[2] | Where-Object HostName -like $HostName).VMSwitchedConfigured -eq 
         foreach ($Switch in $VMList) {
             [array]$Switch.NetworkSwitches = $TempNetworkSwitchs
         }
-    $TemplateMachines | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\template-machines.json"
+    $TemplateMachines | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\template-machines.json"
     }
 
-($Menu[2] | Where-Object HostName -like $HostName).VMSwitchedConfigured = $True
-$Menu | ConvertTo-Json | Out-File -Path "$PSScriptRoot\menu.json"
+($ConfigFile[0] | Where-Object HostName -like $HostName).VMSwitchedConfigured = $True
+$ConfigFile | ConvertTo-Json | Out-File -Path "$PSScriptRoot\config.json"
 }
 
-$VMPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).VMPath
-$ServerTemplateCorePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateCorePath
-$ServerTemplateGuiPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateGuiPath
-$ClientTemplatePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ClientTemplatePath
+$VMPath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName}).VMPath
+$ServerTemplateCorePath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName}).ServerTemplateCorePath
+$ServerTemplateGuiPath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName}).ServerTemplateGuiPath
+$ClientTemplatePath = ($ConfigFile[0] | Where-Object {$_.HostName -like $HostName}).ClientTemplatePath
 
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     Write-Verbose "Starting VM Creation Process...." -Verbose
@@ -171,5 +171,5 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     }
 }
 
-$VMList | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
+$VMList | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
 Write-Verbose "VM Creation Process Completed." -Verbose

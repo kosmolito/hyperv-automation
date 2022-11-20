@@ -12,8 +12,8 @@ foreach ($VM in $VMList) {
     }
 }
 
-$TEMPVM | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
-$VMList = Get-Content -Path "$PSScriptRoot\$HostName-inventory.json" | ConvertFrom-Json
+$TEMPVM | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
+$VMList = Get-Content -Path "$ConfigFolder\inventory.json" | ConvertFrom-Json
 
 #########################################################################################################################
 ####################### SETTING ALL isSelected to $false AND REASSIGN THE VARIABLE AGAIN ################################
@@ -21,13 +21,13 @@ $VMList = Get-Content -Path "$PSScriptRoot\$HostName-inventory.json" | ConvertFr
 foreach ($VM in $TemplateMachines) {
     $VM.isSelected = $false
 }
-$TemplateMachines | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\template-machines.json"
+$TemplateMachines | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\template-machines.json"
 
 if (!($VMList -like $Null)) {
     foreach ($VM in $VMList) {
         $VM.isSelected = $false
     }
-    $VMList | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
+    $VMList | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
 }
 
 foreach ($Array in $Menu) {
@@ -63,9 +63,9 @@ switch ($MenuSelected[0]) {
         foreach ($VM in $TemplateMachines[$VMSelected]) {
             $VM.isSelected = $True
         }
-        $TemplateMachines | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\template-machines.json"
+        $TemplateMachines | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\template-machines.json"
         $TemplateMachines[$VMSelected] | Format-table -Property VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
-        $VMList = [array]$VMList + [array]$TemplateMachines[$VMSelected] | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
+        $VMList = [array]$VMList + [array]$TemplateMachines[$VMSelected] | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
     }
     "1" 
     {
@@ -80,7 +80,7 @@ switch ($MenuSelected[0]) {
         foreach ($VM in $VMList[$VMSelected]) {
             $VM.isSelected = $True
         }
-        $VMList | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
+        $VMList | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
         $VMList[$VMSelected] | Format-table -Property VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
 
     }

@@ -28,5 +28,5 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     }
 $VM.HasJoinedDomain = $True
 }
-$VMList | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\$HostName-inventory.json"
+$VMList | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
 Write-Verbose "Joining process completed." -Verbose

@@ -13,9 +13,6 @@ function Show-Menu {
     Write-Host "Q: To quit."
 }
 
-$File1 = "c:\file1.csv"
-$File1 -match "^(?!.*\.csv$).*$"
-
 Show-Menu
 $selection = Read-Host "Please make a selection"
 switch ($selection)
@@ -37,7 +34,7 @@ switch ($selection)
 
     '3' 
     {
-    $RandomNameList = Import-Csv "$PSScriptRoot\random-names.csv"
+    $RandomNameList = Import-Csv "$PSScriptRoot\example-resource\random-names.csv"
     [ValidateRange(1, 500)]$UserAmount = Read-Host -Prompt "How many users are to be created? (Max 500)"
     $UserPassword = Read-Host -Prompt "Insert the password for the users"
     $RAWGeneralSecurityGroup = Read-Host -Prompt "Insert general security group name, eg. Public"
@@ -46,9 +43,9 @@ switch ($selection)
     $RawOU = Read-Host -Prompt "Insert the name of the OUs separated by a comma eg. site1_users,site2_users"
     $OU = $RawOU.split(",")
     
-    $FilePath = "$PSScriptRoot\random-generated-users.csv"
-    if (test-path ($FilePath)) {
-    Remove-Item -Path $FilePath
+    $RandomCsvFilePath = "$PSScriptRoot\random-generated-users.csv"
+    if (test-path ($RandomCsvFilePath)) {
+    Remove-Item -Path $RandomCsvFilePath
     }
     
     for ($i = 0; $i -lt $UserAmount; $i++) {
@@ -62,10 +59,10 @@ switch ($selection)
             UserPassword = $UserPassword
             SecurityGroups = "SEC_$($RAWGeneralSecurityGroup)" + "," + "SEC_$($SecurityGroup[$RandomSecurityGroup])"
             OU = $OU[$RandomOU]
-            } | Export-Csv -Path $FilePath -Append -Encoding ASCII
-        $UserList = import-csv -Path $FilePath
+            } | Export-Csv -Path $RandomCsvFilePath -Append -Encoding ASCII
+        $UserList = import-csv -Path $RandomCsvFilePath
         }
-    $UserList = Import-Csv -Path $FilePath
+    $UserList = Import-Csv -Path $RandomCsvFilePath
     }
 
     "q" { exit }
