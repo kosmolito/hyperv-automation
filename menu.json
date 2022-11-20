@@ -17,7 +17,7 @@
     {
       "Option": "VM Deployment",
       "ScriptPath": "vm-deployment.ps1",
-      "isSelected": false
+      "isSelected": true
     },
     {
       "Option": "Network Configuration",
@@ -27,7 +27,7 @@
     {
       "Option": "Roles-Features Installation",
       "ScriptPath": "roles-features-installation.ps1",
-      "isSelected": true
+      "isSelected": false
     },
     {
       "Option": "Joining Domain",
@@ -50,14 +50,16 @@
       "VMPath": "D:\\hyper-v",
       "ServerTemplateCorePath": "D:\\hyper-v\\TEMPLATES\\srv-19\\sysprep-srv19-core.vhdx",
       "ServerTemplateGuiPath": "D:\\hyper-v\\TEMPLATES\\srv-19\\sysprep-srv19.vhdx",
-      "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\win-10-pro\\sysprep_win10pro.vhdx"
+      "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\win-10-pro\\sysprep_win10pro.vhdx",
+      "VMSwitchedConfigured": true
     },
     {
       "HostName": "DESKWIN10PRO",
       "VMPath": "C:\\hyper-v",
       "ServerTemplateCorePath": "D:\\hyper-v\\TEMPLATES\\sysprep-srv19-core.vhdx",
       "ServerTemplateGuiPath": "D:\\hyper-v\\TEMPLATES\\sysprep-srv19.vhdx",
-      "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\sysprep-win10pro.vhdx"
+      "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\sysprep-win10pro.vhdx",
+      "VMSwitchedConfigured": true
     }
   ]
 ]

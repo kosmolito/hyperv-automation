@@ -1,5 +1,5 @@
 . .\variables.ps1
-
+Clear-Host
 if (($menu[2].Hostname -contains $HostName)) {
     $VMPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).VMPath
     $ServerTemplateCorePath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).ServerTemplateCorePath
@@ -54,10 +54,50 @@ elseif (($menu[2].Hostname -match $HostName).count -gt 1) {
         ServerTemplateCorePath = $TempServerTemplateCorePath
         ServerTemplateGuiPath = $TempServerTemplateGuiPath
         ClientTemplatePath = $TempClientTemplatePath
+        VMSwitchedConfigured = $False
     }
     $Menu[2] = [array]$Menu[2] + [array]$TempHost
     $Menu | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\menu.json"
     Start-Sleep -Seconds 1
+}
+
+
+if (($Menu[2] | Where-Object HostName -like $HostName).VMSwitchedConfigured -eq $false) {
+    $NetworkSwitchCount = 0
+    foreach ($VM in $TemplateMachines) {
+        if ((Get-VMSwitch).Name -like $VM.NetworkSwitches) {
+            [array]$VM.NetworkSwitches += $VM.NetworkSwitches
+            $NetworkSwitchCount ++
+            }
+    }
+
+    # If there are no matching VM Switch run, make a selection of existing ones in the system
+    if ($NetworkSwitchCount -lt 1) {
+        Write-Host "Cannot find virtual switchname(s) [$($VM.NetworkSwitches)] in the system!" -ForegroundColor Yellow | Out-Host
+        if ((Get-VMSwitch).Count -gt 0) {
+            Write-Host "List of your existing VM Switches:" (Get-VMSwitch).Name -ForegroundColor green | Out-Host
+        }
+        [string]$TempNetworkSwitchs = Read-Host "Enter the the name of your VM network switch"
+
+        # If the provided VM Switch Name is not in the existing switches, it will create a new one
+        if ((Get-VMSwitch).Name -notcontains $TempNetworkSwitchs) {
+            Write-Host "Cannot find virtual switchname $($TempNetworkSwitchs). Creating new virtual switch..." -ForegroundColor Yellow | Out-Host
+            New-VMSwitch -Name $TempNetworkSwitchs -SwitchType Private | Out-Null
+        }
+        
+        # Assigning A
+        foreach ($Switch in $TemplateMachines) {
+            [array]$Switch.NetworkSwitches = $TempNetworkSwitchs
+        }
+
+        foreach ($Switch in $VMList) {
+            [array]$Switch.NetworkSwitches = $TempNetworkSwitchs
+        }
+    $TemplateMachines | ConvertTo-Json | Out-File -FilePath "$PSScriptRoot\template-machines.json"
+    }
+
+($Menu[2] | Where-Object HostName -like $HostName).VMSwitchedConfigured = $True
+$Menu | ConvertTo-Json | Out-File -Path "$PSScriptRoot\menu.json"
 }
 
 $VMPath = ($Menu[2] | Where-Object {$_.HostName -like $HostName}).VMPath
