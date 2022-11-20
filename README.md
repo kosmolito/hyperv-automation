@@ -1,5 +1,5 @@
 # Hyper-V automation
-The idea of this project is to speed up the VM deployments. Instead of creating each VM in GUI and set all its properies which can be very time-consuming, we can deploy multiple VM at once with desired configuration. I have chosen to work with JSON files for persistent configuration and VM inventory.
+The idea of this project is to speed up the VM deployments. Instead of creating each VM in GUI and set all its properies which can be very time-consuming, we can deploy multiple VM at once with desired configuration. I have chosen to work with JSON files for persistent configuration and for VM inventory.
 
 ## Features
 
@@ -8,8 +8,8 @@ The idea of this project is to speed up the VM deployments. Instead of creating 
 - [x] Roles and features installation and confuration
 
 ## requirements
-*   (IMPORTANT) Powershell 7x and up
-    * The conversion of .JSON file in Powershell earlier than 7 is different, causing error. 
+*   (IMPORTANT) Powershell 7x and newer.
+    * The conversion of .JSON file in Powershell earlier than 7 is different, causing nasty problems. 
 * .vhdx sysprep images.
 
 The scripts are deploying the VM as differencing disk and the parent disk needs to be present at all time. This can be changed in vm-deployments.ps1 file.
@@ -21,7 +21,7 @@ Example of credentials.csv is included in this project.
 
 * domain-users.csv (in case adding AD users)
 
-# Installation instructions
+## Installation instructions
 
 Grab the link below and download to your desired folder location:
 

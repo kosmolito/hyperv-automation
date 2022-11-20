@@ -2,6 +2,12 @@
 #########################################################################################################################
 ################# COMPARE THE VMList VM WITH EXISTING VM IN THE SYSTEM. KEEP ONLY THE EXISTING MACHINES #################
 
+if (($PSVersionTable.PSVersion).Major -lt 7) {
+    Write-Host " WArning! Powershell version 7 and newer required!" -ForegroundColor yellow
+    Write-Host "Exiting!" -ForegroundColor red
+    exit
+}
+
 $ExistingVMList = (Get-VM).VMId.Guid
 [array]$TEMPVM = $null
 foreach ($VM in $VMList) {
