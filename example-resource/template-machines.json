@@ -1,51 +1,33 @@
 [
   {
-    "VMName": "AD01",
-    "VMId": "",
-    "CreationTime": "",
-    "DeletionTime": "",
-    "isCore": false,
-    "MachineType": "server",
+    "VMName": "DC01-MAIN",
+    "DomainName": "mstile.se",
     "Roles": [
-      "AD-Domain-Services-Primary",
-      "DNS",
-      "DHCP",
-      "DirectAccess-VPN"
+      "AD-DC-ROOT",
+      "DNS"
     ],
-    "HasJoinedDomain": "",
-    "Path": "",
-    "HardDrives": [],
-    "NonOSHardDrivs": [],
-    "ComputerName": "",
-    "ProcessorCount": 2,
-    "MemoryStartup": 2147483648,
-    "MemoryMinimum": 2147483648,
-    "MemoryMaximum": 4294967296,
-    "CheckpointType": 2,
-    "NetworkSwitches": [
-      "pfLAN1"
-    ],
+    "DCConfig": {
+      "DomainType": "",
+      "NewDomainName": "",
+      "NewDomainNetbiosName": "",
+      "ParentDomainName": "",
+      "ReplicationSourceDC": ""
+    },
+    "HasJoinedDomain": false,
     "IPAddress": "192.168.10.10",
     "DefGateway": "192.168.10.1",
     "DNSAddress": [
       "127.0.0.1"
     ],
-    "SubMaskBit": "24",
-    "isSelected": false
-  },
-  {
-    "VMName": "AD02",
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
     "VMId": "",
     "CreationTime": "",
     "DeletionTime": "",
     "isCore": false,
     "MachineType": "server",
-    "Roles": [
-      "AD-Domain-Services-Secondary",
-      "DNS"
-    ],
-    "ChildDomainName": "stockholm",
-    "HasJoinedDomain": "",
+    "SubMaskBit": "24",
     "Path": "",
     "HardDrives": [],
     "NonOSHardDrivs": [],
@@ -55,75 +37,146 @@
     "MemoryMinimum": 2147483648,
     "MemoryMaximum": 4294967296,
     "CheckpointType": 2,
-    "NetworkSwitches": [
-      "pfLAN1"
-    ],
-    "IPAddress": "192.168.10.11",
-    "DefGateway": "192.168.10.1",
-    "DNSAddress": [
-      "192.168.10.10"
-    ],
-    "SubMaskBit": "24",
     "isSelected": false
   },
   {
-    "VMName": "FIL01",
+    "VMName": "DC02-REPL",
+    "DomainName": "mstile.se",
+    "Roles": [
+      "AD-DC-REPLICATION",
+      "DNS"
+    ],
+    "DCConfig": {
+      "DomainType": "",
+      "NewDomainName": "",
+      "NewDomainNetbiosName": "",
+      "ParentDomainName": "",
+      "ReplicationSourceDC": "DC01-RT.mstile.se"
+    },
+    "HasJoinedDomain": false,
+    "IPAddress": "192.168.10.11",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "127.0.0.1"
+    ],
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
     "VMId": "",
     "CreationTime": "",
     "DeletionTime": "",
     "isCore": false,
     "MachineType": "server",
-    "Roles": [
-      "FS-DFS-Namespace",
-      "FS-DFS-Replication"
-    ],
-    "HasJoinedDomain": "",
+    "SubMaskBit": "24",
     "Path": "",
     "HardDrives": [],
-    "NonOSHardDrivs": [
-      3,
-      "20GB"
-    ],
-    "NonOSDriveLetter": "d:\\",
-    "DFSRootFolder": "dfsroot",
-    "DFSPublicFolders": [
-      "public",
-      "folder-redirection",
-      "bg-image"
-    ],
+    "NonOSHardDrivs": [],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
     "MemoryMinimum": 2147483648,
     "MemoryMaximum": 4294967296,
     "CheckpointType": 2,
+    "isSelected": false
+  },
+  {
+    "VMName": "DC03-CHLD",
+    "DomainName": "stockholm",
+    "Roles": [
+      "AD-DC-CHILD",
+      "DNS"
+    ],
+    "HasJoinedDomain": false,
+    "DCConfig": {
+      "DomainType": "ChildDomain",
+      "NewDomainName": "stockholm",
+      "NewDomainNetbiosName": "STOCKHOLM",
+      "ParentDomainName": "mstile.se",
+      "ReplicationSourceDC": ""
+    },
+    "IPAddress": "192.168.10.12",
+    "DefGateway": "192.168.10.1",
+    "SubMaskBit": "24",
+    "DNSAddress": [
+      "127.0.0.1"
+    ],
     "NetworkSwitches": [
       "pfLAN1"
     ],
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "server",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "isSelected": false
+  },
+  {
+    "VMName": "DC04-TREE",
+    "DomainName": "vstile.se",
+    "Roles": [
+      "AD-DC-TREE",
+      "DNS"
+    ],
+    "HasJoinedDomain": false,
+    "DCConfig": {
+      "DomainType": "TreeDomain",
+      "NewDomainName": "vstile.se",
+      "NewDomainNetbiosName": "VSTILE",
+      "ParentDomainName": "mstile.se",
+      "ReplicationSourceDC": ""
+    },
+    "IPAddress": "192.168.10.13",
+    "DefGateway": "192.168.10.1",
+    "SubMaskBit": "24",
+    "DNSAddress": [
+      "127.0.0.1"
+    ],
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "server",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "isSelected": false
+  },
+  {
+    "VMName": "FIL01",
+    "DomainName": "mstile.se",
+    "Roles": [
+      "FS-DFS-Namespace",
+      "FS-DFS-Replication"
+    ],
+    "HasJoinedDomain": false,
     "IPAddress": "192.168.10.20",
     "DefGateway": "192.168.10.1",
     "DNSAddress": [
       "192.168.10.10"
     ],
-    "SubMaskBit": "24",
-    "isSelected": false
-  },
-  {
-    "VMName": "FIL02",
-    "VMId": "",
-    "CreationTime": "",
-    "DeletionTime": "",
-    "isCore": false,
-    "MachineType": "server",
-    "Roles": [
-      "FS-DFS-Namespace",
-      "FS-DFS-Replication"
+    "NetworkSwitches": [
+      "pfLAN1"
     ],
-    "HasJoinedDomain": "",
-    "Path": "",
-    "HardDrives": [],
     "NonOSHardDrivs": [
-      3,
+      2,
       "20GB"
     ],
     "NonOSDriveLetter": "d:\\",
@@ -133,46 +186,73 @@
       "folder-redirection",
       "bg-image"
     ],
+    "VMId": "",
+    "SubMaskBit": "24",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "server",
+    "Path": "",
+    "HardDrives": [],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
     "MemoryMinimum": 2147483648,
     "MemoryMaximum": 4294967296,
     "CheckpointType": 2,
-    "NetworkSwitches": [
-      "pfLAN1"
+    "isSelected": false
+  },
+  {
+    "VMName": "FIL02",
+    "DomainName": "vstile.se",
+    "Roles": [
+      "FS-DFS-Namespace",
+      "FS-DFS-Replication"
     ],
+    "HasJoinedDomain": false,
     "IPAddress": "192.168.10.21",
     "DefGateway": "192.168.10.1",
     "DNSAddress": [
       "192.168.10.10"
     ],
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "NonOSHardDrivs": [
+      2,
+      "20GB"
+    ],
+    "NonOSDriveLetter": "d:\\",
+    "DFSRootFolder": "dfsroot",
+    "DFSPublicFolders": [
+      "public",
+      "folder-redirection",
+      "bg-image"
+    ],
+    "VMId": "",
     "SubMaskBit": "24",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "server",
+    "Path": "",
+    "HardDrives": [],
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
     "isSelected": false
   },
   {
     "VMName": "MOLNDAL01",
-    "VMId": "",
-    "CreationTime": "",
-    "DeletionTime": "",
-    "isCore": false,
+    "DomainName": "mstile.se",
+    "HasJoinedDomain": "",
     "MachineType": "client",
     "Roles": [
       "pc"
     ],
-    "HasJoinedDomain": "",
-    "Path": "",
-    "HardDrives": [],
-    "NonOSHardDrivs": [],
-    "NonOSDriveLetter": "",
-    "DFSRootFolder": "",
-    "DFSPublicFolder": "",
-    "ComputerName": "",
-    "ProcessorCount": 2,
-    "MemoryStartup": 2147483648,
-    "MemoryMinimum": 2147483648,
-    "MemoryMaximum": 4294967296,
-    "CheckpointType": 2,
     "NetworkSwitches": [
       "pfLAN1"
     ],
@@ -182,31 +262,29 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
+    "NonOSHardDrivs": [],
+    "NonOSDriveLetter": "",
+    "VMId": "",
+    "Path": "",
+    "HardDrives": [],
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "CreationTime": "",
+    "DeletionTime": "",
     "isSelected": false
   },
   {
     "VMName": "MOLNDAL02",
-    "VMId": "",
-    "CreationTime": "",
-    "DeletionTime": "",
-    "isCore": false,
+    "DomainName": "mstile.se",
+    "HasJoinedDomain": "",
     "MachineType": "client",
     "Roles": [
       "pc"
     ],
-    "HasJoinedDomain": "",
-    "Path": "",
-    "HardDrives": [],
-    "NonOSHardDrivs": [],
-    "NonOSDriveLetter": "",
-    "DFSRootFolder": "",
-    "DFSPublicFolder": "",
-    "ComputerName": "",
-    "ProcessorCount": 2,
-    "MemoryStartup": 2147483648,
-    "MemoryMinimum": 2147483648,
-    "MemoryMaximum": 4294967296,
-    "CheckpointType": 2,
     "NetworkSwitches": [
       "pfLAN1"
     ],
@@ -216,142 +294,19 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "isSelected": false
-  },
-  {
-    "VMName": "TEST01",
-    "VMId": "",
-    "CreationTime": "",
-    "DeletionTime": "",
-    "isCore": false,
-    "MachineType": "client",
-    "Roles": [
-      "pc"
-    ],
-    "HasJoinedDomain": "",
-    "Path": "",
-    "HardDrives": [],
     "NonOSHardDrivs": [],
     "NonOSDriveLetter": "",
-    "DFSRootFolder": "",
-    "DFSPublicFolder": "",
+    "VMId": "",
+    "Path": "",
+    "HardDrives": [],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
     "MemoryMinimum": 2147483648,
     "MemoryMaximum": 4294967296,
     "CheckpointType": 2,
-    "NetworkSwitches": [
-      "pfLAN1"
-    ],
-    "IPAddress": "192.168.10.80",
-    "DefGateway": "192.168.10.1",
-    "DNSAddress": [
-      "192.168.10.10"
-    ],
-    "SubMaskBit": "24",
-    "isSelected": false
-  },
-  {
-    "VMName": "TEST02",
-    "VMId": "",
     "CreationTime": "",
     "DeletionTime": "",
-    "isCore": false,
-    "MachineType": "client",
-    "Roles": [
-      "pc"
-    ],
-    "HasJoinedDomain": "",
-    "Path": "",
-    "HardDrives": [],
-    "NonOSHardDrivs": [],
-    "NonOSDriveLetter": "",
-    "DFSRootFolder": "",
-    "DFSPublicFolder": "",
-    "ComputerName": "",
-    "ProcessorCount": 2,
-    "MemoryStartup": 2147483648,
-    "MemoryMinimum": 2147483648,
-    "MemoryMaximum": 4294967296,
-    "CheckpointType": 2,
-    "NetworkSwitches": [
-      "pfLAN1"
-    ],
-    "IPAddress": "192.168.10.81",
-    "DefGateway": "192.168.10.1",
-    "DNSAddress": [
-      "192.168.10.10"
-    ],
-    "SubMaskBit": "24",
-    "isSelected": false
-  },
-  {
-    "VMName": "TEST03",
-    "VMId": "",
-    "CreationTime": "",
-    "DeletionTime": "",
-    "isCore": false,
-    "MachineType": "client",
-    "Roles": [
-      "pc"
-    ],
-    "HasJoinedDomain": "",
-    "Path": "",
-    "HardDrives": [],
-    "NonOSHardDrivs": [],
-    "NonOSDriveLetter": "",
-    "DFSRootFolder": "",
-    "DFSPublicFolder": "",
-    "ComputerName": "",
-    "ProcessorCount": 2,
-    "MemoryStartup": 2147483648,
-    "MemoryMinimum": 2147483648,
-    "MemoryMaximum": 4294967296,
-    "CheckpointType": 2,
-    "NetworkSwitches": [
-      "pfLAN1"
-    ],
-    "IPAddress": "192.168.10.82",
-    "DefGateway": "192.168.10.1",
-    "DNSAddress": [
-      "192.168.10.10"
-    ],
-    "SubMaskBit": "24",
-    "isSelected": false
-  },
-  {
-    "VMName": "TEST04",
-    "VMId": "",
-    "CreationTime": "",
-    "DeletionTime": "",
-    "isCore": false,
-    "MachineType": "client",
-    "Roles": [
-      "pc"
-    ],
-    "HasJoinedDomain": "",
-    "Path": "",
-    "HardDrives": [],
-    "NonOSHardDrivs": [],
-    "NonOSDriveLetter": "",
-    "DFSRootFolder": "",
-    "DFSPublicFolder": "",
-    "ComputerName": "",
-    "ProcessorCount": 2,
-    "MemoryStartup": 2147483648,
-    "MemoryMinimum": 2147483648,
-    "MemoryMaximum": 4294967296,
-    "CheckpointType": 2,
-    "NetworkSwitches": [
-      "pfLAN1"
-    ],
-    "IPAddress": "192.168.10.83",
-    "DefGateway": "192.168.10.1",
-    "DNSAddress": [
-      "192.168.10.10"
-    ],
-    "SubMaskBit": "24",
     "isSelected": false
   }
 ]

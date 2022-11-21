@@ -62,7 +62,7 @@ switch ($MenuSelected[0]) {
     { 
         Clear-Host
         Write-Host -ForegroundColor red "New VM To Provision"
-        $TemplateMachines | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
+        $TemplateMachines | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},VMName,DomainName,isCore,IPAddress,Roles,NonOSHardDrivs
         # Select the script to run and Convert the string array to int array
         $VMSelected = Read-Host "Select VM to deploy-configure, eg. 0,1"
         $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
@@ -79,7 +79,7 @@ switch ($MenuSelected[0]) {
         Write-Host -ForegroundColor red "Existing VM To Configure"
         ## This field is is entered in order to add "INDEX" column to the object
         ## ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}} is for 
-        $VMList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
+        $VMList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},VMName,DomainName,isCore,IPAddress,Roles,NonOSHardDrivs
         $VMSelected = Read-Host "Select VM to configure, eg. 0,1"
         $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
 
@@ -107,9 +107,9 @@ switch ($MenuSelected[0]) {
     { 
         Clear-Host
         Write-Host -ForegroundColor red "New VM Selected To Provision"
-        $TemplateMachines[$VMSelected] | Format-table Index,VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
+        Write-Host "You can change and save the JSON inventory file to desired values before continue" -ForegroundColor Yellow
+        $TemplateMachines[$VMSelected] | Format-table VMName,DomainName,isCore,IPAddress,Roles,NonOSHardDrivs
         $Menu[1] | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Option | Out-Host
-
         $MenuSelected = Read-Host "Please select the script to run`nMultiple scripts can be chosen eg. 0,2,5 (exit for exit)"
         $MenuSelected = $MenuSelected.split(',') | ForEach-Object {Invoke-Expression $_}
         foreach ($Script in $Menu[1][$MenuSelected]) {
@@ -124,7 +124,7 @@ switch ($MenuSelected[0]) {
     {
         Clear-Host
         Write-Host -ForegroundColor red "Existing VM Selected To Configure"
-        $VMList[$VMSelected] | Format-table -Property VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
+        $VMList[$VMSelected] | Format-table -Property VMName,DomainName,IPAddress,Roles
         $Menu[1][1..$Menu[1].Length] | ForEach-Object {$index=1} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Option | Out-Host
 
         $MenuSelected = Read-Host "Please select the script to run`nMultiple scripts can be chosen eg. 0,2,5 (exit for exit)"

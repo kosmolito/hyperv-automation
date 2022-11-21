@@ -11,10 +11,16 @@ $ExistingVMList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Prope
 ################################################## CHOSE VM TO DELETE ###################################################
 
 # Select the script to run and Convert the string array to int array
-[array]$VMSelected = Read-Host "Please select VM to DELETE eg. 0,1"
-$VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
+
+if ($ExistingVMList.count -gt 1) {
+    [array]$VMSelected = Read-Host "Select VM to DELETE eg. 0,1"
+    $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
+} else {
+    [uint16]$VMSelected = Read-Host "Select VM to DELETE eg. 0,1"
+}
+
 $ExistingVMSelected = $ExistingVMList[$VMSelected]
-Write-Host -ForegroundColor yellow
+
 
 Clear-Host
 Write-Host -ForegroundColor red "$($ExistingVMSelected.count) Machines will be deleted, details shown down below"
@@ -44,9 +50,7 @@ if ($DeleteConfirmation -notlike "yes") {
             $VM.DeletionTime = $LogDateTime
             $OldDeployments = [array]$OldDeployments + [array]$VM
         }
-
     }
-
         if (((get-vm $ExistingVM.VMName).State) -notlike "Off") {
             Write-Verbose "[$($ExistingVM.VMName)] is running, turning off the machine.." -Verbose
             Stop-vm -Name $ExistingVM.VMName -Force

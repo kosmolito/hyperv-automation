@@ -55,7 +55,8 @@ function Install-FeaturesAndRoles {
     param($Role)
 
     switch ($Role) {
-        "AD-Domain-Services-Primary" 
+
+        "AD-DC-ROOT" 
         {
 
             if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
@@ -70,8 +71,8 @@ function Install-FeaturesAndRoles {
             catch
             {
                 Write-Verbose "Configuring New Domain with Name [$DomainName] on VM [$($VM.VMName)]" -Verbose
+                
                 Import-Module ADDSDeployment
-
                 Install-ADDSForest `
                 -CreateDnsDelegation:$false `
                 -DatabasePath "C:\Windows\NTDS" `
@@ -89,9 +90,43 @@ function Install-FeaturesAndRoles {
 
         }
 
-        "AD-Domain-Services-Secondary" 
+        "AD-DC-REPLICATION" 
         {
 
+            if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
+                Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
+                Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
+            }
+
+            try
+            {
+                Get-ADComputer -filter *
+            }
+            catch
+            {
+                Write-Verbose "Configuring New Domain with Name [$DomainName] on VM [$($VM.VMName)]" -Verbose
+
+                Import-Module ADDSDeployment
+                Install-ADDSDomainController `
+                -NoGlobalCatalog:$false `
+                -CreateDnsDelegation:$false `
+                -Credential $DomainCredential `
+                -CriticalReplicationOnly:$false `
+                -DatabasePath "C:\Windows\NTDS" `
+                -DomainName $VM.DomainName `
+                -InstallDns:$true `
+                -LogPath "C:\Windows\NTDS" `
+                -NoRebootOnCompletion:$false `
+                -ReplicationSourceDC $VM.DCConfig.ReplicationSourceDC `
+                -SiteName "Default-First-Site-Name" `
+                -SysvolPath "C:\Windows\SYSVOL" `
+                -SafeModeAdministratorPassword $ForestRecoveryPwd `
+                -Force:$true
+            }
+        }
+
+        "AD-DC-CHILD" 
+        {
             if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
                 Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
                 Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
@@ -102,8 +137,8 @@ function Install-FeaturesAndRoles {
             }
             catch {
                 Write-Verbose "Configuring Child DC under [$DomainName] on VM [$($VM.VMName)]" -Verbose
-                Import-Module ADDSDeployment
                 
+                Import-Module ADDSDeployment
                 Install-ADDSDomain `
                 -NoGlobalCatalog:$false `
                 -CreateDnsDelegation:$true `
@@ -113,9 +148,43 @@ function Install-FeaturesAndRoles {
                 -DomainType "ChildDomain" `
                 -InstallDns:$true `
                 -LogPath "C:\Windows\NTDS" `
-                -NewDomainName $($VM.ChildDomainName) `
-                -NewDomainNetbiosName $($VM.ChildDomainName).ToUpper() `
-                -ParentDomainName $DomainName `
+                -NewDomainName $VM.DCConfig.NewDomainName `
+                -NewDomainNetbiosName $VM.DCConfig.NewDomainNetbiosName `
+                -ParentDomainName $VM.DCConfig.ParentDomainName `
+                -NoRebootOnCompletion:$false `
+                -SiteName "Default-First-Site-Name" `
+                -SysvolPath "C:\Windows\SYSVOL" `
+                -SafeModeAdministratorPassword $ForestRecoveryPwd `
+                -Force:$true
+            }
+        }
+
+        "AD-DC-TREE" 
+        {
+            if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
+                Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
+                Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
+            }
+
+            try {
+                Get-ADComputer -filter *
+            }
+            catch {
+                Write-Verbose "Configuring Child DC under [$DomainName] on VM [$($VM.VMName)]" -Verbose
+                
+                Import-Module ADDSDeployment
+                Install-ADDSDomain `
+                -NoGlobalCatalog:$false `
+                -CreateDnsDelegation:$false `
+                -Credential $DomainCredential `
+                -DatabasePath "C:\Windows\NTDS" `
+                -DomainMode "WinThreshold" `
+                -DomainType "TreeDomain" `
+                -InstallDns:$true `
+                -LogPath "C:\Windows\NTDS" `
+                -NewDomainName $VM.DCConfig.NewDomainName `
+                -NewDomainNetbiosName $VM.DCConfig.NewDomainNetbiosName `
+                -ParentDomainName $VM.DCConfig.ParentDomainName `
                 -NoRebootOnCompletion:$false `
                 -SiteName "Default-First-Site-Name" `
                 -SysvolPath "C:\Windows\SYSVOL" `
