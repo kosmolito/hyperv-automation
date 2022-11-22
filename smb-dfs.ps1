@@ -17,10 +17,18 @@ if ($VM.Count -lt 1) {
 
     if ($VM.MachineType -like "server") {
         if (($VM.HasJoinedDomain)) {
+            
+            $DomainName = $VM.DomainName
+            $DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
+            $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
+            -ArgumentList $DomainNetbiosName\$DomainAdmin, $DomainPwd
+
             $Credential = $DomainCredential
         } else {
             $Credential = $ServerLocalCredential
         }
+    } else {
+        $Credential = $ClientCredential
     }
 
     if (((get-vm $VM.VMName).State) -like "Off") {

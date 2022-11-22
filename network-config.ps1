@@ -11,8 +11,18 @@ $VMList | Where-Object {$_.isSelected -eq $true} | Foreach-Object -Parallel {
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     Write-Verbose "Network Configuration Process Starting..." -Verbose
 
+
     if ($VM.MachineType -like "server") {
-        $Credential = $ServerLocalCredential
+        if (($VM.HasJoinedDomain)) {
+            
+            $DomainName = $VM.DomainName
+            $DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
+            $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
+            -ArgumentList $DomainNetbiosName\$DomainAdmin, $DomainPwd
+            $Credential = $DomainCredential
+        } else {
+            $Credential = $ServerLocalCredential
+        }
     } else {
         $Credential = $ClientCredential
     }
@@ -46,8 +56,8 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
             -DefaultGateway $using:VM.DefGateway | Out-Null
             # Config the DNS
             $Netadapter | Set-DnsClientServerAddress -ServerAddresses $using:VM.DNSAddress
-            Write-Verbose "Ip address for VM [$($using:VM.VMName)] is set to:" -Verbose 
-            $Netadapter | Get-NetIPAddress | Select-Object IPv4Address
+            Write-Verbose "Ip address for VM [$($using:VM.VMName)] is set to: $((Get-NetIPAddress | Select-Object).IPv4Address)" -Verbose 
+            # $Netadapter | Get-NetIPAddress | Select-Object IPv4Address
         }
 
         # Disabling IPV6

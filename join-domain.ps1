@@ -7,7 +7,7 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
         if ($VM.MachineType -like "server") {$Credential = $ServerLocalCredential} 
         else {$Credential = $ClientCredential}
 
-    if ($VM.Roles -contains "AD-Domain-Services") {
+    if ($VM.Roles -contains "AD-DC") {
         Write-Host -ForegroundColor yellow $VM.VMName "is a DC. skipping.."
     } else {
         
@@ -18,8 +18,14 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
         Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
             $HasJoinedDomain = (Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain
             if (!$HasJoinedDomain) {
-                Write-Verbose "Joining [$($using:VM.VMName)] to [$($using:DomainName)]  " -Verbose
-                Add-Computer -DomainName $using:DomainName -Credential $using:DomainCredential -Restart
+
+                $DomainName = $using:VM.DomainName
+                $DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
+                $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
+                -ArgumentList $DomainNetbiosName\$using:DomainAdmin, $using:DomainPwd
+
+                Write-Verbose "Joining [$($using:VM.VMName)] to [$($DomainName)]  " -Verbose
+                Add-Computer -DomainName $DomainName -Credential $DomainCredential -Restart
                 Write-Verbose "Restarting [$($using:VM.VMName)]" -Verbose
             }
         }

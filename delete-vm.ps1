@@ -60,7 +60,7 @@ if ($DeleteConfirmation -notlike "yes") {
         foreach ($HDD in $ExistingVM) { Remove-Item $HDD.HardDrives.Path -Force }
         Remove-VM -Name $ExistingVM.VMName -Force
         Remove-Item -Recurse $ExistingVM.Path -Force
-        Write-Host -ForegroundColor green "$($ExistingVM.VMName) are deleted!"
+        Write-Host -ForegroundColor green "$($ExistingVM.VMName) is deleted!"
     }
 }
 $OldDeployments | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\old-deployments.json"
