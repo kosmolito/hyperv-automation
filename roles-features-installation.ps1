@@ -1,7 +1,6 @@
 . .\variables.ps1
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
 
-
     if (((get-vm $VM.VMName).State) -like "Off") {
         Write-Verbose "[$($VM.VMName)] is turned off. Starting Machine..." -Verbose
         Start-vm -Name $VM.VMName
@@ -40,11 +39,13 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
             $DomainNetbiosName = $using:DomainNetbiosName
             $ForestRecoveryPwd = $using:ForestRecoveryPwd
 
-            if ($VM.Roles -notcontains "AD-DC-ROOT") {
-                $ParentDomainName = $VM.DCConfig.ParentDomainName
-                $ParentDomainNetbiosName = $ParentDomainName.split(".")[0]
-                $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
-                -ArgumentList $ParentDomainNetbiosName\$using:DomainAdmin, $using:DomainPwd
+            if ($VM.Roles -match "AD-DC") {
+                if ($VM.Roles -notcontains "AD-DC-ROOT") {
+                    $ParentDomainName = $VM.DCConfig.ParentDomainName
+                    $ParentDomainNetbiosName = $ParentDomainName.split(".")[0]
+                    $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
+                    -ArgumentList $ParentDomainNetbiosName\$using:DomainAdmin, $using:DomainPwd
+                } else { $DomainCredential = $using:DomainCredential }
             } else {
                 $DomainCredential = $using:DomainCredential
             }
