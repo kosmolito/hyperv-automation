@@ -50,7 +50,7 @@
       "DomainType": "",
       "NewDomainName": "",
       "NewDomainNetbiosName": "",
-      "ParentDomainName": "",
+      "ParentDomainName": "mstile.se",
       "ReplicationSourceDC": "DC01-MAIN.mstile.se"
     },
     "HasJoinedDomain": false,

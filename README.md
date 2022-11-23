@@ -39,7 +39,7 @@ Grab the link below and download to your desired folder location:
 
 Run the main.ps1 where you can chose either to deploy new VM or cofigure existing VM. 
 
-On the first deployment you will be asked to enter the path for sysprep images. After that the information will be stored menu.json file in order to avoid filling the same information over and over again.
+On the first deployment you will be asked to enter the path for sysprep images. After that the information will be stored config.json file in order to avoid filling the same information over and over again.
 
 This is done for each machine and the script is looking for hostname and in that way differentiating the path of sysprep images and the path where to store the new deployed VM.
 

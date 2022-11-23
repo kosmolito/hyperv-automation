@@ -110,11 +110,11 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
                             -Credential $DomainCredential `
                             -CriticalReplicationOnly:$false `
                             -DatabasePath "C:\Windows\NTDS" `
-                            -DomainName $VM.DomainName `
+                            -DomainName $($VM.DomainName) `
                             -InstallDns:$true `
                             -LogPath "C:\Windows\NTDS" `
                             -NoRebootOnCompletion:$false `
-                            -ReplicationSourceDC $VM.DCConfig.ReplicationSourceDC `
+                            -ReplicationSourceDC $($VM.DCConfig.ReplicationSourceDC) `
                             -SiteName "Default-First-Site-Name" `
                             -SysvolPath "C:\Windows\SYSVOL" `
                             -SafeModeAdministratorPassword $ForestRecoveryPwd `
