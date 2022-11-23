@@ -12,12 +12,20 @@ $ExistingVMList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Prope
 
 # Select the script to run and Convert the string array to int array
 
-if ($ExistingVMList.count -gt 1) {
-    [array]$VMSelected = Read-Host "Select VM to DELETE eg. 0,1"
+$VMSelected = Read-Host "Select VM to DELETE eg. 0,1, (b for back)"
+
+if ($VMSelected -like "b") {
+    & $PSScriptRoot\main.ps1
+    exit
+} elseif ($ExistingVMList.count -gt 1) {
+    $VMSelected = [array]$VMSelected
+    # [array]$VMSelected = Read-Host "Select VM to DELETE eg. 0,1"
     $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
 } else {
-    [uint16]$VMSelected = Read-Host "Select VM to DELETE eg. 0,1"
+    # [uint16]$VMSelected = Read-Host "Select VM to DELETE eg. 0,1"
+    $VMSelected = [uint16]$VMSelected
 }
+
 
 $ExistingVMSelected = $ExistingVMList[$VMSelected]
 
@@ -30,15 +38,17 @@ $ExistingVMSelected | Format-Table VMName,State,CreationTime
 #########################################################################################################################
 ###################################### DELETING OF THE SELECTED VM IF CONFIRMED  ########################################
 
-$DeleteConfirmation = Read-Host "Do you really want to DELETE the machine(s)? (yes/no)"
+$DeleteConfirmation = Read-Host "Do you really want to DELETE the machine(s)? (yes/no) (b for back)"
 
-if ($DeleteConfirmation -notlike "yes") {
+if ($DeleteConfirmation -like "b") {
+    & $PSScriptRoot\delete-vm.ps1
+    exit
+} elseif ($DeleteConfirmation -notlike "yes") {
     Write-Host -ForegroundColor red "Sorry I did not get correct confirmation, EXITING!"
     exit
 } else {
-
-    foreach ($ExistingVM in $ExistingVMSelected) {
-
+    foreach ($ExistingVM in $ExistingVMSelected) 
+    {
 
 #########################################################################################################################
 ################# COMPARE THE VMList VM WITH EXISTING VM IN THE SYSTEM. KEEP ONLY THE EXISTING MACHINES #################

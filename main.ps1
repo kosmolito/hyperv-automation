@@ -68,9 +68,12 @@ switch ($MenuSelected[0]) {
 
         if ($VMSelected -like "b") {
             & $PSScriptRoot\main.ps1
+            exit
+         } else {
+            $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
          }
 
-        $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
+        
         foreach ($VM in $TemplateMachines[$VMSelected]) {
             $VM.isSelected = $True
         }
@@ -88,9 +91,11 @@ switch ($MenuSelected[0]) {
 
             if ($MenuSelected -like "b") {
                & $PSScriptRoot\main.ps1
+               exit
+            } else {
+                $MenuSelected = $MenuSelected.split(',') | ForEach-Object {Invoke-Expression $_}
             }
 
-            $MenuSelected = $MenuSelected.split(',') | ForEach-Object {Invoke-Expression $_}
             foreach ($Script in $Menu[1][$MenuSelected]) {
                 $Script.isSelected = $True
             }
@@ -110,9 +115,10 @@ switch ($MenuSelected[0]) {
 
         if ($VMSelected -like "b") {
             & $PSScriptRoot\main.ps1
+            exit
+         } else {
+            $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
          }
-
-        $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
 
         foreach ($VM in $VMList[$VMSelected]) {
             $VM.isSelected = $True
@@ -128,9 +134,11 @@ switch ($MenuSelected[0]) {
 
             if ($MenuSelected -like "b") {
                & $PSScriptRoot\main.ps1
+               exit
+            } else {
+                $MenuSelected = $MenuSelected.split(',') | ForEach-Object {Invoke-Expression $_}
             }
             
-            $MenuSelected = $MenuSelected.split(',') | ForEach-Object {Invoke-Expression $_}
             foreach ($Script in $Menu[1][$MenuSelected]) {
                 $Script.isSelected = $True
             }
