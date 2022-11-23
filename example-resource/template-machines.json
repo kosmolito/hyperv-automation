@@ -160,6 +160,46 @@
     "isSelected": false
   },
   {
+    "VMName": "DC05-MAIN",
+    "DomainName": "kstile.se",
+    "Roles": [
+      "AD-DC-ROOT",
+      "DNS"
+    ],
+    "DCConfig": {
+      "DomainType": "",
+      "NewDomainName": "",
+      "NewDomainNetbiosName": "",
+      "ParentDomainName": "",
+      "ReplicationSourceDC": ""
+    },
+    "HasJoinedDomain": false,
+    "IPAddress": "192.168.10.14",
+    "DefGateway": "192.168.10.1",
+    "DNSAddress": [
+      "127.0.0.1"
+    ],
+    "NetworkSwitches": [
+      "pfLAN1"
+    ],
+    "VMId": "",
+    "CreationTime": "",
+    "DeletionTime": "",
+    "isCore": false,
+    "MachineType": "server",
+    "SubMaskBit": "24",
+    "Path": "",
+    "HardDrives": [],
+    "NonOSHardDrivs": [],
+    "ComputerName": "",
+    "ProcessorCount": 2,
+    "MemoryStartup": 2147483648,
+    "MemoryMinimum": 2147483648,
+    "MemoryMaximum": 4294967296,
+    "CheckpointType": 2,
+    "isSelected": false
+  },
+  {
     "VMName": "FIL01",
     "DomainName": "mstile.se",
     "Roles": [
