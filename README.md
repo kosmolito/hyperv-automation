@@ -8,8 +8,10 @@ The idea of this project is to speed up the VM deployments. Instead of creating 
 - [x] Roles and features installation and configuration
 
 ## requirements
+
 *   (IMPORTANT) Powershell 7x and newer.
-    * The conversion of .JSON file in Powershell earlier than 7 is different, causing nasty problems. 
+
+    * The conversion of .JSON file in Powershell earlier than 7 is different, causing nasty problems.
 * .vhdx sysprep images.
 
 The scripts are deploying the VM as differencing disk and the parent disk needs to be present at all time. This can be changed in vm-deployments.ps1 file.
@@ -22,6 +24,12 @@ Example of credentials.csv is included in this project.
 * domain-users.csv (in case adding AD users)
 
 ## Installation instructions
+
+### Powershell 7:
+
+* [PowerShell-7.3.0-win-x64.msi](https://github.com/PowerShell/PowerShell/releases/download/v7.3.0/PowerShell-7.3.0-win-x64.msi)
+* [PowerShell-7.3.0-win-x64.msi](https://github.com/PowerShell/PowerShell/releases/download/v7.3.0/PowerShell-7.3.0-win-x64.msi)
+
 
 Grab the link below and download to your desired folder location:
 
