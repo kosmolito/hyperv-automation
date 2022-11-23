@@ -1,5 +1,14 @@
 . .\variables.ps1
+
+$VMList | Where-Object {$_.isSelected -eq $true} | Foreach-Object -Parallel {
+    if (((get-vm $_.VMName).State) -like "Off") {
+        Write-Verbose "[$($_.VMName)] is turned off. Starting Machine..." -Verbose
+        Start-vm -Name $_.VMName
+    }
+}
+
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
+
 
     if ($VM.HasJoinedDomain) {
         Write-Verbose "[$($VM.VMName)] is already joined to a domain" -Verbose
@@ -7,8 +16,8 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
         if ($VM.MachineType -like "server") {$Credential = $ServerLocalCredential} 
         else {$Credential = $ClientCredential}
 
-    if ($VM.Roles -contains "AD-DC") {
-        Write-Host -ForegroundColor yellow $VM.VMName "is a DC. skipping.."
+    if ($VM.Roles -contains "AD-DC-ROOT") {
+        Write-Host -ForegroundColor yellow $VM.VMName "is a Root DC. skipping.."
     } else {
         
         Write-Verbose "Waiting for PowerShell to connect [$($VM.VMName)] " -Verbose
