@@ -57,6 +57,7 @@
     "IPAddress": "192.168.10.11",
     "DefGateway": "192.168.10.1",
     "DNSAddress": [
+      "192.168.10.10",
       "127.0.0.1"
     ],
     "NetworkSwitches": [
@@ -98,6 +99,7 @@
     "DefGateway": "192.168.10.1",
     "SubMaskBit": "24",
     "DNSAddress": [
+      "192.168.10.10",
       "127.0.0.1"
     ],
     "NetworkSwitches": [
@@ -138,6 +140,7 @@
     "DefGateway": "192.168.10.1",
     "SubMaskBit": "24",
     "DNSAddress": [
+      "192.168.10.10",
       "127.0.0.1"
     ],
     "NetworkSwitches": [
