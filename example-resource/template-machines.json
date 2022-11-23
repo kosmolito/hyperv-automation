@@ -51,7 +51,7 @@
       "NewDomainName": "",
       "NewDomainNetbiosName": "",
       "ParentDomainName": "",
-      "ReplicationSourceDC": "DC01-RT.mstile.se"
+      "ReplicationSourceDC": "DC01-MAIN.mstile.se"
     },
     "HasJoinedDomain": false,
     "IPAddress": "192.168.10.11",
