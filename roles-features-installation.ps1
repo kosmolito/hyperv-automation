@@ -23,6 +23,8 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
             } else {
                 $Credential = $ServerLocalCredential
             }
+        } else {
+            $Credential = $ServerLocalCredential
         }
 
         Write-Verbose "Waiting for PowerShell to connect [$($VM.VMName)] " -Verbose
@@ -30,7 +32,7 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
 
         Write-Verbose "PowerShell Connected to VM [$($VM.VMName)]. Moving On...." -Verbose
         Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
-            Set-Content function:Install-FeaturesAndRoles -Value $using:InstallFeaturesAndRoles
+            # Set-Content function:Install-FeaturesAndRoles -Value $using:InstallFeaturesAndRoles
             Write-Host -ForegroundColor green $using:Role
             # $VMList = $using:VMList
             $VM = $using:VM
