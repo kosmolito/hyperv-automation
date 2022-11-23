@@ -5,7 +5,7 @@ The idea of this project is to speed up the VM deployments. Instead of creating 
 
 - [x] VM Deployment
 - [x] Network configuration
-- [x] Roles and features installation and confuration
+- [x] Roles and features installation and configuration
 
 ## requirements
 *   (IMPORTANT) Powershell 7x and newer.
