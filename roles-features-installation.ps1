@@ -1,13 +1,29 @@
 . .\variables.ps1
-foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
+$VMListIndex = 0
+$VMSelected = $VMList | Where-Object {$_.isSelected -eq $true}
+foreach ($VM in $VMSelected) {
 
     if (((get-vm $VM.VMName).State) -like "Off") {
         Write-Verbose "[$($VM.VMName)] is turned off. Starting Machine..." -Verbose
         Start-vm -Name $VM.VMName
     }
 
-    $Roles = $VM.Roles
+    # If the previous VM was a Root DC, wait until the Root DC gets ready
+    $PreviousVM = $VMSelected[($VMListIndex - 1)]
+    if (($VMListIndex -gt 0) -and ( $PreviousVM.Roles -Match "AD-DC-ROOT")) {
+       
+       $PreviousVMDomainName = $PreviousVM.DomainName
+    #    $PreviousVMDomainNetbiosName = $PreviousVMDomainName.split(".")[0].ToUpper()
+       $PreviousVMDomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
+       -ArgumentList $PreviousVMDomainName\$DomainAdmin, $DomainPwd
 
+       Start-Sleep -Seconds 60
+       Write-Host "waiting for Root DC to be completed" -ForegroundColor Yellow
+       while ((Invoke-Command -VMName $PreviousVM.VMName -Credential $PreviousVMDomainCredential { ((Resolve-DnsName -Name $using:PreviousVM.VMName[0].Name)) } -ea SilentlyContinue) -notlike $PreviousVM.VMName + "." + $PreviousVMDomainName ) {Start-Sleep -Seconds 10}
+       Start-Sleep -Seconds 10
+    }
+   
+    $Roles = $VM.Roles
     foreach ($Role in $Roles) {
 
         $DomainName = $VM.DomainName
@@ -16,7 +32,7 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
         if ($VM.MachineType -like "server") {
             if (($VM.HasJoinedDomain)) {
                 $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
-                -ArgumentList $DomainNetbiosName\$DomainAdmin, $DomainPwd
+                -ArgumentList $DomainName\$DomainAdmin, $DomainPwd
 
                 $Credential = $DomainCredential
             } else {
@@ -42,9 +58,9 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
             if ($VM.Roles -match "AD-DC") {
                 if ($VM.Roles -notcontains "AD-DC-ROOT") {
                     $ParentDomainName = $VM.DCConfig.ParentDomainName
-                    $ParentDomainNetbiosName = $ParentDomainName.split(".")[0]
+                    # $ParentDomainNetbiosName = $ParentDomainName.split(".")[0]
                     $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
-                    -ArgumentList $ParentDomainNetbiosName\$using:DomainAdmin, $using:DomainPwd
+                    -ArgumentList $ParentDomainName\$using:DomainAdmin, $using:DomainPwd
                 } else { $DomainCredential = $using:DomainCredential }
             } else {
                 $DomainCredential = $using:DomainCredential
@@ -101,24 +117,35 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
                         }
                         catch
                         {
-                            Write-Verbose "Configuring New Domain with Name [$DomainName] on VM [$($VM.VMName)]" -Verbose
+                            Write-Host "Waiting for Root DC to be Ready..." -ForegroundColor Yellow
+                            while (!($RootDCReady)) {
+                                $RootDCReady = (Resolve-DnsName $($VM.DomainName) -ErrorAction SilentlyContinue ).Name
+                                start-sleep -Seconds 60
+                                }
+                            # Start-Sleep -Seconds 60
+                            Write-Host "Root DC Ready." -ForegroundColor Yellow
+
+                            
             
-                            Import-Module ADDSDeployment
-                            Install-ADDSDomainController `
-                            -NoGlobalCatalog:$false `
-                            -CreateDnsDelegation:$false `
-                            -Credential $DomainCredential `
-                            -CriticalReplicationOnly:$false `
-                            -DatabasePath "C:\Windows\NTDS" `
-                            -DomainName $($VM.DomainName) `
-                            -InstallDns:$true `
-                            -LogPath "C:\Windows\NTDS" `
-                            -NoRebootOnCompletion:$false `
-                            -ReplicationSourceDC $($VM.DCConfig.ReplicationSourceDC) `
-                            -SiteName "Default-First-Site-Name" `
-                            -SysvolPath "C:\Windows\SYSVOL" `
-                            -SafeModeAdministratorPassword $ForestRecoveryPwd `
-                            -Force:$true
+                            # if (((Get-ADDomainController -Filter *).name -notlike $VM.VMName)) {
+                                Write-Verbose "Configuring New Domain with Name [$DomainName] on VM [$($VM.VMName)]" -Verbose
+
+                                Import-Module ADDSDeployment
+                                Install-ADDSDomainController `
+                                -NoGlobalCatalog:$false `
+                                -CreateDnsDelegation:$false `
+                                -Credential $($using:DomainCredential) `
+                                -CriticalReplicationOnly:$false `
+                                -DatabasePath "C:\Windows\NTDS" `
+                                -DomainName $($VM.DomainName) `
+                                -InstallDns:$true `
+                                -LogPath "C:\Windows\NTDS" `
+                                -NoRebootOnCompletion:$false `
+                                -SiteName "Default-First-Site-Name" `
+                                -SysvolPath "C:\Windows\SYSVOL" `
+                                -SafeModeAdministratorPassword $ForestRecoveryPwd `
+                                -Force:$true
+                        # }
                         }
                     }
             
@@ -279,4 +306,5 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
             Start-Sleep -Seconds 2
         }
     }
+    $VMListIndex++
 }
