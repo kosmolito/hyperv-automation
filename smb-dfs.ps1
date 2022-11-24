@@ -41,10 +41,11 @@ if ($VM.Count -lt 1) {
 
     Write-Verbose "PowerShell Connected to VM [$($VM.VMName)]. Moving On...." -Verbose
     Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
+        $VM = $using:VM
         $UserList = $using:UserList
         $DomainName = $using:DomainName
         $DomainNetbiosName = $using:DomainNetbiosName
-        $VM = $using:VM
+        
 
         ##########################################################################################################
         ############################## Making Storage Pool of Disks and Virtal Disk ##############################
