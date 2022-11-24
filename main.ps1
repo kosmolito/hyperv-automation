@@ -161,9 +161,17 @@ switch ($MenuSelected[0]) {
 
 $Confirmation = read-host "The Following Scripts Will be Run, Do you want to continue? (y/n)"
 if ($Confirmation -eq "y" -or $Confirmation -eq "yes") {
-    foreach ($Selection in $Menu[1][$MenuSelected]) {
+    $ScriptList = $Menu[1][$MenuSelected]
+    $ScriptIndex = 0
+    foreach ($Selection in $ScriptList) {
         $Script = ($Selection).ScriptPath
-        & $PSScriptRoot\$Script
+    if (($ScriptIndex -gt 0) -and ( $ScriptList[($ScriptIndex - 1)].ScriptPath -like "network-config.ps1")) {
+       Write-Host "waiting for network configuration to be completed" -ForegroundColor Yellow
+       Start-Sleep -Seconds 10
+    }
+    & $PSScriptRoot\$Script
+    $ScriptIndex++
+
     }
 } else{
     Write-Host -ForegroundColor red -BackgroundColor Black  "Sorry I did not get correct confirmation. EXITING..."
