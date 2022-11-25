@@ -36,7 +36,7 @@ if ($VM.Count -lt 1) {
         Start-vm -Name $VM.VMName
     }
     $MyFolders = Read-Host -Prompt "Specify the non SMB Folder Names, eg, Sales,Ekonomi"
-    $MyFolders = $MyFolders.split(',') | ForEach-Object {Invoke-Expression $_}
+    $MyFolders = $MyFolders.split(',')
     Write-Verbose "Waiting for PowerShell to connect [$($VM.VMName)] " -Verbose
     while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
 
@@ -84,7 +84,7 @@ if ($VM.Count -lt 1) {
 
         $NonSMBFolders = $null
         $using:MyFolders | Foreach-Object {
-            $NonSMBFolders = $NonSMBFolders + "$DFSPublicFolder\$_"
+            [array]$NonSMBFolders = $NonSMBFolders + "$DFSPublicFolder\$_"
         }
         
         # [array]$NonSMBFolders = "$DFSPublicFolder\sales","$DFSPublicFolder\ekonomi","$DFSPublicFolder\bd"
