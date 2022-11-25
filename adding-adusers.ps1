@@ -18,7 +18,13 @@ $selection = Read-Host "Please make a selection"
 switch ($selection)
     {
         
-    '1' { } # Do nothing and get the user info from variable.ps1 file
+    '1' { 
+        # Do nothing and get the user info from variable.ps1 file
+        if (($UserList.DomainName -like $null) -or ($UserList.DomainName -like "") ) {
+            $UserDomainName = Read-Host "No Domain Found! Specify the domain/upn eg. mstile.se"
+            $UserList = $UserList | Select-Object *, @{n=”DomainName”;e={$UserDomainName}}
+        }
+     } 
         
     '2' 
     {
@@ -29,13 +35,21 @@ switch ($selection)
     } elseif ($NewCsvFile -match "^(?!.*\.csv$).*$") {
         Write-Host "The file you have provided is not a CSV file. Exiting!"-ForegroundColor red
         exit
-    } else { $UserList = import-csv -path $NewCsvFile }
+    } else { 
+        $UserList = import-csv -path $NewCsvFile
+
+        if (($UserList.DomainName -like $null) -or ($UserList.DomainName -like "") ) {
+            $UserDomainName = Read-Host "No Domain Found! Specify the domain/upn eg. mstile.se"
+            $UserList = $UserList | Select-Object *, @{n=”DomainName”;e={$UserDomainName}}
+        }
+    }
     }
 
-    '3' 
+    '3'
     {
     $RandomNameList = Import-Csv "$PSScriptRoot\example-resource\random-names.csv"
     [ValidateRange(1, 500)]$UserAmount = Read-Host -Prompt "How many users are to be created? (Max 500)"
+    $DomainName = Read-Host -Prompt "Insert the UPN/Domain eg. mstile.se"
     $UserPassword = Read-Host -Prompt "Insert the password for the users"
     $RAWGeneralSecurityGroup = Read-Host -Prompt "Insert general security group name, eg. Public"
     $RAWSecurityGroups = Read-Host -Prompt "Insert other security groups separated by a comma, eg. Sales,Ekonomi"
@@ -56,6 +70,7 @@ switch ($selection)
             [PsCustomObject]@{
             FirstName = $RandomNameList.FirstName[$RandomFirstName]
             LastName = $RandomNameList.LastName[$RandomLastName]
+            DomainName = $DomainName
             UserPassword = $UserPassword
             SecurityGroups = "SEC_$($RAWGeneralSecurityGroup)" + "," + "SEC_$($SecurityGroup[$RandomSecurityGroup])"
             OU = $OU[$RandomOU]
@@ -85,7 +100,7 @@ Invoke-Command -VMName $VMName -Credential $DomainCredential -ScriptBlock {
     foreach ($User in $using:UserList) {
     Add-TheADUser `
     -FirstName $User.FirstName -LastName $User.LastName -UserPassword $User.UserPassword -OU $User.OU `
-    -DomainName $using:Credentials.DomainName -SecurityGroups $User.SecurityGroups
+    -DomainName $User.DomainName -SecurityGroups $User.SecurityGroups
     Write-Host ($user.FirstName + "." + $user.LastName) "created: $($i) of $($UserList) total"  -ForegroundColor Green
     $i++
     }
