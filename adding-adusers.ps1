@@ -20,10 +20,12 @@ function Show-Menu {
     Clear-Host
     Write-Host "================ $Title ================"
     
-    Write-Host "1: importing the users from the domain-users.csv"
-    Write-Host "2: Specifying the .csv file to import."
-    Write-Host "3: Random generate users"
-    Write-Host "Q: To quit."
+    Write-Host "1: importing the users from the domain-users.csv" -ForegroundColor Green
+    Write-Host "2: Specifying the .csv file to import." -ForegroundColor Green
+    Write-Host "3: Random generate users" -ForegroundColor Green
+    Write-Host "B:" "Back to main menu" -ForegroundColor Green
+    Write-Host "Q: To quit." -ForegroundColor Green
+
 }
 
 Show-Menu
@@ -91,6 +93,12 @@ switch ($selection)
         $UserList = import-csv -Path $RandomCsvFilePath
         }
     $UserList = Import-Csv -Path $RandomCsvFilePath
+    }
+
+    "b" 
+    { 
+        & $PSScriptRoot\main.ps1
+        exit
     }
 
     "q" { exit }
