@@ -18,16 +18,16 @@ $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredenti
 
 function Show-Menu {
     param (
-        [string]$Title = 'User Creation Menu'
+        [string]$Title = 'Misc. Functions'
     )
     Clear-Host
     Write-Host "================ $Title ================"
     
-    Write-Host "1: Replication Sync"
-    Write-Host "2: Add an alternative UPN Suffix"
-    Write-Host "3: empty"
-    Write-Host "B:" "Back to main menu"
-    Write-Host "Q: To quit."
+    Write-Host "1: DC/AD Replication Sync" -ForegroundColor Green
+    Write-Host "2: Add an alternative UPN Suffix" -ForegroundColor Green
+    # Write-Host "3: empty" -ForegroundColor Green
+    Write-Host "B:" "Back to main menu" -ForegroundColor Green
+    Write-Host "Q: To quit." -ForegroundColor Green
 }
 
 Show-Menu
