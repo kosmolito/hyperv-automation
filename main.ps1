@@ -3,7 +3,8 @@
 ################# COMPARE THE VMList VM WITH EXISTING VM IN THE SYSTEM. KEEP ONLY THE EXISTING MACHINES #################
 
 if (($PSVersionTable.PSVersion).Major -lt 7) {
-    Write-Host " WArning! Powershell version 7 and newer required!" -ForegroundColor yellow
+    Write-Host "Error! Powershell version 7 and newer required!" -ForegroundColor Red
+    Write-Host "Powershell 7 can be downloaded from https://github.com/PowerShell/PowerShell/releases/download/v7.3.0/PowerShell-7.3.0-win-x64.msi" -ForegroundColor green
     Write-Host "Exiting!" -ForegroundColor red
     exit
 }
