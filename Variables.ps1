@@ -105,6 +105,7 @@ $ConfigFolder = ((Get-Location).Path | ForEach-Object { Split-Path -Path $_ -Par
 
 # Create files if its exist
 if (!(test-path $ConfigFolder)) {
+    Clear-Host
     Write-Verbose "Cannot find Config Folder. Creating folder and nessecary files..." -Verbose
     New-Item -Path $ConfigFolder -ItemType Directory | Out-Null
 
@@ -132,19 +133,21 @@ if (!(test-path $ConfigFolder)) {
         Copy-Item "$PSScriptRoot\example-resource\example-domain-users.csv" -Destination "$ConfigFolder\domain-users.csv" | Out-Null
     }
 
-
-    Write-Verbose "Cannot find Config Folder. Creating folder and nessecary files..." -Verbose
     Write-Verbose "Config Folder and files have been created." -Verbose
-    Write-Verbose "The Path to the config folder: [$($ConfigFolder)]`n" -Verbose
+    Write-Verbose "Config folder Path:[$($ConfigFolder)]`n" -Verbose
     
-    Write-Host "The Credential file is located in ["$ConfigFolder\credentials.csv"]" -ForegroundColor green
-    Write-Host "Change the credentials, save the file and press any key to continue ....."
-    $x = $host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-    # Read-Host "Change the credentials in the csv file save the file and press any key" 
+    Write-Host "Change the credentials, save the file and press any Enter to continue ....." 
+    Start-Sleep -Seconds 2
+    notepad.exe "$ConfigFolder\credentials.csv"
+    Pause
     Clear-Host
     Write-Host "==================================================================================================="
     
     Write-Host "
+    `tWelcome to Hyper-v Automation`n
+
+    `tThe main purpose of this program is to speed up the VM deployment and VM configuration.`n
+
     `tTemplate VM are located in template-machines.JSON file
     `tThe VM have multiple properties stored, ex. Domain, Network configurations
     `tPlease change the information to your need. 
@@ -153,17 +156,16 @@ if (!(test-path $ConfigFolder)) {
     `tYou will be asked for VM path where you want to save the VM
     `tSame for path to your sysprep .vhdx files for server and windows10 clients.
     `tlocated in template-machines.json file inside the config folder`n
+
     `tPlease report create issue if you find any bugs so it can be addressed.
     `tThe issues can be created on Github
     `tlink: (https://github.com/kosmo-lito/hyperv-automation)`n`n
+
+
     `tI hope you you find thes small scripts helpful."
     
     Write-Host "`n==================================================================================================="
-    # $Confirm = read-host "Enter yes to continue"
-    while (($Confirm = read-host "Enter ( y/yes) to continue") -notmatch "y" ) {
-        # $Confirm = read-host "Enter yes to continue"
-        
-    }
+    Pause
 
 }
 
