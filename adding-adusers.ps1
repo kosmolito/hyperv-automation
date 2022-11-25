@@ -1,5 +1,18 @@
 . .\variables.ps1
 
+$VMSelected = $VMList | Where-Object {$_.isSelected -eq $true}
+
+if ($VMSelected.Count -gt 1) {
+    Write-Host " Warning! You have selected more than 1 AD/DC, please retry!" -ForegroundColor Yellow
+    $Selection = Read-Host "(b for back)"
+    switch ($Selection) {
+        "b" { & $PSScriptRoot\main.ps1 }
+        Default { exit }
+    }
+
+}
+$DomainName = $VMSelected.DomainName
+$DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DomainName\$DomainAdmin,$DomainPwd
 function Show-Menu {
     param (
         [string]$Title = 'User Creation Menu'
@@ -50,7 +63,7 @@ switch ($selection)
     $RandomNameList = Import-Csv "$PSScriptRoot\example-resource\random-names.csv"
     [ValidateRange(1, 500)]$UserAmount = Read-Host -Prompt "How many users are to be created? (Max 500)"
     $DomainName = Read-Host -Prompt "Insert the UPN/Domain eg. mstile.se"
-    $UserPassword = Read-Host -Prompt "Insert the password for the users"
+    $UserPassword = Read-Host -Prompt "Insert the password for the users" -MaskInput
     $RAWGeneralSecurityGroup = Read-Host -Prompt "Insert general security group name, eg. Public"
     $RAWSecurityGroups = Read-Host -Prompt "Insert other security groups separated by a comma, eg. Sales,Ekonomi"
     $SecurityGroup = $RAWSecurityGroups.split(",")
@@ -83,17 +96,21 @@ switch ($selection)
     "q" { exit }
     }
 
-$VMName = Read-Host -Prompt "Please enter the name of AD Machine"
-if (((get-vm $VMName).State) -like "Off") {
-    Write-Verbose "[$($VMName)] is turned off. Starting Machine..." -Verbose
-    Start-vm -Name $VMName
+
+
+# $VMName = Read-Host -Prompt "Please enter the name of AD Machine"
+if (((get-vm $VMSelected.VMName).State) -like "Off") {
+    Write-Verbose "[$($VMSelected.VMName)] is turned off. Starting Machine..." -Verbose
+    Start-vm -Name $VMSelected.VMName
 }
 
-Write-Verbose "Waiting for PowerShell to connect [$VMName] " -Verbose
-while ((Invoke-Command -VMName $VMName -Credential $DomainCredential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
-Write-Verbose "PowerShell Connected to VM [$VMName]. Moving On...." -Verbose
 
-Invoke-Command -VMName $VMName -Credential $DomainCredential -ScriptBlock {
+
+Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
+while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
+Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
+
+Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
     Set-Content function:Add-TheADUser -Value $using:AddTheADUser
     Write-Verbose "User creation process starting..." -Verbose
     $i = 1
