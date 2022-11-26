@@ -18,6 +18,8 @@ function Show-Menu {
         [string]$Title = 'User Creation Menu'
     )
     Clear-Host
+    Write-Host -ForegroundColor red "Selected VM"
+    $VMSelected | Format-table -Property VMName,DomainName,Roles
     Write-Host "================ $Title ================"
     
     Write-Host "1: importing the users from the domain-users.csv" -ForegroundColor Green
@@ -123,11 +125,19 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
     Write-Verbose "User creation process starting..." -Verbose
     $i = 1
     foreach ($User in $using:UserList) {
-    Add-TheADUser `
-    -FirstName $User.FirstName -LastName $User.LastName -UserPassword $User.UserPassword -OU $User.OU `
-    -DomainName $User.DomainName -SecurityGroups $User.SecurityGroups
-    Write-Host ($user.FirstName + "." + $user.LastName) "created: $($i) of $($UserList) total"  -ForegroundColor Green
-    $i++
+        try {
+
+            Add-TheADUser `
+            -FirstName $User.FirstName -LastName $User.LastName -UserPassword $User.UserPassword -OU $User.OU `
+            -DomainName $User.DomainName -SecurityGroups $User.SecurityGroups -ErrorAction Stop
+            Write-Host ($user.FirstName + "." + $user.LastName) "created: $($i) of $($UserList) total"  -ForegroundColor Green
+            $i++
+            
+        }
+        catch {
+            Write-Error $Error[0]
+        }
+
     }
     Write-Verbose "User creation process finished." -Verbose
 }
