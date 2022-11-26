@@ -29,13 +29,17 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
             if (!$HasJoinedDomain) {
 
                 $DomainName = $using:VM.DomainName
-                $DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
-                $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
-                -ArgumentList $DomainNetbiosName\$using:DomainAdmin, $using:DomainPwd
-
-                Write-Verbose "Joining [$($using:VM.VMName)] to [$($DomainName)]  " -Verbose
-                Add-Computer -DomainName $DomainName -Credential $DomainCredential -Restart
-                Write-Verbose "Restarting [$($using:VM.VMName)]" -Verbose
+                $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DomainName\$using:DomainAdmin, $using:DomainPwd
+                try {
+                    Write-Verbose "Joining [$($using:VM.VMName)] to [$($DomainName)]..." -Verbose
+                    Add-Computer -DomainName $DomainName -Credential $DomainCredential -Restart -ErrorAction stop
+                    Write-Verbose "Restarting [$($using:VM.VMName)]" -Verbose
+                }
+                catch {
+                    write-host "Joining [$($using:VM.VMName)] to [$($DomainName)] faild!" -ForegroundColor red
+                    Write-Warning $Error[0]
+                }
+                
             }
         }
     }
@@ -45,3 +49,5 @@ $VM.HasJoinedDomain = $True
 }
 $VMList | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
 Write-Verbose "Joining process completed." -Verbose
+Pause
+& $PSScriptRoot\main.ps1
