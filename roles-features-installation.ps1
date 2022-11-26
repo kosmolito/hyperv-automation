@@ -244,25 +244,27 @@ foreach ($VM in $VMSelected) {
                         $NetworkAddress = $tempAddress
                         
                         try {
-            
-                            (Get-ADComputer -Filter * | Where-Object {$_.Name -like $($VM.VMName)}).DnsHostName
-            
-                            netsh dhcp add securitygroups
-                            Restart-Service dhcpserver
-                            Add-DhcpServerInDC -DnsName ($VM.VMName + "." + $DomainName) -IPAddress $VM.IPAddress
-                            Get-DhcpServerInDC
-                            Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
-                            Set-DhcpServerv4DnsSetting -ComputerName ($VM.VMName + "." + $DomainName) -DynamicUpdates "Always" -DeleteDnsRRonLeaseExpiry $True
-                        
-                            ######### SETTING UP THE SCOPE #########
+
+                            # Add DHCP Scope
                             Add-DhcpServerv4Scope -name "staff_ipv4_scope" -StartRange "$($NetworkAddress)100" -EndRange "$($NetworkAddress)200" -SubnetMask 255.255.255.0 -State Active
-                            Add-DhcpServerv4ExclusionRange -ScopeID "$($NetworkAddress)0" -StartRange "$($NetworkAddress)1" -EndRange "$($NetworkAddress)30"
-                            Set-DhcpServerv4OptionValue -OptionID 3 -Value "$($NetworkAddress)1" -ScopeID "$($NetworkAddress)0" -ComputerName AD01.mstile.se
-                            Set-DhcpServerv4OptionValue -DnsDomain (Get-ADComputer -filter *).DNSHostName -DnsServer $VM.IPAddress
+
+                            # Add-DhcpServerInDC -DnsName "$($VM.DomainName)" -IPAddress "$($VM.IPAddress)"
+                
+                            # Add DNS Server, Router Gateway Options in DHCP
+                            Set-DhcpServerV4OptionValue -DnsServer "$($VM.IPAddress)" -Router "$($NetworkAddress)1"
+
+                            # Set Up Lease Duration
+                            Set-DhcpServerv4Scope -ScopeId "$($VM.IPAddress)" -LeaseDuration 1.00:00:00
+
+                            # Set Up Dns Domain information
+                            Set-DhcpServerv4OptionValue -DnsDomain "$($VM.DomainName)" -DnsServer "$($VM.IPAddress)"
+
+                            # Restart DHCP Service
+                            Restart-service dhcpserver
                         }
             
                         catch {
-                            Write-Verbose "Active Directory Role could not be found!" -Verbose
+                            Write-Error $Error[0]
                         }
                         }
                     }
