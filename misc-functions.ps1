@@ -21,6 +21,8 @@ function Show-Menu {
         [string]$Title = 'Misc. Functions'
     )
     Clear-Host
+    Write-Host -ForegroundColor red "Existing VM Selected To Configure"
+    $VMSelected | Format-table -Property VMName,DomainName,IPAddress,DNSAddress,NetworkSwitches
     Write-Host "================ $Title ================"
     
     Write-Host "1: DC/AD Replication Sync" -ForegroundColor Green
@@ -32,6 +34,14 @@ function Show-Menu {
 
 Show-Menu
 $selection = Read-Host "Please make a selection"
+
+
+$VMSelected | Foreach-Object -Parallel {
+    if (((get-vm $_.VMName).State) -like "Off") {
+        Write-Verbose "[$($_.VMName)] is turned off. Starting Machine..." -Verbose
+        Start-vm -Name $_.VMName
+    }
+}
 switch ($selection)
     {
         
@@ -45,9 +55,17 @@ switch ($selection)
         Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
 
         Write-Verbose "Syncing Domain Controllers...." -Verbose
-        (Get-ADDomainController -Filter *).Name | Foreach-Object { repadmin /syncall $_ (Get-ADDomain).DistinguishedName /AdeP }
-        Write-Verbose "Syncing Completed." -Verbose
+        try {
+
+            (Get-ADDomainController -Filter *).Name | Foreach-Object { repadmin /syncall $_ (Get-ADDomain).DistinguishedName /AdeP }
+            Write-Verbose "Syncing Completed." -Verbose
         }
+        catch {
+            {Write-Verbose "Syncing Error." -Verbose}
+        }
+
+        }
+        Pause
        & $PSScriptRoot\misc-functions.ps1
     } 
         
@@ -67,12 +85,17 @@ switch ($selection)
         Write-Verbose "UPN Alternative added." -Verbose
 
         }
-
+        Pause
         & $PSScriptRoot\misc-functions.ps1
     }
 
     '3'
     {
+
+        #
+
+
+
 
     }
 
