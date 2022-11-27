@@ -66,13 +66,14 @@ switch ($selection)
     {
     $RandomNameList = Import-Csv "$PSScriptRoot\example-resource\random-names.csv"
     [ValidateRange(1, 500)]$UserAmount = Read-Host -Prompt "How many users are to be created? (Max 500)"
-    $DomainName = Read-Host -Prompt "Insert the UPN/Domain eg. mstile.se"
-    $UserPassword = Read-Host -Prompt "Insert the password for the users" -MaskInput
-    $RAWGeneralSecurityGroup = Read-Host -Prompt "Insert general security group name, eg. Public"
-    $RAWSecurityGroups = Read-Host -Prompt "Insert other security groups separated by a comma, eg. Sales,Ekonomi"
-    $SecurityGroup = $RAWSecurityGroups.split(",")
-    $RawOU = Read-Host -Prompt "Insert the name of the OUs separated by a comma eg. site1_users,site2_users"
+    $DomainName = Read-Host -Prompt "Insert the UPN/Domain ex. mstile.se"
+    $RawOU = Read-Host -Prompt "Insert the name of the OUs separated by a comma"
     $OU = $RawOU.split(",")
+    $UserPassword = Read-Host -Prompt "Insert the password for the users" -MaskInput
+    $RAWGeneralSecurityGroup = Read-Host -Prompt "Insert general security group name, ex. Public"
+    $RAWSecurityGroups = Read-Host -Prompt "Insert other security groups separated by a comma, ex. Sales,Ekonomi"
+    $SecurityGroup = $RAWSecurityGroups.split(",")
+
     
     $RandomCsvFilePath = "$PSScriptRoot\random-generated-users.csv"
     if (test-path ($RandomCsvFilePath)) {
@@ -121,7 +122,74 @@ while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential 
 Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
 
 Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
-    Set-Content function:Add-TheADUser -Value $using:AddTheADUser
+    # Set-Content function:Add-TheADUser -Value $using:AddTheADUser
+
+    function Add-TheADUser {
+        param($FirstName,$LastName,$UserPassword,$OU,$DomainName,$SecurityGroups)
+    
+        $FullName = $FirstName + " " + $LastName
+        $username = ("$($FirstName)".ToLower() + "." + "$($LastName)".ToLower())
+    
+        # Converting non [a-z] charactor for the username to [a-z]
+        # The string has been converted to Char array and the each char is been checked.
+        # If its find å ä or ö it will convert to [a-z] letters.
+        # TempUsername has $null value at the beginning. Char are been added to the variable on every loop.
+        $TempUserName = $null
+        foreach ($Char in $UserName.ToCharArray()) {
+            switch -Regex ($Char) {
+            "å" { $Char = "a" }
+            "ä" { $Char = "a" }
+            "ö" { $Char = "o" }
+            }
+            $TempUserName += $Char
+        }
+        $UserName = $TempUserName
+    
+        $UserPassword = ConvertTo-SecureString $UserPassword -AsPlainText -Force
+        $DomainNetbiosName = $DomainName.Split(".")[0]
+        $DomainTop = $DomainName.Split(".")[1]
+        $SecurityGroups = $SecurityGroups.split(",")
+
+
+        #(get-addomain).distinguishedname
+
+            $UserOU = "Users"
+            
+        if (-not (Get-ADOrganizationalUnit -Filter 'name -like $OU'))
+            { New-ADOrganizationalUnit -Name $OU -Path "DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false }
+        
+        
+        if (-not (Get-ADOrganizationalUnit -filter 'name -like $UserOU' | Where-Object {$_.DistinguishedName -match "OU=$OU,DC=$DomainNetbiosName,DC=$DomainTop"}) ) 
+                    { New-ADOrganizationalUnit -Name $UserOU -Path "OU=$OU,DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false }
+        $UserOUPath = "OU=$UserOU,OU=$OU,DC=$DomainNetbiosName,DC=$DomainTop"
+
+    
+        # if (-not (Get-ADOrganizationalUnit -Filter 'name -like $OU')) 
+        # { New-ADOrganizationalUnit -Name $OU -Path "DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false}
+     
+        foreach ($SecurityGroup in $SecurityGroups) {
+            if (-not (Get-ADGroup -Filter 'Name -like $SecurityGroup')) 
+            { New-ADGroup -Name $SecurityGroup -GroupCategory Security -GroupScope Global -Path "ou=$OU,DC=$DomainNetbiosName,DC=$DomainTop" }    
+        }
+    
+        New-AdUser -AccountPassword $UserPassword `
+        -GivenName $FirstName `
+        -Surname $LastName `
+        -DisplayName $FullName `
+        -Name $FullName `
+        -SamAccountName $username `
+        -UserPrincipalName $username"@"$DomainName `
+        -PasswordNeverExpires $true `
+        -Path $UserOUPath `
+        -Enabled $true
+    
+        # -Path "ou=$OU,$(([ADSI]`"").distinguishedName)" `
+        foreach ($SecurityGroup in $SecurityGroups) {
+            Add-ADGroupMember -Identity $SecurityGroup -Members $username
+        }
+    }
+
+
     Write-Verbose "User creation process starting..." -Verbose
     $i = 1
     foreach ($User in $using:UserList) {
@@ -141,3 +209,5 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
     }
     Write-Verbose "User creation process finished." -Verbose
 }
+Pause
+& $PSScriptRoot\main.ps1
