@@ -21,6 +21,8 @@ foreach ($VM in $VMSelected) {
        Write-Host "waiting for Root DC to be completed" -ForegroundColor Yellow
        while ((Invoke-Command -VMName $PreviousVM.VMName -Credential $PreviousVMDomainCredential { ((Resolve-DnsName -Name $using:PreviousVM.VMName[0].Name)) } -ea SilentlyContinue) -notlike $PreviousVM.VMName + "." + $PreviousVMDomainName ) {Start-Sleep -Seconds 10}
        Start-Sleep -Seconds 10
+       Write-Host "Verify that Root DC is fully booted." -ForegroundColor Yellow
+       Pause
     }
    
     $Roles = $VM.Roles
@@ -307,6 +309,7 @@ foreach ($VM in $VMSelected) {
             $VMList = Get-Content -Path "$ConfigFolder\inventory.json" | ConvertFrom-Json
             Start-Sleep -Seconds 2
         }
+        start-sleep -Seconds 5
     }
     $VMListIndex++
 }
