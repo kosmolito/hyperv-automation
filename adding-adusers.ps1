@@ -151,11 +151,14 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
 
         #(get-addomain).distinguishedname
 
-            $UserOU = "Users"
-            
+        $UserOU = "Users"    
         if (-not (Get-ADOrganizationalUnit -Filter 'name -like $OU'))
             { New-ADOrganizationalUnit -Name $OU -Path "DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false }
-        
+
+        # Creat OU for Sec groups
+        $SecurityGroupOU = "SEC_Groups"
+        if (-not (Get-ADOrganizationalUnit -Filter 'name -like $SecurityGroupOU'))
+        { New-ADOrganizationalUnit -Name $SecurityGroupOU -Path "DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false }
         
         if (-not (Get-ADOrganizationalUnit -filter 'name -like $UserOU' | Where-Object {$_.DistinguishedName -match "OU=$OU,DC=$DomainNetbiosName,DC=$DomainTop"}) ) 
                     { New-ADOrganizationalUnit -Name $UserOU -Path "OU=$OU,DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false }
@@ -167,7 +170,7 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
      
         foreach ($SecurityGroup in $SecurityGroups) {
             if (-not (Get-ADGroup -Filter 'Name -like $SecurityGroup')) 
-            { New-ADGroup -Name $SecurityGroup -GroupCategory Security -GroupScope Global -Path "ou=$OU,DC=$DomainNetbiosName,DC=$DomainTop" }    
+            { New-ADGroup -Name $SecurityGroup -GroupCategory Security -GroupScope Global -Path "OU=$SecurityGroupOU,DC=$DomainNetbiosName,DC=$DomainTop" }    
         }
     
         New-AdUser -AccountPassword $UserPassword `
