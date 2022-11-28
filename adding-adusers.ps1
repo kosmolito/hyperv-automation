@@ -74,8 +74,7 @@ switch ($selection)
     $RAWSecurityGroups = Read-Host -Prompt "Insert other security groups separated by a comma, ex. Sales,Ekonomi"
     $SecurityGroup = $RAWSecurityGroups.split(",")
 
-    
-    $RandomCsvFilePath = "$PSScriptRoot\random-generated-users.csv"
+    $RandomCsvFilePath = "$ConfigFolder\random-generated-users.csv"
     if (test-path ($RandomCsvFilePath)) {
     Remove-Item -Path $RandomCsvFilePath
     }
