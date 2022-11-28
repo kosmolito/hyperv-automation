@@ -24,8 +24,9 @@ function Show-Menu {
     
     Write-Host "1: importing the users from the domain-users.csv" -ForegroundColor Green
     Write-Host "2: Specifying the .csv file to import." -ForegroundColor Green
-    Write-Host "3: Random generate users" -ForegroundColor Green
-    Write-Host "B:" "Back to main menu" -ForegroundColor Green
+    Write-Host "3: Random generate users" -ForegroundColor green
+    Write-Host "4: Import from last random generate file" -ForegroundColor Green
+    Write-Host "B: Back to main menu" -ForegroundColor Green
     Write-Host "Q: To quit." -ForegroundColor Green
 
 }
@@ -35,15 +36,15 @@ $selection = Read-Host "Please make a selection"
 switch ($selection)
     {
         
-    '1' { 
+    "1" { 
         # Do nothing and get the user info from variable.ps1 file
         if (($UserList.DomainName -like $null) -or ($UserList.DomainName -like "") ) {
             $UserDomainName = Read-Host "No Domain Found! Specify the domain/upn eg. mstile.se"
             $UserList = $UserList | Select-Object *, @{n=”DomainName”;e={$UserDomainName}}
         }
-     } 
+     }
         
-    '2' 
+    "2"
     {
     $NewCsvFile =  Read-Host -Prompt "Specify the location of .csv file"
     if(!(test-path $NewCsvFile)) {
@@ -62,7 +63,7 @@ switch ($selection)
     }
     }
 
-    '3'
+    "3"
     {
     $RandomNameList = Import-Csv "$PSScriptRoot\example-resource\random-names.csv"
     [ValidateRange(1, 500)]$UserAmount = Read-Host -Prompt "How many users are to be created? (Max 500)"
@@ -96,6 +97,22 @@ switch ($selection)
         }
     $UserList = Import-Csv -Path $RandomCsvFilePath
     }
+
+    "4" {
+        
+        if (!(test-path "$ConfigFolder\random-generated-users.csv")) {
+            Write-Error -Message "No file found!"
+            Pause
+            & $PSScriptRoot\adding-adusers.ps1
+        } else {
+            $UserList = import-csv -path "$ConfigFolder\random-generated-users.csv"
+            if (($UserList.DomainName -like $null) -xor ($UserList.DomainName -like "") ) {
+                $UserDomainName = Read-Host "No Domain Found! Specify the domain/upn eg. mstile.se"
+                $UserList = $UserList | Select-Object *, @{n=”DomainName”;e={$UserDomainName}}
+            }
+        }
+
+     }
 
     "b" 
     { 
@@ -147,22 +164,22 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
         $DomainNetbiosName = $DomainName.Split(".")[0]
         $DomainTop = $DomainName.Split(".")[1]
         $SecurityGroups = $SecurityGroups.split(",")
-
+        $DomainDistinguishedName = (get-addomain).distinguishedname
 
         #(get-addomain).distinguishedname
 
         $UserOU = "Users"    
         if (-not (Get-ADOrganizationalUnit -Filter 'name -like $OU'))
-            { New-ADOrganizationalUnit -Name $OU -Path "DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false }
+            { New-ADOrganizationalUnit -Name $OU -Path "$DomainDistinguishedName" -ProtectedFromAccidentalDeletion $false }
 
         # Creat OU for Sec groups
         $SecurityGroupOU = "SEC_Groups"
         if (-not (Get-ADOrganizationalUnit -Filter 'name -like $SecurityGroupOU'))
-        { New-ADOrganizationalUnit -Name $SecurityGroupOU -Path "DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false }
+        { New-ADOrganizationalUnit -Name $SecurityGroupOU -Path "$DomainDistinguishedName" -ProtectedFromAccidentalDeletion $false }
         
-        if (-not (Get-ADOrganizationalUnit -filter 'name -like $UserOU' | Where-Object {$_.DistinguishedName -match "OU=$OU,DC=$DomainNetbiosName,DC=$DomainTop"}) ) 
-                    { New-ADOrganizationalUnit -Name $UserOU -Path "OU=$OU,DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false }
-        $UserOUPath = "OU=$UserOU,OU=$OU,DC=$DomainNetbiosName,DC=$DomainTop"
+        if (-not (Get-ADOrganizationalUnit -filter 'name -like $UserOU' | Where-Object {$_.DistinguishedName -match "OU=$OU,$DomainDistinguishedName"}) ) 
+                    { New-ADOrganizationalUnit -Name $UserOU -Path "OU=$OU,$DomainDistinguishedName" -ProtectedFromAccidentalDeletion $false }
+        $UserOUPath = "OU=$UserOU,OU=$OU,$DomainDistinguishedName"
 
     
         # if (-not (Get-ADOrganizationalUnit -Filter 'name -like $OU')) 
@@ -170,7 +187,7 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
      
         foreach ($SecurityGroup in $SecurityGroups) {
             if (-not (Get-ADGroup -Filter 'Name -like $SecurityGroup')) 
-            { New-ADGroup -Name $SecurityGroup -GroupCategory Security -GroupScope Global -Path "OU=$SecurityGroupOU,DC=$DomainNetbiosName,DC=$DomainTop" }    
+            { New-ADGroup -Name $SecurityGroup -GroupCategory Security -GroupScope Global -Path "OU=$SecurityGroupOU,$DomainDistinguishedName" }    
         }
     
         New-AdUser -AccountPassword $UserPassword `
