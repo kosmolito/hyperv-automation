@@ -122,7 +122,6 @@ while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential 
 Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
 
 Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
-    # Set-Content function:Add-TheADUser -Value $using:AddTheADUser
 
     function Add-TheADUser {
         param($FirstName,$LastName,$UserPassword,$OU,$DomainName,$SecurityGroups)
@@ -203,6 +202,7 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
             
         }
         catch {
+            Write-Host ($user.FirstName + "." + $user.LastName) -ForegroundColor Red
             Write-Error $Error[0]
         }
 
