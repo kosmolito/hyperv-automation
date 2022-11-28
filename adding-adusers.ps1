@@ -181,10 +181,6 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
                     { New-ADOrganizationalUnit -Name $UserOU -Path "OU=$OU,$DomainDistinguishedName" -ProtectedFromAccidentalDeletion $false }
         $UserOUPath = "OU=$UserOU,OU=$OU,$DomainDistinguishedName"
 
-    
-        # if (-not (Get-ADOrganizationalUnit -Filter 'name -like $OU')) 
-        # { New-ADOrganizationalUnit -Name $OU -Path "DC=$DomainNetbiosName,DC=$DomainTop" -ProtectedFromAccidentalDeletion $false}
-     
         foreach ($SecurityGroup in $SecurityGroups) {
             if (-not (Get-ADGroup -Filter 'Name -like $SecurityGroup')) 
             { New-ADGroup -Name $SecurityGroup -GroupCategory Security -GroupScope Global -Path "OU=$SecurityGroupOU,$DomainDistinguishedName" }    
