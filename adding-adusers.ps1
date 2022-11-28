@@ -212,4 +212,4 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
     Write-Verbose "User creation process finished." -Verbose
 }
 Pause
-& $PSScriptRoot\main.ps1
+& $PSScriptRoot\adding-adusers.ps1
