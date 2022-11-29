@@ -181,6 +181,19 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
                     { New-ADOrganizationalUnit -Name $UserOU -Path "OU=$OU,$DomainDistinguishedName" -ProtectedFromAccidentalDeletion $false }
         $UserOUPath = "OU=$UserOU,OU=$OU,$DomainDistinguishedName"
 
+        # Adding One extra SEC Group for each OU to easier NTFS target
+        $SecurityGroups = $SecurityGroups + "SEC_$OU"
+
+        $TempSecGroups = $null
+        foreach ($Group in $SecurityGroups) {
+            if (!($Group -match "^SEC_")) {
+                $Group = "SEC_" + $Group
+            }
+            [array]$TempSecGroups = $TempSecGroups + $Group
+        }
+        
+        $SecurityGroups = $TempSecGroups
+
         foreach ($SecurityGroup in $SecurityGroups) {
             if (-not (Get-ADGroup -Filter 'Name -like $SecurityGroup')) 
             { New-ADGroup -Name $SecurityGroup -GroupCategory Security -GroupScope Global -Path "OU=$SecurityGroupOU,$DomainDistinguishedName" }    
