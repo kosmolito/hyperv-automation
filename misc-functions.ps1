@@ -18,7 +18,7 @@ $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredenti
 
 function Show-Menu {
     param (
-        [string]$Title = 'Misc. Functions'
+        [string]$Title = "Misc. Functions"
     )
     Clear-Host
     Write-Host -ForegroundColor red "Existing VM Selected To Configure"
@@ -27,9 +27,9 @@ function Show-Menu {
     
     Write-Host "1: DC/AD Replication Sync" -ForegroundColor Green
     Write-Host "2: Add an alternative UPN Suffix" -ForegroundColor Green
-    # Write-Host "3: empty" -ForegroundColor Green
+    Write-Host "3: Demote a DC" -ForegroundColor Green
     Write-Host "B:" "Back to main menu" -ForegroundColor Green
-    Write-Host "Q: To quit." -ForegroundColor Green
+    Write-Host "Q: To quit" -ForegroundColor Green
 }
 
 Show-Menu
@@ -45,7 +45,7 @@ $VMSelected | Foreach-Object -Parallel {
 switch ($selection)
     {
         
-    '1' 
+    "1"
     {
 
         Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
@@ -67,9 +67,9 @@ switch ($selection)
         }
         Pause
        & $PSScriptRoot\misc-functions.ps1
-    } 
+    }
         
-    '2' 
+    "2"
     {
 
         $AlternativeUPNSuffix = Read-Host -Prompt "Speficy alternative UPN suffix eg. test.com"
@@ -89,13 +89,70 @@ switch ($selection)
         & $PSScriptRoot\misc-functions.ps1
     }
 
-    '3'
+    "3"
     {
+        Clear-Host
+        $AvailableDC = $VMList | Where-Object {($_.Roles -match "AD-DC") -and ($_.DomainName -like $VMSelected.DomainName) -and ($_.VMName -notlike $VMSelected.VMName)}
+        Write-Host "Available DC to have FSMO role" -ForegroundColor green
+        $AvailableDC | Format-Table VMName,DomainName,Roles | Out-Host
+        $NewFSMORole = Read-Host "Specify VM Name to be Root DC"
 
-        #
+        Write-Host "WARNING! [$($VMSelected.VMName)] will be DEMOTED and [$NewFSMORole] will be set as Root DC" -ForegroundColor Red | Out-Host
+
+        $DemoteConfirmation = Read-Host "Do you really want to DEMOTE the machine(s)? (yes/no)"
+
+        if ($DemoteConfirmation -notlike "yes") {
+            Write-Host -ForegroundColor red "Sorry I did not get correct confirmation!"
+            Pause
+            & $PSScriptRoot\misc-functions.ps1
+        } elseif ($VMSelected.count -ne 1) {
+            Write-Host -ForegroundColor red "One ONE VM can be selected for this operation!"
+            Pause
+            & $PSScriptRoot\misc-functions.ps1
+        } else {
 
 
+        Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
+        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
+        Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
+        Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
 
+            try {
+                Write-Verbose "Changing FSMO Role to [$using:NewFSMORole].." -Verbose
+                Move-ADDirectoryServerOperationMasterRole -Identity $using:NewFSMORole -OperationMasterRole DomainNamingMaster,PDCEmulator,RIDMaster,SchemaMaster,InfrastructureMaster -confirm:$false -ErrorAction Stop
+                Start-Sleep -Seconds 2
+                Write-Verbose "Syncing Domain Controllers...." -Verbose
+                (Get-ADDomainController -Filter *).Name | Foreach-Object { repadmin /syncall $_ (Get-ADDomain).DistinguishedName /AdeP }
+                Write-Verbose "Syncing Completed." -Verbose
+            }
+            catch {
+                Write-Error $Error[0]
+            }
+
+            # Only run this code if the code above runned successfully
+            if ($?) {
+                try {
+                    Write-Verbose "Demoting DC [$($VMSelected.VMName)]..." -Verbose
+                    Import-Module ADDSDeployment
+                    Uninstall-ADDSDomainController `
+                    -DemoteOperationMasterRole:$true `
+                    -RemoveDnsDelegation:$true `
+                    -DnsDelegationRemovalCredential $using:DomainCredential `
+                    -localadministratorpassword $using:DomainPwd `
+                    -norebootoncompletion:$false `
+                    -Force:$true -ErrorAction Stop
+                }
+                catch {
+                    Write-Error $Error[0]
+                }
+            }
+
+        }
+
+        Pause
+        & $PSScriptRoot\misc-functions.ps1
+
+        }
 
     }
 
