@@ -118,10 +118,14 @@ switch ($selection)
         Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
 
             try {
+                Write-Verbose "Pre FSMO Syncing Domain Controllers...." -Verbose
+                (Get-ADDomainController -Filter *).Name | Foreach-Object { repadmin /syncall $_ (Get-ADDomain).DistinguishedName /AdeP }
+
                 Write-Verbose "Changing FSMO Role to [$using:NewFSMORole].." -Verbose
                 Move-ADDirectoryServerOperationMasterRole -Identity $using:NewFSMORole -OperationMasterRole DomainNamingMaster,PDCEmulator,RIDMaster,SchemaMaster,InfrastructureMaster -confirm:$false -ErrorAction Stop
                 Start-Sleep -Seconds 2
-                Write-Verbose "Syncing Domain Controllers...." -Verbose
+
+                Write-Verbose "Post FSMO Syncing Domain Controllers...." -Verbose
                 (Get-ADDomainController -Filter *).Name | Foreach-Object { repadmin /syncall $_ (Get-ADDomain).DistinguishedName /AdeP }
                 Write-Verbose "Syncing Completed." -Verbose
             }
@@ -132,7 +136,7 @@ switch ($selection)
             # Only run this code if the code above runned successfully
             if ($?) {
                 try {
-                    Write-Verbose "Demoting DC [$($VMSelected.VMName)]..." -Verbose
+                    Write-Verbose "Demoting DC [$($using:VMSelected.VMName)]..." -Verbose
                     Import-Module ADDSDeployment
                     Uninstall-ADDSDomainController `
                     -DemoteOperationMasterRole:$true `
