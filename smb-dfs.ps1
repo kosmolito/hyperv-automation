@@ -111,7 +111,7 @@ if ($VM.Count -lt 1) {
 
             Start-Sleep -Seconds 1
             $DomainAdmins = "$DomainNetbiosName\Domain Admins"
-            $identity = "$DomainNetbiosName\$PublicSecurityGroupName"
+            $identity = "$DomainNetbiosName\$using:PublicSecurityGroupName"
 
             # Disabling The inheritance
             $Acl = Get-Acl -Path $FolderPath
@@ -156,6 +156,24 @@ if ($VM.Count -lt 1) {
                 # Apply permissions to folder
                 set-acl -aclobject $acl $FolderPath
             }
+
+            if (($FolderName -like "bg-image")) {
+
+
+            # Grant Permission to the Domain Users, in this  case only ReadAndExecute
+            # The permission is applied to this folder/object and sub subfolders
+            $rights = 'ReadAndExecute,Synchronize' #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
+            $inheritance = "ContainerInherit, ObjectInherit"#'ContainerInherit, ObjectInherit' #Other options: [enum]::GetValues('System.Security.AccessControl.Inheritance')
+            $propagation = 'None' #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
+            $type = 'allow' #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
+            $ACE = New-Object System.Security.AccessControl.FileSystemAccessRule($identity,$rights,$inheritance,$propagation,$type)
+            $Acl = Get-Acl -Path $FolderPath
+            $Acl.AddAccessRule($ACE)
+            Set-Acl -Path $FolderPath -AclObject $Acl
+
+            }
+
+
 
             # Grant Permission to the Domain Users, in this  case only ReadAndExecute
             # The permission is only applied to this folder/object and not subfolders,
