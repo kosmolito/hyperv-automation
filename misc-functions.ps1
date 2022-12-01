@@ -136,7 +136,7 @@ switch ($selection)
                     Import-Module ADDSDeployment
                     Uninstall-ADDSDomainController `
                     -DemoteOperationMasterRole:$true `
-                    -RemoveDnsDelegation:$true `
+                    -RemoveDnsDelegation:$false `
                     -DnsDelegationRemovalCredential $using:DomainCredential `
                     -localadministratorpassword $using:DomainPwd `
                     -norebootoncompletion:$false `
