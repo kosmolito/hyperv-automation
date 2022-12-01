@@ -261,6 +261,11 @@ foreach ($VM in $VMSelected) {
 
                             # Restart DHCP Service
                             Restart-service dhcpserver
+
+                            start-sleep -Seconds 5
+
+                            # Post installation wizzard configuration
+                            Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
                         }
             
                         catch {
