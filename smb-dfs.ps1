@@ -1,42 +1,32 @@
 . .\variables.ps1
 
 
-$VM = $VMList | Where-Object { ($_.isSelected -eq $true) -and ($_.Roles -contains "FS-DFS-Namespace") }
+$VM = $VMList | Where-Object { ($_.isSelected -eq $true) }
 if ($VM.Count -lt 1) {
-    $FileSrvSelection = read-host "No VM with file-server role found. Exiting!"
+    read-host "No VM with file-server role found. Exiting!"
     exit
+    & $PSScriptRoot\main.ps1
 } else {
 
+    if ($VM.MachineType -like "server" -and ($VM.HasJoinedDomain)) {
+        $DomainName = $VM.DomainName
+        $DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
+        $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
+        -ArgumentList $DomainNetbiosName\$DomainAdmin, $DomainPwd
 
-    $FileSrvSelection = read-host "Enter the name of the file server"
-    $VM = $VMList | Where-Object {($_.VMName -Like $FileSrvSelection) -and ($_.Roles -contains "FS-DFS-Namespace")}
-    while ($VM.Count -ne 1) {
-        $FileSrvSelection = Read-Host "The information you provided is not correct. Please enter the name of the file server"
-        $VM = $VMList | Where-Object VMName -Like $FileSrvSelection
-    }
-
-    if ($VM.MachineType -like "server") {
-        if (($VM.HasJoinedDomain)) {
-            
-            $DomainName = $VM.DomainName
-            $DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
-            $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential `
-            -ArgumentList $DomainNetbiosName\$DomainAdmin, $DomainPwd
-
-            $Credential = $DomainCredential
-        } else {
-            $Credential = $ServerLocalCredential
-        }
+        $Credential = $DomainCredential
     } else {
-        $Credential = $ClientCredential
+        $Credential = $ServerLocalCredential
     }
 
     if (((get-vm $VM.VMName).State) -like "Off") {
         Write-Verbose "[$($VM.VMName)] is turned off. Starting Machine..." -Verbose
         Start-vm -Name $VM.VMName
     }
-    $MyFolders = Read-Host -Prompt "Specify the non SMB Folder Names, eg, Sales,Ekonomi"
-    $MyFolders = $MyFolders.split(',')
+    $MyOUFolders = Read-Host -Prompt "Specify the OU folder Names ex. Stockholm,Goteborg"
+    $MyOUFolders = $MyOUFolders.split(',')
+    $MyDepartmentFolders = Read-Host -Prompt "Specify the Department Folder Names, ex. Sales,Ekonomi"
+    $MyDepartmentFolders = $MyDepartmentFolders.split(',')
     Write-Verbose "Waiting for PowerShell to connect [$($VM.VMName)] " -Verbose
     while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
 
@@ -73,6 +63,12 @@ if ($VM.Count -lt 1) {
         # Show the ACL / Permissions for the folder
         # (Get-Acl -Path $FolderPath).Access | Format-Table -Autosize
 
+
+        while (!(test-path($VM.NonOSDriveLetter))) {
+            $VM.NonOSDriveLetter = Read-Host "The Drive Letter Does not Exist.`nSpecify The Drive letter"
+            $VM.NonOSDriveLetter
+        }
+
         foreach ($Folder in $($VM.DFSPublicFolders)) {
             [array]$DFSFolders += $VM.NonOSDriveLetter + $Folder
         }
@@ -83,10 +79,13 @@ if ($VM.Count -lt 1) {
 
 
         $NonSMBFolders = $null
-        $using:MyFolders | Foreach-Object {
-            [array]$NonSMBFolders = $NonSMBFolders + "$DFSPublicFolder\$_"
+        foreach ($Folder in $using:MyOUFolders) {
+            [array]$NonSMBFolders = $NonSMBFolders + $Folder
+            foreach ($f in $using:MyDepartmentFolders) {
+                [array]$NonSMBFolders = $NonSMBFolders + ($Folder + "\" + $f)
+            }
         }
-        
+      
         # [array]$NonSMBFolders = "$DFSPublicFolder\sales","$DFSPublicFolder\ekonomi","$DFSPublicFolder\bd"
         [array]$AllFolders = $SMBFolders + $NonSMBFolders
 
@@ -175,18 +174,20 @@ if ($VM.Count -lt 1) {
         ##########################################################################################################
         ############################################# DFS NameSpace ##############################################
 
-        $DFSRootFolderName = $DFSRootFolder.split("\")[1]
-        # Create DFS Root Folder
-        if ((test-path "\\$DomainName\share")) {
-        Write-Host -ForegroundColor yellow "DfnsNameSpace Root \\$DomainName\share already exist"
-        } else { New-DfsnRoot -Path "\\$DomainName\share" -TargetPath "\\$($VM.VMName)\$DFSRootFolderName" -Type DomainV2 -EnableAccessBasedEnumeration $True -GrantAdminAccounts $DomainAdmins }
+        if ($VM.Roles -match "FS-DFS-Namespace") {
+            $DFSRootFolderName = $DFSRootFolder.split("\")[1]
+            # Create DFS Root Folder
+            if ((test-path "\\$DomainName\share")) {
+            Write-Host -ForegroundColor yellow "DfnsNameSpace Root \\$DomainName\share already exist"
+            } else { New-DfsnRoot -Path "\\$DomainName\share" -TargetPath "\\$($VM.VMName)\$DFSRootFolderName" -Type DomainV2 -EnableAccessBasedEnumeration $True -GrantAdminAccounts $DomainAdmins }
 
-        # Create New folders under the root folder
-        foreach ($Folder in $($DFSFolders)) {
-            $DFSFolderName = $Folder.split("\")[1]
-            if ((test-path "\\$DomainName\share\$DFSFolderName")) {
-                Write-Host -ForegroundColor yellow "DfnsNameSpace folder \\$DomainName\share\$DFSFolderName already exist"
-            } else { New-DfsnFolder -Path "\\$DomainName\share\$DFSFolderName" -TargetPath "\\$($VM.VMName)\$DFSFolderName" -EnableTargetFailback $True }
-        }
+            # Create New folders under the root folder
+            foreach ($Folder in $($DFSFolders)) {
+                $DFSFolderName = $Folder.split("\")[1]
+                if ((test-path "\\$DomainName\share\$DFSFolderName")) {
+                    Write-Host -ForegroundColor yellow "DfnsNameSpace folder \\$DomainName\share\$DFSFolderName already exist"
+                } else { New-DfsnFolder -Path "\\$DomainName\share\$DFSFolderName" -TargetPath "\\$($VM.VMName)\$DFSFolderName" -EnableTargetFailback $True }
+            }
+    }
     }
 }
