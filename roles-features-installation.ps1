@@ -110,17 +110,16 @@ foreach ($VM in $VMSelected) {
                             Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
                             Install-WindowsFeature -Name AD-Domain-Services -IncludeAllSubFeature -IncludeManagementTools
                         }
-            
-                        try
-                        {
-                            Get-ADComputer -filter *
-                        }
-                        catch
-                        {
+
+                        $DCPath = (Get-ADDomain).DistinguishedName
+                        $isPromotedToDC = Get-ADObject -Filter 'Name -like $($VM.VMName)' -SearchBase "OU=Domain Controllers,$DCPath" -ErrorAction SilentlyContinue
+                        if (!$isPromotedToDC) {
+
+
                             Write-Host "Waiting for Root DC to be Ready..." -ForegroundColor Yellow
                             while (!($RootDCReady)) {
                                 $RootDCReady = (Resolve-DnsName $($VM.DomainName) -ErrorAction SilentlyContinue ).Name
-                                start-sleep -Seconds 60
+                                timeout /t 600
                                 }
                             # Start-Sleep -Seconds 60
                             Write-Host "Root DC Ready." -ForegroundColor Yellow
