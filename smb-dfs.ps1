@@ -27,6 +27,7 @@ if ($VM.Count -lt 1) {
     $MyOUFolders = $MyOUFolders.split(',')
     $MyDepartmentFolders = Read-Host -Prompt "Specify the Department Folder Names, ex. Sales,Ekonomi"
     $MyDepartmentFolders = $MyDepartmentFolders.split(',')
+    $PublicSecurityGroupName = Read-Host -Prompt "Specify the Public Security Group Name"
     Write-Verbose "Waiting for PowerShell to connect [$($VM.VMName)] " -Verbose
     while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
 
@@ -80,9 +81,9 @@ if ($VM.Count -lt 1) {
 
         $NonSMBFolders = $null
         foreach ($Folder in $using:MyOUFolders) {
-            [array]$NonSMBFolders = $NonSMBFolders + $Folder
+            [array]$NonSMBFolders = $NonSMBFolders + ($DFSPublicFolder + "\" + $Folder)
             foreach ($f in $using:MyDepartmentFolders) {
-                [array]$NonSMBFolders = $NonSMBFolders + ($Folder + "\" + $f)
+                [array]$NonSMBFolders = $NonSMBFolders + ($DFSPublicFolder + "\" + $Folder + "\" + $f)
             }
         }
       
@@ -110,7 +111,7 @@ if ($VM.Count -lt 1) {
 
             Start-Sleep -Seconds 1
             $DomainAdmins = "$DomainNetbiosName\Domain Admins"
-            $identity = "$DomainNetbiosName\SEC_Gemensam"
+            $identity = "$DomainNetbiosName\$PublicSecurityGroupName"
 
             # Disabling The inheritance
             $Acl = Get-Acl -Path $FolderPath
