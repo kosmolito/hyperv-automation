@@ -90,8 +90,10 @@ switch ($selection)
             LastName = $RandomNameList.LastName[$RandomLastName]
             DomainName = $DomainName
             UserPassword = $UserPassword
-            SecurityGroups = "SEC_$($RAWGeneralSecurityGroup)" + "," + "SEC_$($SecurityGroup[$RandomSecurityGroup])"
+            SecurityGroups = ("SEC_" + $RAWGeneralSecurityGroup) + $(if ($SecurityGroup[$RandomSecurityGroup] -notlike "") { ",SEC_" +  $($SecurityGroup[$RandomSecurityGroup])})
             OU = $OU[$RandomOU]
+
+
             } | Export-Csv -Path $RandomCsvFilePath -Append -Encoding ASCII
         $UserList = import-csv -Path $RandomCsvFilePath
         }
