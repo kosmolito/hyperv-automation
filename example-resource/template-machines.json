@@ -227,7 +227,8 @@
     "DFSPublicFolders": [
       "public",
       "folder-redirection",
-      "bg-image"
+      "bg-image",
+      "adminfolder"
     ],
     "VMId": "",
     "SubMaskBit": "24",
@@ -270,7 +271,8 @@
     "DFSPublicFolders": [
       "public",
       "folder-redirection",
-      "bg-image"
+      "bg-image",
+      "adminfolder"
     ],
     "VMId": "",
     "SubMaskBit": "24",

@@ -162,10 +162,10 @@ if ($VM.Count -lt 1) {
 
             # Grant Permission to the Domain Users, in this  case only ReadAndExecute
             # The permission is applied to this folder/object and sub subfolders
-            $rights = 'ReadAndExecute,Synchronize' #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
+            $rights = "ReadAndExecute,Synchronize" #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
             $inheritance = "ContainerInherit, ObjectInherit"#'ContainerInherit, ObjectInherit' #Other options: [enum]::GetValues('System.Security.AccessControl.Inheritance')
-            $propagation = 'None' #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
-            $type = 'allow' #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
+            $propagation = "None" #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
+            $type = "allow" #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
             $ACE = New-Object System.Security.AccessControl.FileSystemAccessRule($identity,$rights,$inheritance,$propagation,$type)
             $Acl = Get-Acl -Path $FolderPath
             $Acl.AddAccessRule($ACE)
@@ -174,14 +174,31 @@ if ($VM.Count -lt 1) {
             }
 
 
+            if (($FolderName -like "adminfolder")) {
+
+
+                # Grant Permission to the Domain Users, in this  case only ReadAndExecute
+                # The permission is applied to this folder/object and sub subfolders
+                $rights = "FullControl" #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
+                $inheritance = "ContainerInherit, ObjectInherit"#'ContainerInherit, ObjectInherit' #Other options: [enum]::GetValues('System.Security.AccessControl.Inheritance')
+                $propagation = "None" #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
+                $type = "allow" #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
+                $ACE = New-Object System.Security.AccessControl.FileSystemAccessRule($DomainAdmins,$rights,$inheritance,$propagation,$type)
+                $Acl = Get-Acl -Path $FolderPath
+                $Acl.AddAccessRule($ACE)
+                Set-Acl -Path $FolderPath -AclObject $Acl
+    
+                }
+
+
 
             # Grant Permission to the Domain Users, in this  case only ReadAndExecute
             # The permission is only applied to this folder/object and not subfolders,
             # if the permission will be for subfolders, change the inheritance to "ContainerInherit, ObjectInherit"
-            $rights = 'ReadAndExecute,Synchronize' #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
+            $rights = "ReadAndExecute,Synchronize" #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
             $inheritance = "none"#'ContainerInherit, ObjectInherit' #Other options: [enum]::GetValues('System.Security.AccessControl.Inheritance')
-            $propagation = 'None' #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
-            $type = 'allow' #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
+            $propagation = "None" #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
+            $type = "allow" #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
             $ACE = New-Object System.Security.AccessControl.FileSystemAccessRule($identity,$rights,$inheritance,$propagation,$type)
             $Acl = Get-Acl -Path $FolderPath
             $Acl.AddAccessRule($ACE)
