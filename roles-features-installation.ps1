@@ -247,7 +247,7 @@ foreach ($VM in $VMSelected) {
                             # Add DHCP Scope
                             Add-DhcpServerv4Scope -name "staff_ipv4_scope" -StartRange "$($NetworkAddress)100" -EndRange "$($NetworkAddress)200" -SubnetMask 255.255.255.0 -State Active
 
-                            # Add-DhcpServerInDC -DnsName "$($VM.DomainName)" -IPAddress "$($VM.IPAddress)"
+                            Add-DhcpServerInDC -DnsName "$($VM.DomainName)" -IPAddress "$($VM.IPAddress)"
                 
                             # Add DNS Server, Router Gateway Options in DHCP
                             Set-DhcpServerV4OptionValue -DnsServer "$($VM.IPAddress)" -Router "$($NetworkAddress)1"
