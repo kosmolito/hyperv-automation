@@ -49,7 +49,7 @@ switch ($selection)
     {
 
         Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
-        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
+        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {"Test"} -ea SilentlyContinue) -ne "Test") {Start-Sleep -Seconds 1}
 
         Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
         Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
@@ -75,7 +75,7 @@ switch ($selection)
         $AlternativeUPNSuffix = Read-Host -Prompt "Speficy alternative UPN suffix eg. test.com"
 
         Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
-        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
+        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {"Test"} -ea SilentlyContinue) -ne "Test") {Start-Sleep -Seconds 1}
 
         Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
         Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
@@ -95,9 +95,11 @@ switch ($selection)
         $AvailableDC = $VMList | Where-Object {($_.Roles -match "AD-DC") -and ($_.DomainName -like $VMSelected.DomainName) -and ($_.VMName -notlike $VMSelected.VMName)}
         Write-Host "Available DC to have FSMO role" -ForegroundColor green
         $AvailableDC | Format-Table VMName,DomainName,Roles | Out-Host
-        $NewFSMORole = Read-Host "Specify VM Name to be Root DC"
+        $NewFSMORoleSelected = Read-Host "Specify VM Name to be Root DC"
+        $NewFSMOVM = $AvailableDC | Where-Object {$_.VMName -like $NewFSMORoleSelected}
 
-        Write-Host "WARNING! [$($VMSelected.VMName)] will be DEMOTED and [$NewFSMORole] will be set as Root DC" -ForegroundColor Red | Out-Host
+
+        Write-Host "WARNING! [$($VMSelected.VMName)] will be DEMOTED and [$($NewFSMOVM.VMName)] will be set as Root DC" -ForegroundColor Red | Out-Host
 
         $DemoteConfirmation = Read-Host "Do you really want to DEMOTE the machine(s)? (yes/no)"
 
@@ -113,16 +115,20 @@ switch ($selection)
 
 
         Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
-        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
+        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {"Test"} -ea SilentlyContinue) -ne "Test") {Start-Sleep -Seconds 1}
         Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
         Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
+
+            # Changing the DNS Server ipv4 address
+            Write-Verbose "Changing DNS Address in the DHCP Scope to [$($using:NewFSMOVM.IPAddress)]." -Verbose
+            Set-DhcpServerv4OptionValue -DnsServer "$($using:NewFSMOVM.IPAddress)"
 
             try {
                 Write-Verbose "Pre FSMO Syncing Domain Controllers...." -Verbose
                 (Get-ADDomainController -Filter *).Name | Foreach-Object { repadmin /syncall $_ (Get-ADDomain).DistinguishedName /AdeP }
 
-                Write-Verbose "Changing FSMO Role to [$using:NewFSMORole].." -Verbose
-                Move-ADDirectoryServerOperationMasterRole -Identity $using:NewFSMORole -OperationMasterRole DomainNamingMaster,PDCEmulator,RIDMaster,SchemaMaster,InfrastructureMaster -confirm:$false -ErrorAction Stop
+                Write-Verbose "Changing FSMO Role to [$($using:NewFSMOVM.VMName)].." -Verbose
+                Move-ADDirectoryServerOperationMasterRole -Identity $($using:NewFSMOVM.VMName) -OperationMasterRole DomainNamingMaster,PDCEmulator,RIDMaster,SchemaMaster,InfrastructureMaster -confirm:$false -ErrorAction Stop
                 Start-Sleep -Seconds 2
 
                 Write-Verbose "Post FSMO Syncing Domain Controllers...." -Verbose
@@ -151,6 +157,22 @@ switch ($selection)
                 }
             }
 
+        }
+
+        Write-Verbose "Waiting for PowerShell to connect [$($NewFSMOVM.VMName)] " -Verbose
+        while ((Invoke-Command -VMName $NewFSMOVM.VMName -Credential $DomainCredential {"Test"} -ea SilentlyContinue) -ne "Test") {Start-Sleep -Seconds 1}
+        Write-Verbose "PowerShell Connected to VM [$($NewFSMOVM.VMName)]. Moving On...." -Verbose
+        Invoke-Command -VMName $NewFSMOVM.VMName -Credential $DomainCredential -ScriptBlock {
+
+            Write-Verbose "Cleaning DNS Records of the OLD/Demoted DC [$($using:VMSelected.VMName)]..." -Verbose
+
+            Get-DnsServerResourceRecord -ZoneName $($using:VMSelected.DomainName) | `
+            Where-Object {$_.RecordData.IPv4Address -eq $($using:VMSelected.IPAdress) `
+            -or $_.RecordData.NameServer -eq "$($using:VMSelected.VMName).$($using:VMSelected.DomainName)." `
+            -or $_.RecordData.DomainName -eq "$($using:VMSelected.VMName).$($using:VMSelected.DomainName)."} | `
+            Remove-DnsServerResourceRecord -ZoneName $($using:VMSelected.DomainName) -force
+
+            Write-Verbose "Cleaning Process Finished." -Verbose
         }
 
         Pause

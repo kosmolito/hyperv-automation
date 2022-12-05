@@ -114,17 +114,6 @@ foreach ($VM in $VMSelected) {
                         $DCPath = (Get-ADDomain).DistinguishedName
                         $isPromotedToDC = Get-ADObject -Filter 'Name -like $($VM.VMName)' -SearchBase "OU=Domain Controllers,$DCPath" -ErrorAction SilentlyContinue
                         if (!$isPromotedToDC) {
-
-
-                            Write-Host "Waiting for Root DC to be Ready..." -ForegroundColor Yellow
-                            while (!($RootDCReady)) {
-                                $RootDCReady = (Resolve-DnsName $($VM.DomainName) -ErrorAction SilentlyContinue ).Name
-                                timeout /t 600
-                                }
-                            # Start-Sleep -Seconds 60
-                            Write-Host "Root DC Ready." -ForegroundColor Yellow
-
-                            
             
                             # if (((Get-ADDomainController -Filter *).name -notlike $VM.VMName)) {
                                 Write-Verbose "Configuring New Domain with Name [$DomainName] on VM [$($VM.VMName)]" -Verbose
