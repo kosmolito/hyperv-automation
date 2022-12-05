@@ -24,28 +24,25 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
         while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
         Write-Verbose "PowerShell Connected to VM [$($VM.VMName)]. Moving On...." -Verbose
 
-        Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
+       Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
             $HasJoinedDomain = (Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain
             if (!$HasJoinedDomain) {
 
                 $DomainName = $using:VM.DomainName
                 $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DomainName\$using:DomainAdmin, $using:DomainPwd
-                try {
                     Write-Verbose "Joining [$($using:VM.VMName)] to [$($DomainName)]..." -Verbose
                     Add-Computer -DomainName $DomainName -Credential $DomainCredential -Restart -ErrorAction stop
                     Write-Verbose "Restarting [$($using:VM.VMName)]" -Verbose
-                }
-                catch {
-                    write-host "Joining [$($using:VM.VMName)] to [$($DomainName)] faild!" -ForegroundColor red
-                    Write-Warning $Error[0]
-                }
-                
             }
         }
-    }
+
+        # Only Change the value of the Last code runned without error
+        if ($?) {
+            $VM.HasJoinedDomain = $True
+        }
+        }
 
     }
-$VM.HasJoinedDomain = $True
 }
 $VMList | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
 Write-Verbose "Joining process completed." -Verbose
