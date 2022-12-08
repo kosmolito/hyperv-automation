@@ -135,10 +135,7 @@ if (((get-vm $VMSelected.VMName).State) -like "Off") {
 
 
 
-Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
-while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
-Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
-
+Invoke-VMConnectionConfirmation -VMName $VMSelected.VMName -Credential $DomainCredential
 Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
 
     function Add-TheADUser {

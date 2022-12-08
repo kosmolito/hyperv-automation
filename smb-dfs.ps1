@@ -28,10 +28,8 @@ if ($VM.Count -lt 1) {
     $MyDepartmentFolders = Read-Host -Prompt "Specify the Department Folder Names, ex. Sales,Ekonomi"
     $MyDepartmentFolders = $MyDepartmentFolders.split(',')
     $PublicSecurityGroupName = Read-Host -Prompt "Specify the Public Security Group Name, ex. SEC_Gemensam"
-    Write-Verbose "Waiting for PowerShell to connect [$($VM.VMName)] " -Verbose
-    while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {"Test"} -ea SilentlyContinue) -ne "Test") {Start-Sleep -Seconds 1}
-
-    Write-Verbose "PowerShell Connected to VM [$($VM.VMName)]. Moving On...." -Verbose
+    
+    Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
     Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
         $VM = $using:VM
         $UserList = $using:UserList

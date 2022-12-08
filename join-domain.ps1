@@ -20,10 +20,7 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
         Write-Host -ForegroundColor yellow $VM.VMName "is a Root DC. skipping.."
     } else {
         
-        Write-Verbose "Waiting for PowerShell to connect [$($VM.VMName)] " -Verbose
-        while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
-        Write-Verbose "PowerShell Connected to VM [$($VM.VMName)]. Moving On...." -Verbose
-
+§      Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
        Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
             $HasJoinedDomain = (Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain
             if (!$HasJoinedDomain) {

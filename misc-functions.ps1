@@ -48,10 +48,7 @@ switch ($selection)
     "1"
     {
 
-        Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
-        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {"Test"} -ea SilentlyContinue) -ne "Test") {Start-Sleep -Seconds 1}
-
-        Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
+        Invoke-VMConnectionConfirmation -VMName $VMSelected.VMName -Credential $DomainCredential
         Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
 
         Write-Verbose "Syncing Domain Controllers...." -Verbose
@@ -74,10 +71,7 @@ switch ($selection)
 
         $AlternativeUPNSuffix = Read-Host -Prompt "Speficy alternative UPN suffix eg. test.com"
 
-        Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
-        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {"Test"} -ea SilentlyContinue) -ne "Test") {Start-Sleep -Seconds 1}
-
-        Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
+        Invoke-VMConnectionConfirmation -VMName $VMSelected.VMName -Credential $DomainCredential
         Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
         
         Write-Verbose "Adding alternative UPN [$($using:AlternativeUPNSuffix)]..." -Verbose
@@ -114,9 +108,7 @@ switch ($selection)
         } else {
 
 
-        Write-Verbose "Waiting for PowerShell to connect [$($VMSelected.VMName)] " -Verbose
-        while ((Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential {"Test"} -ea SilentlyContinue) -ne "Test") {Start-Sleep -Seconds 1}
-        Write-Verbose "PowerShell Connected to VM [$($VMSelected.VMName)]. Moving On...." -Verbose
+        Invoke-VMConnectionConfirmation -VMName $VMSelected.VMName -Credential $DomainCredential
         Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
 
             # Changing the DNS Server ipv4 address
@@ -159,9 +151,7 @@ switch ($selection)
 
         }
 
-        Write-Verbose "Waiting for PowerShell to connect [$($NewFSMOVM.VMName)] " -Verbose
-        while ((Invoke-Command -VMName $NewFSMOVM.VMName -Credential $DomainCredential {"Test"} -ea SilentlyContinue) -ne "Test") {Start-Sleep -Seconds 1}
-        Write-Verbose "PowerShell Connected to VM [$($NewFSMOVM.VMName)]. Moving On...." -Verbose
+        Invoke-VMConnectionConfirmation -VMName $NewFSMOVM.VMName -Credential $DomainCredential
         Invoke-Command -VMName $NewFSMOVM.VMName -Credential $DomainCredential -ScriptBlock {
 
             Write-Verbose "Cleaning DNS Records of the OLD/Demoted DC [$($using:VMSelected.VMName)]..." -Verbose

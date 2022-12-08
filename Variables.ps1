@@ -43,6 +43,23 @@ function New-HardDrive {
 
 }
 
+
+function Invoke-VMConnectionConfirmation {
+
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [String]$VMName,
+        [Parameter(Mandatory)]
+        [System.Management.Automation.PSCredential]$Credential
+
+    )
+
+    Write-Verbose "Waiting for PowerShell to start on VM [$($VMName)]" -Verbose
+    while ((Invoke-Command -VMName $VMName -Credential $Credential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
+    Write-Verbose "PowerShell responding on VM [$($VMName)]. Moving On...." -Verbose
+}
+
 ########################## End of Functions ##########################
 
 $LogDateTime = Get-Date -UFormat %Y-%m-%d-%H%M

@@ -28,10 +28,7 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     }
 
     # We wait until PowerShell is working within the guest VM before moving on.
-    Write-Verbose "Waiting for PowerShell to start on VM [$($VM.VMName)]" -Verbose
-    while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
-
-    Write-Verbose "PowerShell responding on VM [$($VM.VMName)]. Moving On...." -Verbose
+    Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
 
     # Changing IP-Subnet-DefGateWay-HostName inside VM // InterfaceAlias can be found by making use of the Get-NetIPAddress Cmdlet
     Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {

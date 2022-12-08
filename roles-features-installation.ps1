@@ -42,10 +42,7 @@ foreach ($VM in $VMSelected) {
             $Credential = $ServerLocalCredential
         }
 
-        Write-Verbose "Waiting for PowerShell to connect [$($VM.VMName)] " -Verbose
-        while ((Invoke-Command -VMName $VM.VMName -Credential $Credential {“Test”} -ea SilentlyContinue) -ne “Test”) {Start-Sleep -Seconds 1}
-
-        Write-Verbose "PowerShell Connected to VM [$($VM.VMName)]. Moving On...." -Verbose
+        Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
         Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
             # Set-Content function:Install-FeaturesAndRoles -Value $using:InstallFeaturesAndRoles
             Write-Host -ForegroundColor green $using:Role
