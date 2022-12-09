@@ -20,8 +20,8 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
         Write-Host -ForegroundColor yellow $VM.VMName "is a Root DC. skipping.."
     } else {
         
-§      Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
-       Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
+        Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
+        Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
             $HasJoinedDomain = (Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain
             if (!$HasJoinedDomain) {
 
