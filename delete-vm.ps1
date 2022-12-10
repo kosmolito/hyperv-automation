@@ -1,7 +1,7 @@
 . .\Variables.ps1
+Get-ElevatedInfo
 #########################################################################################################################
 ################################################# LIST ALL EXISTING VM ##################################################
-
 Clear-Host
 Write-Host -ForegroundColor red "Existing VM to be Deleted!"
 $ExistingVMList = get-vm

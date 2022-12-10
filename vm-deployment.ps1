@@ -1,4 +1,5 @@
 . .\variables.ps1
+Get-ElevatedInfo
 Clear-Host
 if (($ConfigFile.Hostname -contains $HostName)) {
     $VMPath = ($ConfigFile | Where-Object {$_.HostName -like $HostName}).VMPath

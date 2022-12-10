@@ -1,4 +1,5 @@
 . .\variables.ps1
+Get-ElevatedInfo
 #########################################################################################################################
 ################# COMPARE THE VMList VM WITH EXISTING VM IN THE SYSTEM. KEEP ONLY THE EXISTING MACHINES #################
 

@@ -1,4 +1,5 @@
 . .\variables.ps1
+Get-ElevatedInfo
 $VMListIndex = 0
 $VMSelected = $VMList | Where-Object {$_.isSelected -eq $true}
 foreach ($VM in $VMSelected) {

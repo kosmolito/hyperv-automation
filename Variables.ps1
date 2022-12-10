@@ -60,6 +60,17 @@ function Invoke-VMConnectionConfirmation {
     Write-Verbose "PowerShell responding on VM [$($VMName)]. Moving On...." -Verbose
 }
 
+# Check if the process is running in elevated mode, if not, the scrip stops
+function Get-ElevatedInfo {
+    $currentPrincipal = [System.Security.Principal.WindowsPrincipal] [System.Security.Principal.WindowsIdentity]::GetCurrent()
+    $isAdmin = $currentPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)
+    if (!($isAdmin)) {
+    Write-Error "You need to run the script as administrator!"
+    Pause
+    exit
+    }
+}
+
 ########################## End of Functions ##########################
 
 $LogDateTime = Get-Date -UFormat %Y-%m-%d-%H%M

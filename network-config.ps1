@@ -1,5 +1,5 @@
 . .\variables.ps1
-
+Get-ElevatedInfo
 # Starting the VM Parallel to speed up the process
 $VMList | Where-Object {$_.isSelected -eq $true} | Foreach-Object -Parallel {
     if (((get-vm $_.VMName).State) -like "Off") {

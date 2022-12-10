@@ -1,9 +1,9 @@
 . .\variables.ps1
-
+Get-ElevatedInfo
 
 $VM = $VMList | Where-Object { ($_.isSelected -eq $true) }
 if ($VM.Count -lt 1) {
-    read-host "No VM with file-server role found. Exiting!"
+    Write-Error "No VM with file-server role found. Exiting!"
     exit
     & $PSScriptRoot\main.ps1
 } else {

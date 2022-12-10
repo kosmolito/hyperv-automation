@@ -1,5 +1,5 @@
 . .\variables.ps1
-
+Get-ElevatedInfo
 $VMList | Where-Object {$_.isSelected -eq $true} | Foreach-Object -Parallel {
     if (((get-vm $_.VMName).State) -like "Off") {
         Write-Verbose "[$($_.VMName)] is turned off. Starting Machine..." -Verbose

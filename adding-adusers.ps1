@@ -1,5 +1,5 @@
 . .\variables.ps1
-
+Get-ElevatedInfo
 $VMSelected = $VMList | Where-Object {$_.isSelected -eq $true}
 
 if ($VMSelected.Count -gt 1) {
