@@ -139,6 +139,7 @@ Invoke-VMConnectionConfirmation -VMName $VMSelected.VMName -Credential $DomainCr
 Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptBlock {
 
     function Add-TheADUser {
+        [CmdletBinding()]
         param($FirstName,$LastName,$UserPassword,$OU,$DomainName,$SecurityGroups)
     
         $FullName = $FirstName + " " + $LastName
@@ -151,9 +152,8 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
         $TempUserName = $null
         foreach ($Char in $UserName.ToCharArray()) {
             switch -Regex ($Char) {
-            "å" { $Char = "a" }
-            "ä" { $Char = "a" }
-            "ö" { $Char = "o" }
+                [åäæ] { $Char = "a" }
+                [öø] { $Char = "o" }
             }
             $TempUserName += $Char
         }
