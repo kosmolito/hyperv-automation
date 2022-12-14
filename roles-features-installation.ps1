@@ -65,6 +65,7 @@ foreach ($VM in $VMSelected) {
             }
 
             function Install-FeaturesAndRoles {
+                [CmdletBinding()]
                 param($Role)
             
                 switch ($Role) {

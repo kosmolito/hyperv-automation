@@ -20,6 +20,7 @@ Add-HardDrive -VMName TESTVM -DiskAmount 3 -DiskSize 20GB
 General notes
 #>
 function New-HardDrive {
+    [CmdletBinding()]
     param ([string]$VMName,[int32]$DiskAmount,[UInt64]$DiskSize)
 
     $Num = 0
@@ -45,7 +46,6 @@ function New-HardDrive {
 
 
 function Invoke-VMConnectionConfirmation {
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
