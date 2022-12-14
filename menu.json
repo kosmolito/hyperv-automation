@@ -51,7 +51,7 @@
     {
       "Option": "misc. functions",
       "ScriptPath": "misc-functions.ps1",
-      "isSelected": true
+      "isSelected": false
     }
   ]
 ]
