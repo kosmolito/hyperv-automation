@@ -160,8 +160,6 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
         $UserName = $TempUserName
     
         $UserPassword = ConvertTo-SecureString $UserPassword -AsPlainText -Force
-        $DomainNetbiosName = $DomainName.Split(".")[0]
-        $DomainTop = $DomainName.Split(".")[1]
         $SecurityGroups = $SecurityGroups.split(",")
         $DomainDistinguishedName = (get-addomain).distinguishedname
 
