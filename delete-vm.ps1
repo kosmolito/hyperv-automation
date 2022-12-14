@@ -1,5 +1,6 @@
 . .\Variables.ps1
 Get-ElevatedInfo
+$OldDeployments = Get-Content -Path "$ConfigFolder\old-deployments.json" | ConvertFrom-Json
 #########################################################################################################################
 ################################################# LIST ALL EXISTING VM ##################################################
 Clear-Host

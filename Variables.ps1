@@ -74,81 +74,12 @@ function Get-ElevatedInfo {
 ########################## End of Functions ##########################
 
 $LogDateTime = Get-Date -UFormat %Y-%m-%d-%H%M
-$HostName = hostname
+$HostName = $Env:COMPUTERNAME
 $ConfigFolder = ((Get-Location).Path | ForEach-Object { Split-Path -Path $_ -Parent }) + "\$HostName-ha-config"
-
-# Create files if its exist
-if (!(test-path $ConfigFolder)) {
-    Clear-Host
-    Write-Verbose "Cannot find Config Folder. Creating folder and nessecary files..." -Verbose
-    New-Item -Path $ConfigFolder -ItemType Directory | Out-Null
-
-    if (!(test-path "$ConfigFolder\config.json")) {
-        Copy-Item "$PSScriptRoot\example-resource\example-config.json" -Destination "$ConfigFolder\config.json" | Out-Null
-    }
-
-    if (!(test-path "$ConfigFolder\template-machines.json")) {
-        Copy-Item "$PSScriptRoot\example-resource\template-machines.json" -Destination "$ConfigFolder\template-machines.json" | Out-Null
-    }
-
-    if (!(test-path "$ConfigFolder\inventory.json")) {
-        New-Item -Path "$ConfigFolder\inventory.json" -ItemType File | Out-Null
-    }
-
-    if (!(test-path "$ConfigFolder\old-deployments.json")) {
-        New-Item -Path "$ConfigFolder\old-deployments.json" -ItemType File | Out-Null
-    }
-
-    if (!(test-path "$ConfigFolder\credentials.csv")) {
-        Copy-Item "$PSScriptRoot\example-resource\example-credentials.csv" -Destination "$ConfigFolder\credentials.csv" | Out-Null
-    }
-
-    if (!(test-path "$ConfigFolder\domain-users.csv")) {
-        Copy-Item "$PSScriptRoot\example-resource\example-domain-users.csv" -Destination "$ConfigFolder\domain-users.csv" | Out-Null
-    }
-
-    Write-Verbose "Config Folder and files have been created." -Verbose
-    Write-Verbose "Config folder Path:[$($ConfigFolder)]`n" -Verbose
-    
-    Write-Host "Change the credentials, save the file and press any Enter to continue ....." 
-    Start-Sleep -Seconds 2
-    notepad.exe "$ConfigFolder\credentials.csv"
-    Pause
-    Clear-Host
-    Write-Host "==================================================================================================="
-    
-    Write-Host "
-    `tWelcome to Hyper-v Automation`n
-
-    `tThe main purpose of this program is to speed up the VM deployment and VM configuration.`n
-
-    `tTemplate VM are located in template-machines.JSON file
-    `tThe VM have multiple properties stored, ex. Domain, Network configurations
-    `tPlease change the information to your need. 
-    `tonce the VM are deployed, they will be stored in
-    `t(hostname)-inventory.JSON file.`n
-    `tYou will be asked for VM path where you want to save the VM
-    `tSame for path to your sysprep .vhdx files for server and windows10 clients.
-    `tlocated in template-machines.json file inside the config folder`n
-
-    `tPlease report create issue if you find any bugs so it can be addressed.
-    `tThe issues can be created on Github
-    `tlink: (https://github.com/kosmo-lito/hyperv-automation)`n`n
-
-
-    `tI hope you you find thes small scripts helpful."
-    
-    Write-Host "`n==================================================================================================="
-    Pause
-
-}
-
-$Menu = Get-Content -Path "$PSScriptRoot\menu.json" | ConvertFrom-Json
 $ConfigFile = Get-Content -Path "$ConfigFolder\config.json" | ConvertFrom-Json
 $JSONTemplatePath = ($ConfigFile | Where-Object {$_.HostName -like $HostName}).JSONTemplateFile
 $TemplateMachines = Get-Content -Path $JSONTemplatePath | ConvertFrom-Json
 $VMList = Get-Content -Path "$ConfigFolder\inventory.json" | ConvertFrom-Json
-$OldDeployments = Get-Content -Path "$ConfigFolder\old-deployments.json" | ConvertFrom-Json
 $UserList = Import-Csv -path "$ConfigFolder\domain-users.csv"
 
 
