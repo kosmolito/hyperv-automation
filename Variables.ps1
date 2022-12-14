@@ -143,13 +143,13 @@ if (!(test-path $ConfigFolder)) {
 
 }
 
-$TemplateMachines = Get-Content -Path "$ConfigFolder\template-machines.json" | ConvertFrom-Json
+$Menu = Get-Content -Path "$PSScriptRoot\menu.json" | ConvertFrom-Json
+$ConfigFile = Get-Content -Path "$ConfigFolder\config.json" | ConvertFrom-Json
+$JSONTemplatePath = ($ConfigFile | Where-Object {$_.HostName -like $HostName}).JSONTemplateFile
+$TemplateMachines = Get-Content -Path $JSONTemplatePath | ConvertFrom-Json
 $VMList = Get-Content -Path "$ConfigFolder\inventory.json" | ConvertFrom-Json
 $OldDeployments = Get-Content -Path "$ConfigFolder\old-deployments.json" | ConvertFrom-Json
 $UserList = Import-Csv -path "$ConfigFolder\domain-users.csv"
-
-$Menu = Get-Content -Path "$PSScriptRoot\menu.json" | ConvertFrom-Json
-$ConfigFile = Get-Content -Path "$ConfigFolder\config.json" | ConvertFrom-Json
 
 
 ################################## Credentials ##################################

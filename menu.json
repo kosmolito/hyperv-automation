@@ -11,6 +11,10 @@
     {
       "Option": "Delete Exisiting VM",
       "isSelected": false
+    },
+    {
+      "Option": "Change the Template File",
+      "isSelected": false
     }
   ],
   [

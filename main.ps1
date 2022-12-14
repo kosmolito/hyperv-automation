@@ -155,6 +155,26 @@ switch ($MenuSelected[0]) {
         & $PSScriptRoot\delete-vm.ps1
         exit
     }
+
+    "3" 
+    {
+        Clear-Host
+        Write-Host -ForegroundColor red "Template Files to Select"
+        $JSONTemplateList = Get-ChildItem -Path $ConfigFolder | Where-Object {$_.Name -Match ".json$" -and $_.Name -like "*template*"}
+        $JSONTemplateList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Name | Out-Host
+        [int32]$TemplateSelection = Read-Host "Select a Template from the list"
+        if (($JSONTemplateSelection -cle -1) -xor ($JSONTemplateSelection -gt ($JSONTemplateList.Count -1)) ) {
+            Write-Error "Wrong option entered! Exiting"
+            exit
+        } else {
+            
+            ($ConfigFile | Where-Object {$_.HostName -like $HostName}).JSONTemplateFile = ($JSONTemplateList[$TemplateSelection]).FullName
+            $ConfigFile | ConvertTo-Json | Out-File "$ConfigFolder\config.json"
+            Pause
+            & "$PSScriptRoot\main.ps1"
+        }
+    }
+
     Default {exit}
 }
 
