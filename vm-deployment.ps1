@@ -65,7 +65,7 @@ elseif (($ConfigFile.Hostname -match $HostName).count -gt 1) {
 
 if (($ConfigFile | Where-Object HostName -like $HostName).VMSwitchedConfigured -eq $false) {
     $NetworkSwitchCount = 0
-    foreach ($VM in $TemplateMachines) {
+    foreach ($VM in $VMList) {
         if ((Get-VMSwitch).Name -like $VM.NetworkSwitches) {
             [array]$VM.NetworkSwitches += $VM.NetworkSwitches
             $NetworkSwitchCount ++
