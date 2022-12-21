@@ -5,12 +5,17 @@ The idea of this project is to speed up the VM deployments. Instead of creating 
 
 - [x] VM Deployment
 - [x] Network configuration
+- [x] Joining VM to domain
 - [x] Roles and features installation and configuration
+- [x] Creating Random AD users
+- [x] Creating AD users from a CSV file
+- [x] Creating Storage Pool with SMB and DFS shares
+- [x] Demoting a Domain Controller
+- [x] Ability to chose JSON VM Template file
 
 ## requirements
 
 *   (IMPORTANT) Powershell 7x and newer.
-
     * The conversion of .JSON file in Powershell earlier than 7 is different, causing nasty problems.
 * .vhdx sysprep images.
 
@@ -25,11 +30,11 @@ Example of credentials.csv is included in this project.
 
 ## Installation instructions
 
-### Powershell 7:
-
-* [PowerShell-7.3.0-win-x64.msi](https://github.com/PowerShell/PowerShell/releases/download/v7.3.0/PowerShell-7.3.0-win-x64.msi)
-* [PowerShell-7.3.0-win-x64.msi](https://github.com/PowerShell/PowerShell/releases/download/v7.3.0/PowerShell-7.3.0-win-x64.msi)
-
+### PowerShell 7:
+Link to Powershell Download can be found donw blow 
+* [PowerShell 7 - Stable release](https://aka.ms/powershell-release?tag=stable)
+* [PowerShell 7 - LTS release](https://aka.ms/powershell-release?tag=lts)
+* [PowerShell 7 - Preview release](https://aka.ms/powershell-release?tag=preview)
 
 Grab the link below and download to your desired folder location:
 
@@ -46,9 +51,3 @@ This is done for each machine and the script is looking for hostname and in that
 # Contributions
 
 Feel free to send pull requests or fill out issues when you encounter them. I'm also open to adding direct maintainers/contributors and working together!
-
-# Future plans
-
-- [x] Deploying labs with desired amount of VM and roles
-
-
