@@ -43,6 +43,20 @@ foreach ($VM in $VMSelected) {
             $Credential = $ServerLocalCredential
         }
 
+        if ($Role -like "SCCM") {
+            $ISOFile = "C:\Users\Karker\Desktop\git\kosmolito\Lenovo-ha-config\sccm.iso"
+            # Enable Guest Service Interface in order to copy the files from the Host to VM
+            Enable-VMIntegrationService -Name 'Guest Service Interface' –VMName TESTSCCM01
+
+            # Copy the XML file for the IIS from the Host to VM
+            Copy-VMFile -Name $VM.VMName -SourcePath "$ConfigFolder\DeploymentConfigTemplate-IIS.xml" –DestinationPath "C:\DeploymentConfigTemplate-IIS.xml" -FileSource Host –CreateFullPath -Force
+            Copy-VMFile -Name $VM.VMName -SourcePath "$ConfigFolder\DeploymentConfigTemplate-WSUS.xml" –DestinationPath "C:\DeploymentConfigTemplate-WSUS.xml" -FileSource Host –CreateFullPath -Force
+
+            if ((get-vmdvdDrive $VM.VMName).Path -notlike $ISOFile ) {
+            Add-VMDvdDrive -VMName $VM.VMName -Path $ISOFile
+            }
+        }
+
         Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
         Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
             # Set-Content function:Install-FeaturesAndRoles -Value $using:InstallFeaturesAndRoles
@@ -283,6 +297,245 @@ foreach ($VM in $VMSelected) {
                             Install-WindowsFeature -Name DirectAccess-VPN -IncludeAllSubFeature -IncludeManagementTools
                         }
                     }
+
+                    "SCCM" 
+                    {
+                        pause
+                        # Setting the source path for the ISO file
+                        $SourcePath = (Get-CimInstance Win32_LogicalDisk | Where-Object {$_.Description -like "CD-ROM Disc"}).DeviceID
+                        ######################################################################################################
+                        if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
+                        Write-Verbose "Installing Active Directory Services on VM [$($VMName)]" -Verbose
+                        Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+                        }
+                        Pause
+                        ######################################################################################################
+                        Import-Module ADDSDeployment
+                        Write-Verbose "Creating [System Management] Container..." -Verbose
+                        # Get the distinguished name of the Active Directory domain
+                        $DCPath = (Get-ADDomain).DistinguishedName
+
+                        # Build distinguished name path of the System container
+                        $SystemPath = "CN=System," + $DCPath
+
+                        # Get the AD computer object for this system
+                        $SCCMServer = Get-ADComputer -Identity $VM.VMName
+
+                        # Get or create the System Management container
+                        $Container = $null 
+                        Try 
+                        { 
+                        $Container = Get-ADObject "CN=System Management,$SystemPath" 
+                        } 
+                        Catch 
+                        { 
+                        Write-Verbose "System Management container does not exist." 
+                        }
+
+                        If ($Container -eq $null) 
+                        { 
+                        $Container = New-ADObject -Type Container -name "System Management" -Path "$SystemPath" -Passthru 
+                        }
+                        Pause
+                        ######################################################################################################
+                        # Get current ACL for the System Management container
+                        Write-Verbose "Setting [System Management] container permissions..." -Verbose
+                        $ACL = Get-ACL -Path AD:\$Container
+
+                        # Get the SID for the computer object
+                        $SID = $SCCMServer.SID
+
+                        # Create a new access control entry for the System Management container
+                        $adRights = [System.DirectoryServices.ActiveDirectoryRights] "GenericAll"
+                        $type = [System.Security.AccessControl.AccessControlType] "Allow"
+                        $inheritanceType = [System.DirectoryServices.ActiveDirectorySecurityInheritance] "All"
+                        $ACE = New-Object System.DirectoryServices.ActiveDirectoryAccessRule `
+                        $SID,$adRights,$type,$inheritanceType
+
+                        # Add the new access control entry to the ACL object we grabbed earlier
+                        $ACL.AddAccessRule($ACE)
+
+                        # Commit the new audit rule
+                        Set-ACL -AclObject $ACL -Path "AD:$Container"
+                        Pause
+                        ######################################################################################################
+                        Write-Verbose "Extracting MEM_Configmgr..." -Verbose
+                        # Launching self-extracing file in auto mode
+                        if (!(Test-Path("C:\MEM_Configmgr_2103"))) {
+                        D:\MEM_Configmgr_2103.exe /auto C:\MEM_Configmgr_2103
+                        Write-Verbose "Waiting for extraction of files to be completed..." -Verbose
+                        Start-Sleep -Seconds 120
+                        Write-Verbose "extraction of files completed." -Verbose
+                        }
+                        Write-Verbose "Extend the Active Directory Schema..." -Verbose
+                        # Extend the Active Directroy Schema
+                        C:\MEM_Configmgr_2103\SMSSETUP\BIN\X64\extadsch.exe
+                        Start-Sleep -Seconds 10
+                        Pause
+                        ######################################################################################################
+
+                        # Installing IIS Roles and Features, based on the XML file
+                        Write-Verbose "Installing roles and features [IIS]..." -Verbose
+                        Install-WindowsFeature -ConfigurationFilePath "c:\DeploymentConfigTemplate-IIS.xml"
+                        Write-Verbose "Installing roles and features [IIS] completed" -Verbose
+                        Pause
+                        ######################################################################################################
+
+                        # Installing Windows ADK
+
+                        # # This installs Windows Deployment Service
+                        # Write-Host "Installing Windows Deployment Services"  -nonewline
+                        # Import-Module ServerManager
+                        # Install-WindowsFeature -Name WDS -IncludeManagementTools
+                        # Start-Sleep -s 10
+
+                        # Install ADK Deployment Tools,  Windows Preinstallation Enviroment
+                        Write-Verbose "Installing Windows ADK..." -Verbose
+                        Start-Process -FilePath "$SourcePath\ADK\adksetup.exe" -Wait `
+                        -ArgumentList "/Features OptionId.DeploymentTools OptionId.WindowsPreinstallationEnvironment OptionId.ImagingAndConfigurationDesigner OptionId.ICDConfigurationDesigner OptionId.UserStateMigrationTool /norestart /quiet /ceip off" -Verbose
+                        Start-Sleep -s 120
+                        Write-Verbose "Windows ADK installation completed." -Verbose
+                        Pause
+                        ######################################################################################################
+
+                        $SQLsource = "$SourcePath\sqlserver2019"
+                        $SQLSYSADMINACCOUNTS = whoami.exe
+
+$SQLConfigData = @"
+[OPTIONS]
+IAcceptSQLServerLicenseTerms="True"
+IACCEPTPYTHONLICENSETERMS="True"
+ACTION="Install"
+IACCEPTROPENLICENSETERMS="True"
+SUPPRESSPRIVACYSTATEMENTNOTICE="True"
+ENU="True"
+QUIET="True"
+UpdateEnabled="False"
+USEMICROSOFTUPDATE="False"
+SUPPRESSPAIDEDITIONNOTICE="False"
+UpdateSource="MU"
+FEATURES=SQLENGINE
+HELP="False"
+INDICATEPROGRESS="False"
+X86="False"
+INSTANCENAME="MSSQLSERVER"
+INSTALLSHAREDDIR="C:\Program Files\Microsoft SQL Server"
+INSTALLSHAREDWOWDIR="C:\Program Files (x86)\Microsoft SQL Server"
+INSTANCEID="MSSQLSERVER"
+SQLTELSVCACCT="NT Service\SQLTELEMETRY"
+SQLTELSVCSTARTUPTYPE="Automatic"
+INSTANCEDIR="C:\Program Files\Microsoft SQL Server"
+AGTSVCACCOUNT="NT Service\SQLSERVERAGENT"
+AGTSVCSTARTUPTYPE="Manual"
+COMMFABRICPORT="0"
+COMMFABRICNETWORKLEVEL="0"
+COMMFABRICENCRYPTION="0"
+MATRIXCMBRICKCOMMPORT="0"
+SQLSVCSTARTUPTYPE="Automatic"
+FILESTREAMLEVEL="0"
+SQLMAXDOP="2"
+ENABLERANU="False"
+SQLCOLLATION="SQL_Latin1_General_CP1_CI_AS"
+SQLSVCACCOUNT="NT Service\MSSQLSERVER"
+SQLSVCINSTANTFILEINIT="False"
+SQLSYSADMINACCOUNTS="$SQLSYSADMINACCOUNTS"
+SQLTEMPDBFILECOUNT="2"
+SQLTEMPDBFILESIZE="8"
+SQLTEMPDBFILEGROWTH="64"
+SQLTEMPDBLOGFILESIZE="8"
+SQLTEMPDBLOGFILEGROWTH="64"
+ADDCURRENTUSERASSQLADMIN="False"
+TCPENABLED="1"
+NPENABLED="0"
+BROWSERSVCSTARTUPTYPE="Disabled"
+SQLMAXMEMORY="2147483647"
+SQLMINMEMORY="0"
+"@
+                        
+                        $SQLConfiginiFile="c:\SQLConfigurationFile.ini"
+
+                        if (Test-Path $SQLConfiginiFile){
+                        Write-Verbose "Found an old Configuration file [$($SQLConfiginiFile)], removing the file..." -Verbose
+                        Remove-Item -Path $SQLConfiginiFile -Force
+                        }
+
+                        Write-Verbose "Creating a New Configuration file [$($SQLConfiginiFile)]..." -Verbose
+                        New-Item -Path $SQLConfiginiFile -ItemType File -Value $SQLConfigData
+
+                        # Create firewall rule
+                        if (!(get-netfirewallrule -DisplayName "SQL Server (TCP 1433) Inbound" -ErrorAction SilentlyContinue)){
+                        Write-Verbose "Creating firewall rule for SQL Server..." -Verbose
+                        New-NetFirewallRule -DisplayName "SQL Server (TCP 1433) Inbound" -Action Allow -Direction Inbound -LocalPort 1433 -Protocol TCP}
+
+                        # start the SQL installer
+                        Try
+                        {
+                        if (Test-Path $SQLsource){
+                            Write-Verbose "SQL Server installation started..." -Verbose
+                            $SQLSetupFile =  "$SQLsource\setup.exe"
+                            & $SQLSetupFile  /CONFIGURATIONFILE=$SQLConfiginiFile
+                            Write-Verbose "Installation of SQL Server completed." -Verbose
+                        } else {
+                            Write-Error "Could not find the media for SQL Server"
+                            break
+                        }
+                        }
+                        catch
+                        {
+                        write-Error "Something went wrong with the installation of SQL Server, aborting."
+                        break
+                        }
+
+                        Pause
+                        # Configure Firewall settings for SQL
+
+                        Write-Verbose "Configuring SQL Server Firewall settings..." -Verbose
+
+                        #Enable SQL Server Ports
+
+                        New-NetFirewallRule -DisplayName "SQL Server" -Direction Inbound –Protocol TCP –LocalPort 1433 -Action allow
+                        New-NetFirewallRule -DisplayName "SQL Admin Connection" -Direction Inbound –Protocol TCP –LocalPort 1434 -Action allow
+                        New-NetFirewallRule -DisplayName "SQL Database Management" -Direction Inbound –Protocol UDP –LocalPort 1434 -Action allow
+                        New-NetFirewallRule -DisplayName "SQL Service Broker" -Direction Inbound –Protocol TCP –LocalPort 4022 -Action allow
+                        New-NetFirewallRule -DisplayName "SQL Debugger/RPC" -Direction Inbound –Protocol TCP –LocalPort 135 -Action allow
+
+                        #Enable SQL Analysis Ports
+
+                        New-NetFirewallRule -DisplayName "SQL Analysis Services" -Direction Inbound –Protocol TCP –LocalPort 2383 -Action allow
+                        New-NetFirewallRule -DisplayName "SQL Browser" -Direction Inbound –Protocol TCP –LocalPort 2382 -Action allow
+
+                        #Enabling related Applications
+
+                        New-NetFirewallRule -DisplayName "HTTP" -Direction Inbound –Protocol TCP –LocalPort 80 -Action allow
+                        New-NetFirewallRule -DisplayName "SQL Server Browse Button Service" -Direction Inbound –Protocol UDP –LocalPort 1433 -Action allow
+                        New-NetFirewallRule -DisplayName "SSL" -Direction Inbound –Protocol TCP –LocalPort 443 -Action allow
+
+                        #Enable Windows Firewall
+                        Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen True -AllowUnicastResponseToMulticast True
+
+                        Write-Verbose "SQL Server Firewall Settings completed." -ForegroundColor Green
+                        pause
+                        ######################################################################################################
+
+                        $WSUSFolder = "C:\WSUS"
+                        $ServerName = $Env:COMPUTERNAME
+                        # create WSUS folder
+                        if (Test-Path $WSUSFolder){
+                        Write-Verbose "WSUS folder [$WSUSFolder] already exist."
+                        } else {
+                        Write-Verbose "Creating WSUS folder [$WSUSFolder]"
+                        New-Item -Path $WSUSFolder -ItemType Directory | Out-Null
+                        }
+
+                        Write-Verbose "Installing WSUS roles and features..." -Verbose
+                        Install-WindowsFeature -ConfigurationFilePath "C:\DeploymentConfigTemplate-WSUS.xml"
+                        Start-Sleep -s 10
+                        & "C:\Program Files\Update Services\Tools\WsusUtil.exe" postinstall SQL_INSTANCE_NAME=$ServerName CONTENT_DIR=$WSUSFolder | out-file Null
+                        Write-Verbose "Installation of WSUS roles and features completed." -Verbose
+                    }
+
+
+
                     default { write-host -ForegroundColor red "Not Finding any valid Roles or Features!" }
                 }
             
