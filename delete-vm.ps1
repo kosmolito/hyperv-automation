@@ -67,8 +67,9 @@ if ($DeleteConfirmation -like "b") {
             Stop-vm -Name $ExistingVM.VMName -Force
         }
 
-        Write-Verbose "Deleting [$($ExistingVM.VMName)] and its components.." -Verbose
-        foreach ($HDD in $ExistingVM) { Remove-Item $HDD.HardDrives.Path -Force }
+        # # Removing all attached HDD
+        # Write-Verbose "Deleting [$($ExistingVM.VMName)] and its components.." -Verbose
+        # foreach ($HDD in $ExistingVM) { Remove-Item $HDD.HardDrives.Path -Force }
         Remove-VM -Name $ExistingVM.VMName -Force
         Remove-Item -Recurse $ExistingVM.Path -Force
         Write-Host -ForegroundColor green "$($ExistingVM.VMName) is deleted!"
