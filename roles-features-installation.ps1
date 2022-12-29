@@ -462,7 +462,7 @@ foreach ($VM in $VMSelected) {
                         # Create firewall rule
                         if (!(get-netfirewallrule -DisplayName "SQL Server (TCP 1433) Inbound" -ErrorAction SilentlyContinue)){
                         Write-Verbose "Creating firewall rule for SQL Server..." -Verbose
-                        New-NetFirewallRule -DisplayName "SQL Server (TCP 1433) Inbound" -Action Allow -Direction Inbound -LocalPort 1433 -Protocol TCP}
+                        New-NetFirewallRule -DisplayName "SQL Server (TCP 1433) Inbound" -Action Allow -Direction Inbound -LocalPort 1433 -Protocol TCP | Out-Null }
 
                         # start the SQL installer
                         Try
@@ -488,24 +488,24 @@ foreach ($VM in $VMSelected) {
 
                         Write-Verbose "Configuring SQL Server Firewall settings..." -Verbose
 
-                        #Enable SQL Server Ports
+                        # Enable SQL Server Ports
 
-                        New-NetFirewallRule -DisplayName "SQL Server" -Direction Inbound –Protocol TCP –LocalPort 1433 -Action allow
-                        New-NetFirewallRule -DisplayName "SQL Admin Connection" -Direction Inbound –Protocol TCP –LocalPort 1434 -Action allow
-                        New-NetFirewallRule -DisplayName "SQL Database Management" -Direction Inbound –Protocol UDP –LocalPort 1434 -Action allow
-                        New-NetFirewallRule -DisplayName "SQL Service Broker" -Direction Inbound –Protocol TCP –LocalPort 4022 -Action allow
-                        New-NetFirewallRule -DisplayName "SQL Debugger/RPC" -Direction Inbound –Protocol TCP –LocalPort 135 -Action allow
+                        New-NetFirewallRule -DisplayName "SQL Server" -Direction Inbound –Protocol TCP –LocalPort 1433 -Action allow | Out-Null
+                        New-NetFirewallRule -DisplayName "SQL Admin Connection" -Direction Inbound –Protocol TCP –LocalPort 1434 -Action allow | Out-Null
+                        New-NetFirewallRule -DisplayName "SQL Database Management" -Direction Inbound –Protocol UDP –LocalPort 1434 -Action allow | Out-Null
+                        New-NetFirewallRule -DisplayName "SQL Service Broker" -Direction Inbound –Protocol TCP –LocalPort 4022 -Action allow | Out-Null
+                        New-NetFirewallRule -DisplayName "SQL Debugger/RPC" -Direction Inbound –Protocol TCP –LocalPort 135 -Action allow | Out-Null
 
-                        #Enable SQL Analysis Ports
+                        # Enable SQL Analysis Ports
 
-                        New-NetFirewallRule -DisplayName "SQL Analysis Services" -Direction Inbound –Protocol TCP –LocalPort 2383 -Action allow
-                        New-NetFirewallRule -DisplayName "SQL Browser" -Direction Inbound –Protocol TCP –LocalPort 2382 -Action allow
+                        New-NetFirewallRule -DisplayName "SQL Analysis Services" -Direction Inbound –Protocol TCP –LocalPort 2383 -Action allow | Out-Null
+                        New-NetFirewallRule -DisplayName "SQL Browser" -Direction Inbound –Protocol TCP –LocalPort 2382 -Action allow | Out-Null
 
-                        #Enabling related Applications
+                        # Enabling related Applications
 
-                        New-NetFirewallRule -DisplayName "HTTP" -Direction Inbound –Protocol TCP –LocalPort 80 -Action allow
-                        New-NetFirewallRule -DisplayName "SQL Server Browse Button Service" -Direction Inbound –Protocol UDP –LocalPort 1433 -Action allow
-                        New-NetFirewallRule -DisplayName "SSL" -Direction Inbound –Protocol TCP –LocalPort 443 -Action allow
+                        New-NetFirewallRule -DisplayName "HTTP" -Direction Inbound –Protocol TCP –LocalPort 80 -Action allow | Out-Null
+                        New-NetFirewallRule -DisplayName "SQL Server Browse Button Service" -Direction Inbound –Protocol UDP –LocalPort 1433 -Action allow | Out-Null
+                        New-NetFirewallRule -DisplayName "SSL" -Direction Inbound –Protocol TCP –LocalPort 443 -Action allow | Out-Null
 
                         #Enable Windows Firewall
                         Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen True -AllowUnicastResponseToMulticast True
@@ -549,8 +549,10 @@ foreach ($VM in $VMSelected) {
                         foreach ($Item in $SQLServices) {
                             $Service = Get-WmiObject win32_service -Filter "Name='$Item'"
                             $Service.StopService()
+                            Start-Sleep -Seconds 5
                             $Service.Change($null,$null,$null,$null,$null,$null,$SQLSYSADMINACCOUNTS,$using:ServerPwdPlainText,$null,$null,$null)
                             $Service.StartService()
+                            Start-Sleep -Seconds 5
                         }
 
                         $SCCMSource="$SourcePath\MEM_Configmgr_2103"
