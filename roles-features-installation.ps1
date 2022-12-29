@@ -333,7 +333,7 @@ foreach ($VM in $VMSelected) {
                         Write-Verbose "System Management container does not exist." 
                         }
 
-                        If ($Container -eq $null) 
+                        If ($null -eq $Container) 
                         { 
                         $Container = New-ADObject -Type Container -name "System Management" -Path "$SystemPath" -Passthru 
                         }
