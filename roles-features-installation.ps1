@@ -44,17 +44,11 @@ foreach ($VM in $VMSelected) {
         }
 
         if ($Role -like "SCCM") {
-            $ISOFile = "C:\Users\Karker\Desktop\git\kosmolito\Lenovo-ha-config\sccm.iso"
-            # Enable Guest Service Interface in order to copy the files from the Host to VM
-            Enable-VMIntegrationService -Name 'Guest Service Interface' –VMName TESTSCCM01
 
-            # Copy the XML file for the IIS from the Host to VM
-            Copy-VMFile -Name $VM.VMName -SourcePath "$ConfigFolder\DeploymentConfigTemplate-IIS.xml" –DestinationPath "C:\DeploymentConfigTemplate-IIS.xml" -FileSource Host –CreateFullPath -Force
-            Copy-VMFile -Name $VM.VMName -SourcePath "$ConfigFolder\DeploymentConfigTemplate-WSUS.xml" –DestinationPath "C:\DeploymentConfigTemplate-WSUS.xml" -FileSource Host –CreateFullPath -Force
-
-            if ((get-vmdvdDrive $VM.VMName).Path -notlike $ISOFile ) {
-            Add-VMDvdDrive -VMName $VM.VMName -Path $ISOFile
+            if ((Get-VMHardDiskDrive -VMName $VM.VMName).Path -notcontains "$ConfigFolder\sccmusb.vhdx") {
+                Add-VMHardDiskDrive -VMName $VM.VMName -Path "$ConfigFolder\sccmusb.vhdx"
             }
+
         }
 
         Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
@@ -300,16 +294,23 @@ foreach ($VM in $VMSelected) {
 
                     "SCCM" 
                     {
-                        pause
-                        # Setting the source path for the ISO file
-                        $SourcePath = (Get-CimInstance Win32_LogicalDisk | Where-Object {$_.Description -like "CD-ROM Disc"}).DeviceID
+                        # Make the SCCM offline VHD Disk online
+                        Get-Disk | Where-Object {$_.OperationalStatus -like "Offline"} | Set-Disk -IsOffline $False
+                        $SourcePath = ((Get-Volume -FriendlyName "sccmusb").DriveLetter + ":")
+
                         ######################################################################################################
+                        ######################################################################################################
+                        #### Installing AD Feature
+
                         if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
-                        Write-Verbose "Installing Active Directory Services on VM [$($VMName)]" -Verbose
+                        Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
                         Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
                         }
-                        Pause
+
                         ######################################################################################################
+                        ######################################################################################################
+                        #### Creating System Management Container and set the permissions
+
                         Import-Module ADDSDeployment
                         Write-Verbose "Creating [System Management] Container..." -Verbose
                         # Get the distinguished name of the Active Directory domain
@@ -336,8 +337,7 @@ foreach ($VM in $VMSelected) {
                         { 
                         $Container = New-ADObject -Type Container -name "System Management" -Path "$SystemPath" -Passthru 
                         }
-                        Pause
-                        ######################################################################################################
+
                         # Get current ACL for the System Management container
                         Write-Verbose "Setting [System Management] container permissions..." -Verbose
                         $ACL = Get-ACL -Path AD:\$Container
@@ -357,31 +357,27 @@ foreach ($VM in $VMSelected) {
 
                         # Commit the new audit rule
                         Set-ACL -AclObject $ACL -Path "AD:$Container"
-                        Pause
+
                         ######################################################################################################
-                        Write-Verbose "Extracting MEM_Configmgr..." -Verbose
-                        # Launching self-extracing file in auto mode
-                        if (!(Test-Path("C:\MEM_Configmgr_2103"))) {
-                        D:\MEM_Configmgr_2103.exe /auto C:\MEM_Configmgr_2103
-                        Write-Verbose "Waiting for extraction of files to be completed..." -Verbose
-                        Start-Sleep -Seconds 120
-                        Write-Verbose "extraction of files completed." -Verbose
-                        }
+                        ######################################################################################################
+                        #### Extending AD Schema
+                        
                         Write-Verbose "Extend the Active Directory Schema..." -Verbose
                         # Extend the Active Directroy Schema
-                        C:\MEM_Configmgr_2103\SMSSETUP\BIN\X64\extadsch.exe
+                        & "$SourcePath\MEM_Configmgr_2103\SMSSETUP\BIN\X64\extadsch.exe"
                         Start-Sleep -Seconds 10
-                        Pause
-                        ######################################################################################################
 
-                        # Installing IIS Roles and Features, based on the XML file
+                        ######################################################################################################
+                        ######################################################################################################
+                        #### Installing IIS Roles and Features, based on the XML file
+
                         Write-Verbose "Installing roles and features [IIS]..." -Verbose
-                        Install-WindowsFeature -ConfigurationFilePath "c:\DeploymentConfigTemplate-IIS.xml"
-                        Write-Verbose "Installing roles and features [IIS] completed" -Verbose
-                        Pause
-                        ######################################################################################################
+                        Install-WindowsFeature -ConfigurationFilePath "$SourcePath\DeploymentConfigTemplate-IIS.xml"
+                        Write-Verbose "[IIS] roles and features installation completed" -Verbose
 
-                        # Installing Windows ADK
+                        ######################################################################################################
+                        ######################################################################################################
+                        #### Installing Windows 10 ADK
 
                         # # This installs Windows Deployment Service
                         # Write-Host "Installing Windows Deployment Services"  -nonewline
@@ -395,61 +391,62 @@ foreach ($VM in $VMSelected) {
                         -ArgumentList "/Features OptionId.DeploymentTools OptionId.WindowsPreinstallationEnvironment OptionId.ImagingAndConfigurationDesigner OptionId.ICDConfigurationDesigner OptionId.UserStateMigrationTool /norestart /quiet /ceip off" -Verbose
                         Start-Sleep -s 120
                         Write-Verbose "Windows ADK installation completed." -Verbose
-                        Pause
-                        ######################################################################################################
 
+                        ######################################################################################################
+                        ######################################################################################################
+                        #### SQL Server
                         $SQLsource = "$SourcePath\sqlserver2019"
                         $SQLSYSADMINACCOUNTS = whoami.exe
 
-$SQLConfigData = @"
-[OPTIONS]
-IAcceptSQLServerLicenseTerms="True"
-IACCEPTPYTHONLICENSETERMS="True"
-ACTION="Install"
-IACCEPTROPENLICENSETERMS="True"
-SUPPRESSPRIVACYSTATEMENTNOTICE="True"
-ENU="True"
-QUIET="True"
-UpdateEnabled="False"
-USEMICROSOFTUPDATE="False"
-SUPPRESSPAIDEDITIONNOTICE="False"
-UpdateSource="MU"
-FEATURES=SQLENGINE
-HELP="False"
-INDICATEPROGRESS="False"
-X86="False"
-INSTANCENAME="MSSQLSERVER"
-INSTALLSHAREDDIR="C:\Program Files\Microsoft SQL Server"
-INSTALLSHAREDWOWDIR="C:\Program Files (x86)\Microsoft SQL Server"
-INSTANCEID="MSSQLSERVER"
-SQLTELSVCACCT="NT Service\SQLTELEMETRY"
-SQLTELSVCSTARTUPTYPE="Automatic"
-INSTANCEDIR="C:\Program Files\Microsoft SQL Server"
-AGTSVCACCOUNT="NT Service\SQLSERVERAGENT"
-AGTSVCSTARTUPTYPE="Manual"
-COMMFABRICPORT="0"
-COMMFABRICNETWORKLEVEL="0"
-COMMFABRICENCRYPTION="0"
-MATRIXCMBRICKCOMMPORT="0"
-SQLSVCSTARTUPTYPE="Automatic"
-FILESTREAMLEVEL="0"
-SQLMAXDOP="2"
-ENABLERANU="False"
-SQLCOLLATION="SQL_Latin1_General_CP1_CI_AS"
-SQLSVCACCOUNT="NT Service\MSSQLSERVER"
-SQLSVCINSTANTFILEINIT="False"
-SQLSYSADMINACCOUNTS="$SQLSYSADMINACCOUNTS"
-SQLTEMPDBFILECOUNT="2"
-SQLTEMPDBFILESIZE="8"
-SQLTEMPDBFILEGROWTH="64"
-SQLTEMPDBLOGFILESIZE="8"
-SQLTEMPDBLOGFILEGROWTH="64"
-ADDCURRENTUSERASSQLADMIN="False"
-TCPENABLED="1"
-NPENABLED="0"
-BROWSERSVCSTARTUPTYPE="Disabled"
-SQLMAXMEMORY="2147483647"
-SQLMINMEMORY="0"
+                        $SQLConfigData = @"
+                        [OPTIONS]
+                        IAcceptSQLServerLicenseTerms="True"
+                        IACCEPTPYTHONLICENSETERMS="True"
+                        ACTION="Install"
+                        IACCEPTROPENLICENSETERMS="True"
+                        SUPPRESSPRIVACYSTATEMENTNOTICE="True"
+                        ENU="True"
+                        QUIET="True"
+                        UpdateEnabled="False"
+                        USEMICROSOFTUPDATE="False"
+                        SUPPRESSPAIDEDITIONNOTICE="False"
+                        UpdateSource="MU"
+                        FEATURES=SQLENGINE
+                        HELP="False"
+                        INDICATEPROGRESS="False"
+                        X86="False"
+                        INSTANCENAME="MSSQLSERVER"
+                        INSTALLSHAREDDIR="C:\Program Files\Microsoft SQL Server"
+                        INSTALLSHAREDWOWDIR="C:\Program Files (x86)\Microsoft SQL Server"
+                        INSTANCEID="MSSQLSERVER"
+                        SQLTELSVCACCT="NT Service\SQLTELEMETRY"
+                        SQLTELSVCSTARTUPTYPE="Automatic"
+                        INSTANCEDIR="C:\Program Files\Microsoft SQL Server"
+                        AGTSVCACCOUNT="NT Service\SQLSERVERAGENT"
+                        AGTSVCSTARTUPTYPE="Manual"
+                        COMMFABRICPORT="0"
+                        COMMFABRICNETWORKLEVEL="0"
+                        COMMFABRICENCRYPTION="0"
+                        MATRIXCMBRICKCOMMPORT="0"
+                        SQLSVCSTARTUPTYPE="Automatic"
+                        FILESTREAMLEVEL="0"
+                        SQLMAXDOP="2"
+                        ENABLERANU="False"
+                        SQLCOLLATION="SQL_Latin1_General_CP1_CI_AS"
+                        SQLSVCACCOUNT="NT Service\MSSQLSERVER"
+                        SQLSVCINSTANTFILEINIT="False"
+                        SQLSYSADMINACCOUNTS="$SQLSYSADMINACCOUNTS"
+                        SQLTEMPDBFILECOUNT="2"
+                        SQLTEMPDBFILESIZE="8"
+                        SQLTEMPDBFILEGROWTH="64"
+                        SQLTEMPDBLOGFILESIZE="8"
+                        SQLTEMPDBLOGFILEGROWTH="64"
+                        ADDCURRENTUSERASSQLADMIN="False"
+                        TCPENABLED="1"
+                        NPENABLED="0"
+                        BROWSERSVCSTARTUPTYPE="Disabled"
+                        SQLMAXMEMORY="2147483647"
+                        SQLMINMEMORY="0"
 "@
                         
                         $SQLConfiginiFile="c:\SQLConfigurationFile.ini"
@@ -513,9 +510,11 @@ SQLMINMEMORY="0"
                         #Enable Windows Firewall
                         Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen True -AllowUnicastResponseToMulticast True
 
-                        Write-Verbose "SQL Server Firewall Settings completed." -ForegroundColor Green
-                        pause
+                        Write-Verbose "SQL Server Firewall Settings completed." -Verbose
+
                         ######################################################################################################
+                        ######################################################################################################
+                        #### Installing WSUS Feature
 
                         $WSUSFolder = "C:\WSUS"
                         $ServerName = $Env:COMPUTERNAME
@@ -528,13 +527,150 @@ SQLMINMEMORY="0"
                         }
 
                         Write-Verbose "Installing WSUS roles and features..." -Verbose
-                        Install-WindowsFeature -ConfigurationFilePath "C:\DeploymentConfigTemplate-WSUS.xml"
+                        Install-WindowsFeature -ConfigurationFilePath "$SourcePath\DeploymentConfigTemplate-WSUS.xml"
                         Start-Sleep -s 10
                         & "C:\Program Files\Update Services\Tools\WsusUtil.exe" postinstall SQL_INSTANCE_NAME=$ServerName CONTENT_DIR=$WSUSFolder | out-file Null
                         Write-Verbose "Installation of WSUS roles and features completed." -Verbose
+
+                        ######################################################################################################
+                        ######################################################################################################
+                        #### SCCM
+                        
+                        # Status if SCCM is already installed on the machine
+
+                        $SCCMStatus = Get-CimInstance Win32_Service | Where-Object {$_.Name -eq "ccmexec"}
+
+                        if (!($null -eq $SCCMStatus)) {
+                            Write-Verbose "SCCM is already installed on the machine! Exiting!"
+                            exit
+                        } else {
+                        # Change the account permissions of SQL services to the Domain Administrator
+                        $SQLServices = "MSSQLSERVER","SQLSERVERAGENT"
+                        foreach ($Item in $SQLServices) {
+                            $Service = Get-WmiObject win32_service -Filter "Name='$Item'"
+                            $Service.StopService()
+                            $Service.Change($null,$null,$null,$null,$null,$null,$SQLSYSADMINACCOUNTS,$using:ServerPwdPlainText,$null,$null,$null)
+                            $Service.StartService()
+                        }
+
+                        $SCCMSource="$SourcePath\MEM_Configmgr_2103"
+                        
+                        # start the SCCM installer
+                        if (!(Test-Path $SCCMSource)){
+                            Write-Error "Could not find the installtion media for SCCM! Exiting."
+                            exit
+                        } else {
+                            Write-Verbose "Installation media for SCCM found." -Verbose
+                        }
+
+                        $DNSHostName = (Get-ADComputer -Identity $env:COMPUTERNAME).DNSHostName
+                        # define your SCCM Current Branch variables here
+                        $Action="InstallPrimarySite"
+                        $ProductID="EVAL"
+                        $SiteCode="GBG"
+                        $Sitename="Goteborg"
+                        $SMSInstallDir="C:\Program Files\Microsoft Configuration Manager"
+                        $SDKServer=$DNSHostName
+                        $RoleCommunicationProtocol="HTTPorHTTPS"
+                        $ClientsUsePKICertificate="0"
+                        $PrerequisiteComp="1"
+                        $PrerequisitePath="$SourcePath\sccm"
+                        $ManagementPoint=$DNSHostName
+                        $ManagementPointProtocol="HTTP"
+                        $DistributionPoint=$DNSHostName
+                        $DistributionPointProtocol="HTTP"
+                        $DistributionPointInstallIIS="0"
+                        $AdminConsole="1"
+                        $JoinCEIP="0"
+                        $SQLServerName=$DNSHostName
+                        $DatabaseName="CM_GBG"
+                        $SQLSSBPort="4022"
+                        $CloudConnector="1"
+                        $CloudConnectorServer=$DNSHostName
+                        $UseProxy="0"
+                        $ProxyName=""
+                        $ProxyPort=""
+                        $SysCenterId=""
+
+                        # do not edit below this line
+
+                        $conffile= @"
+                        [Identification]
+                        Action="$Action"
+
+                        [Options]
+                        ProductID="$ProductID"
+                        SiteCode="$SiteCode"
+                        SiteName="$Sitename"
+                        SMSInstallDir="$SMSInstallDir"
+                        SDKServer="$SDKServer"
+                        RoleCommunicationProtocol="$RoleCommunicationProtocol"
+                        ClientsUsePKICertificate="$ClientsUsePKICertificate"
+                        PrerequisiteComp="$PrerequisiteComp"
+                        PrerequisitePath="$PrerequisitePath"
+                        ManagementPoint="$ManagementPoint"
+                        ManagementPointProtocol="$ManagementPointProtocol"
+                        DistributionPoint="$DistributionPoint"
+                        DistributionPointProtocol="$DistributionPointProtocol"
+                        DistributionPointInstallIIS="$DistributionPointInstallIIS"
+                        AdminConsole="$AdminConsole"
+                        JoinCEIP="$JoinCEIP"
+
+                        [SQLConfigOptions]
+                        SQLServerName="$SQLServerName"
+                        DatabaseName="$DatabaseName"
+                        SQLSSBPort="$SQLSSBPort"
+
+                        [CloudConnectorOptions]
+                        CloudConnector="$CloudConnector"
+                        CloudConnectorServer="$CloudConnectorServer"
+                        UseProxy="$UseProxy"
+                        ProxyName="$ProxyName"
+                        ProxyPort="$ProxyPort"
+
+                        [SystemCenterOptions]
+                        SysCenterId="$SysCenterId"
+
+                        [HierarchyExpansionOption]
+"@
+
+                        $SCCMConfigFile = "C:\ConfigMgrAutoSave-sccm.ini"
+
+                        if (Test-Path $SCCMConfigFile){
+                        Write-Verbose "The file [$SCCMConfigFile] already exists, removing..." -Verbose
+                        Remove-Item -Path $SCCMConfigFile -Force
+                        }
+
+                        # Create file:
+                        Write-Verbose "Creating [$SCCMConfigFile]..." -Verbose
+                        New-Item -Path $SCCMConfigFile -ItemType File -Value $Conffile | Out-Null
+
+                        $SCCMSetupLogFile = "C:\ConfigMgrSetup.log"
+                        if (Test-Path $SCCMSetupLogFile) {
+                            Rename-Item -Path $SCCMSetupLogFile -NewName "c:\ConfigMgrSetup-$($using:LogDateTime).log"
+                        }
+
+                        # Opening the logs to see the setup process
+                        New-Item -Path "C:\ConfigMgrSetup.log" -ItemType File -Force | Out-Null
+                        & "$SCCMSource\SMSSETUP\TOOLS\CMTrace.exe" /"ConfigMgrSetup.log"
+
+                        # start the SCCM installer
+                        Write-Verbose "Starting Installation of SCCM..." -Verbose
+                        $SCCMSetupFile = "$SCCMSource\SMSSETUP\bin\X64\Setup.exe"
+                        $Parms = "  /script $SCCMConfigFile"
+                        $Prms = $Parms.Split(" ")
+                        Try
+                        {
+                            & "$SCCMSetupFile" $Prms | Out-Null
+                        }
+                        catch
+                        {
+                            Write-Error "Someting went wrong. Exiting!"
+                        break
+                        }
+                        Write-Verbose "Setup of SCCM completed." -Verbose
+                        }
                     }
-
-
 
                     default { write-host -ForegroundColor red "Not Finding any valid Roles or Features!" }
                 }
