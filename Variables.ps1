@@ -212,4 +212,5 @@ $DomainPwd = ConvertTo-SecureString -String $Credentials.DomainPwd -AsPlainText 
 $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DomainNetbiosName\$DomainAdmin, $DomainPwd
 
 $ForestRecoveryPwd = ConvertTo-SecureString -String $Credentials.ForestRecoveryPwd -AsPlainText -Force
+$ServerPwdPlainText = $Credentials.ServerLocalPwd
 ######################################################################################################
