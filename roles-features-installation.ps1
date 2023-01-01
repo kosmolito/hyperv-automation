@@ -483,7 +483,6 @@ foreach ($VM in $VMSelected) {
                         break
                         }
 
-                        Pause
                         # Configure Firewall settings for SQL
 
                         Write-Verbose "Configuring SQL Server Firewall settings..." -Verbose
@@ -552,7 +551,12 @@ foreach ($VM in $VMSelected) {
                             Start-Sleep -Seconds 5
                             $Service.Change($null,$null,$null,$null,$null,$null,$SQLSYSADMINACCOUNTS,$using:ServerPwdPlainText,$null,$null,$null)
                             $Service.StartService()
-                            Start-Sleep -Seconds 5
+
+                            while ($Service.status -notlike "Running") {
+                                Write-Verbose "Trying to start the service [$Item]..."
+                                $Service.StartService()
+                                Start-Sleep -Seconds 3
+                            }
                         }
 
                         $SCCMSource="$SourcePath\MEM_Configmgr_2103"
