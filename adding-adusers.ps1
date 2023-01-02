@@ -222,7 +222,7 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
             Add-TheADUser `
             -FirstName $User.FirstName -LastName $User.LastName -UserPassword $User.UserPassword -OU $User.OU `
             -DomainName $User.DomainName -SecurityGroups $User.SecurityGroups -ErrorAction Stop
-            Write-Host ($user.FirstName + "." + $user.LastName) "created: $($i) of $($UserList) total"  -ForegroundColor Green
+            Write-Host ($user.FirstName + "." + $user.LastName) "created: $($i) of $($using:UserList.Count) total"  -ForegroundColor Green
             $i++
             
         }
