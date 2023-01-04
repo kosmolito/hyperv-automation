@@ -450,9 +450,18 @@ if (!(Get-CMBoundaryGroup -Name $BoundaryGroupName)) {
     New-CMBoundaryGroup -Name $BoundaryGroupName
 }
 
+
+# Selecting the first 3 part of the ip-address (Network-Address)
+$NetworkAddress = $VM.IPAddress.Split(".")[0,1,2]
+$tempAddress = $null
+foreach ($octet in $NetworkAddress) {
+    $tempAddress += $octet + "."
+}
+$NetworkAddress = $tempAddress
+
 Write-Verbose "Creating New CM Boundry..." -Verbose
 if (!(Get-CMBoundary -Name $SiteCode)) { 
-    New-CMBoundary -Name $SiteCode -Type IPSubnet -Value "192.168.10.0/24"
+    New-CMBoundary -Name $SiteCode -Type IPSubnet -Value "$($NetworkAddress)0/24"
 }
 
 Write-Verbose "Adding the CM Boundry to the CM Boundry Group..."
