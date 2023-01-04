@@ -21,8 +21,7 @@ if (($VM.HasJoinedDomain)) {
 }
 
 
-$DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DomainName\$DomainAdmin,$DomainPwd
-$Credential = $DomainCredential
+$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DomainName\$DomainAdmin,$DomainPwd
 
 if ($VM.Role -like "SCCM") {
     if ((Get-VMHardDiskDrive -VMName $VM.VMName).Path -notcontains "$ConfigFolder\sccmusb.vhdx") {
@@ -357,7 +356,7 @@ SiteCode="$SiteCode"
 SiteName="$SiteName"
 SMSInstallDir="C:\Program Files\Microsoft Configuration Manager"
 SDKServer="$DNSHostName"
-RoleCommunicationProtocol=""HTTPorHTTPS""
+RoleCommunicationProtocol="HTTPorHTTPS"
 ClientsUsePKICertificate="0"
 PrerequisiteComp="1"
 PrerequisitePath="$SourcePath\sccm"
