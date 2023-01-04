@@ -49,6 +49,11 @@
       "isSelected": false
     },
     {
+      "Option": "SCCM",
+      "ScriptPath": "sccm.ps1",
+      "isSelected": false
+    },
+    {
       "Option": "misc. functions",
       "ScriptPath": "misc-functions.ps1",
       "isSelected": false
