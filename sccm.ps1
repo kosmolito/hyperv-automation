@@ -447,7 +447,13 @@ break
 
 # Importing the Module
 Write-Verbose "Importing the SCCM Module..." -Verbose
+if (!($Null -eq $env:SMS_ADMIN_UI_PATH)) {
     Import-Module $env:SMS_ADMIN_UI_PATH\..\ConfigurationManager.psd1
+} else {
+    Import-Module "C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1"
+}
+
+
 
 #### Enable Active Directory System Discovery ####
 Write-Verbose "Enabling Active Directory System Discovery..." -Verbose
