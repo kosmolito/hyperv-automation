@@ -294,8 +294,8 @@ catch
 
 ######################################################################################################
 ######################################################################################################
-#### Installing WSUS Feature
-
+#### Installing WSUS Feature if its not installed already
+if (!((Get-WindowsFeature -Name UpdateServices).InstallState -eq "Installed")) {
 $WSUSFolder = "C:\WSUS"
 $ServerName = $Env:COMPUTERNAME
 # create WSUS folder
@@ -311,6 +311,9 @@ Install-WindowsFeature -ConfigurationFilePath "$SourcePath\DeploymentConfigTempl
 Start-Sleep -s 10
 & "C:\Program Files\Update Services\Tools\WsusUtil.exe" postinstall SQL_INSTANCE_NAME=$ServerName CONTENT_DIR=$WSUSFolder | out-file Null
 Write-Verbose "Installation of WSUS roles and features completed." -Verbose
+} else {
+    Write-Verbose "WSUS roles and features is installed already." -Verbose
+}
 
 ######################################################################################################
 ######################################################################################################
