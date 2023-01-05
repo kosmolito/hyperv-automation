@@ -132,11 +132,15 @@ if (!((Get-WindowsFeature -Name Web-Server).InstallState -eq "Installed")) {
 #### Installing Windows 10 ADK
 
 # Install ADK Deployment Tools,  Windows Preinstallation Enviroment
+if (!(Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit' -ErrorAction SilentlyContinue)) {
 Write-Verbose "Installing Windows ADK..." -Verbose
 Start-Process -FilePath "$SourcePath\ADK\adksetup.exe" -Wait `
 -ArgumentList "/Features OptionId.DeploymentTools OptionId.WindowsPreinstallationEnvironment OptionId.ImagingAndConfigurationDesigner OptionId.ICDConfigurationDesigner OptionId.UserStateMigrationTool /norestart /quiet /ceip off" -Verbose
 Start-Sleep -s 120
 Write-Verbose "Windows ADK installation completed." -Verbose
+} else {
+    Write-Verbose "Windows ADK is installed already! Skipping the installation." -Verbose
+}
 
 ######################################################################################################
 ######################################################################################################
