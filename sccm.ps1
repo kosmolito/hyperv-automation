@@ -118,9 +118,14 @@ Start-Sleep -Seconds 10
 ######################################################################################################
 #### Installing IIS Roles and Features, based on the XML file
 
-Write-Verbose "Installing roles and features [IIS]..." -Verbose
-Install-WindowsFeature -ConfigurationFilePath "$SourcePath\DeploymentConfigTemplate-IIS.xml"
-Write-Verbose "[IIS] roles and features installation completed" -Verbose
+
+if (!((Get-WindowsFeature -Name Web-Server).InstallState -eq "Installed")) {
+    Write-Verbose "Installing roles and features [IIS]..." -Verbose
+    Install-WindowsFeature -ConfigurationFilePath "$SourcePath\DeploymentConfigTemplate-IIS.xml"
+    Write-Verbose "[IIS] roles and features installation completed" -Verbose
+} else {
+    Write-Verbose "[IIS] roles and features are installed already!" -Verbose
+}
 
 ######################################################################################################
 ######################################################################################################
