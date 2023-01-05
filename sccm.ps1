@@ -322,26 +322,30 @@ Write-Verbose "Installation of WSUS roles and features completed." -Verbose
 # Status if SCCM is already installed on the machine
 
 $SCCMStatus = Get-CimInstance Win32_Service | Where-Object {$_.Name -eq "ccmexec"}
-
+$SiteCode = "GBG"
+$SiteName = "Goteborg"
 if (!($null -eq $SCCMStatus)) {
-    Write-Verbose "SCCM is already installed on the machine! Exiting!"
-    exit
+    Write-Verbose "SCCM is already installed on the machine!" -Verbose
 } else {
 # Change the account permissions of SQL services to the Domain Administrator
 $SQLServices = "MSSQLSERVER","SQLSERVERAGENT"
+Write-Verbose "Changing Account Permission of SQL Services and starting..." -Verbose
 foreach ($Item in $SQLServices) {
     $Service = Get-WmiObject win32_service -Filter "Name='$Item'"
-    $Service.StopService()
+    $Service.StopService() | Out-Null
     Start-Sleep -Seconds 5
-    $Service.Change($null,$null,$null,$null,$null,$null,$SQLSYSADMINACCOUNTS,$using:ServerPwdPlainText,$null,$null,$null)
-    $Service.StartService()
+    $Service.Change($null,$null,$null,$null,$null,$null,$SQLSYSADMINACCOUNTS,$using:ServerPwdPlainText,$null,$null,$null) | Out-Null
+    $Service.StartService() | Out-Null
+    Start-Sleep -Seconds 5
 
-    while ($Service.status -notlike "Running") {
-        Write-Verbose "Trying to start the service [$Item]..."
-        $Service.StartService()
-        Start-Sleep -Seconds 3
+    $Service = Get-Service -Name $Item
+    while ($Service.Status -notlike "Running") {
+        Write-Verbose "Trying to start the service [$Item]..." -Verbose
+        Set-Service -Name $Item -Status Running
+        Start-Sleep -Seconds 5
     }
 }
+Write-Verbose "SQL Services Permission & Status OK." -Verbose
 
 
 $SCCMSource="$SourcePath\MEM_Configmgr_2103"
@@ -421,7 +425,8 @@ if (Test-Path $SCCMSetupLogFile) {
 New-Item -Path "C:\ConfigMgrSetup.log" -ItemType File -Force | Out-Null
 & "$SCCMSource\SMSSETUP\TOOLS\CMTrace.exe" /"ConfigMgrSetup.log"
 
-# start the SCCM installer
+# start the SCCM installer if its not installed already in the system
+if (!(Get-ChildItem "HKLM:\Software\Microsoft\SMS" -ErrorAction SilentlyContinue)) {
 Write-Verbose "Starting Installation of SCCM..." -Verbose
 $SCCMSetupFile = "$SCCMSource\SMSSETUP\bin\X64\Setup.exe"
 $Parms = "  /script $SCCMConfigFile"
@@ -435,12 +440,14 @@ catch
     Write-Error "Someting went wrong. Exiting!"
 break
 }
+    Start-Sleep -Seconds 30
     Write-Verbose "Setup of SCCM completed." -Verbose
+}
 }
 
 # Importing the Module
 Write-Verbose "Importing the SCCM Module..." -Verbose
-Import-Module $env:SMS_ADMIN_UI_PATH\..\ConfigurationManager.psd1
+    Import-Module $env:SMS_ADMIN_UI_PATH\..\ConfigurationManager.psd1
 
 #### Enable Active Directory System Discovery ####
 Write-Verbose "Enabling Active Directory System Discovery..." -Verbose
