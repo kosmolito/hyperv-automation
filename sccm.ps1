@@ -207,34 +207,10 @@ if (Test-Path $SQLConfiginiFile){
 }
 
 Write-Verbose "Creating a New Configuration file [$($SQLConfiginiFile)]..." -Verbose
-New-Item -Path $SQLConfiginiFile -ItemType File -Value $SQLConfigData
+New-Item -Path $SQLConfiginiFile -ItemType File -Value $SQLConfigData | Out-Null
 
-# Create firewall rule
-if (!(get-netfirewallrule -DisplayName "SQL Server (TCP 1433) Inbound" -ErrorAction SilentlyContinue)){
-    Write-Verbose "Creating firewall rule for SQL Server..." -Verbose
-    New-NetFirewallRule -DisplayName "SQL Server (TCP 1433) Inbound" -Action Allow -Direction Inbound -LocalPort 1433 -Protocol TCP 
-}
 
-# start the SQL installer
-Try
-{
-    if (Test-Path $SQLsource){
-        Write-Verbose "SQL Server installation started..." -Verbose
-        $SQLSetupFile =  "$SQLsource\setup.exe"
-        & $SQLSetupFile  /CONFIGURATIONFILE=$SQLConfiginiFile
-        Write-Verbose "Installation of SQL Server completed." -Verbose
-    } else {
-        Write-Error "Could not find the media for SQL Server"
-        break
-    }
-}
-catch
-{
-    write-Error "Something went wrong with the installation of SQL Server, aborting."
-    break
-}
-
-# Configure Firewall settings for SQL
+# Configure Firewall Rules for SQL and Web
 Write-Verbose "Configuring SQL Server Firewall settings..." -Verbose
 
 $FireWallRules = @{
@@ -282,13 +258,39 @@ $FireWallRules = @{
 
 # Create Firewall Rules if it does not exist already
 $FireWallRules.GetEnumerator() | ForEach-Object {
-    if (!(Get-NetFireWallRule -DisplayName $_.Key)) {
-        New-NetFirewallRule -DisplayName $_.Key -Direction Inbound -Protocol $_.Protocol -LocalPort $_.LocalPort -Action Allow
-    } 
+    if (!(Get-NetFireWallRule -DisplayName $_.Key -ErrorAction SilentlyContinue)) {
+        Write-Verbose "Creating Firewall Rule [Name:$($_.Key) :Protocol:$($_.Value.Protocol) LocalPort:$($_.Value.LocalPort)]..." -Verbose
+        New-NetFirewallRule -DisplayName $_.Key -Direction Inbound -Protocol $_.Value.Protocol -LocalPort $_.Value.LocalPort -Action Allow | Out-Null
+    }
 }
 
 #Enable Windows Firewall
 Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen True -AllowUnicastResponseToMulticast True
+
+Write-Verbose "Firewall Rules configuration completed." -Verbose
+
+# start the SQL installer if its not installed already
+if (!(Get-ChildItem "HKLM:\Software\Microsoft\Microsoft SQL Server" -ErrorAction SilentlyContinue)) {
+Try
+{
+    if (Test-Path $SQLsource){
+        Write-Verbose "Microsoft SQL Server installation started..." -Verbose
+        $SQLSetupFile =  "$SQLsource\setup.exe"
+        & $SQLSetupFile  /CONFIGURATIONFILE=$SQLConfiginiFile
+        Write-Verbose "Installation of SQL Server completed." -Verbose
+        }  else {
+        Write-Error "Could not find the media for SQL Server"
+        break
+    }
+}
+catch
+{
+    write-Error "Something went wrong with the installation of SQL Server, aborting."
+    break
+}
+} else {
+    Write-Verbose "Microsoft SQL Server is installed already!" -Verbose
+}
 
 ######################################################################################################
 ######################################################################################################
