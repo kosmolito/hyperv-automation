@@ -1,12 +1,10 @@
 . .\Variables.ps1
 
 $VM = $VMList | Where-Object {$_.isSelected -eq $true}
-
 if ($VM.Count -ne 1) {
     Write-Error "Only 1 VM can be selected! Exiting"
     exit
 }
-
 $DomainName = $VM.DomainName
 $DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
 
@@ -14,22 +12,19 @@ If ($VM.MachineType -notlike "server") {
     Write-Error "Only [server] types of machines are allowed! Exiting"
     Exit
 }
-
-if (($VM.HasJoinedDomain)) {
+if (!($VM.HasJoinedDomain)) {
     Write-Error "The VM is NOT joined any Domain, Please join the VM before continue!"
     Exit
 }
 
-
 $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DomainName\$DomainAdmin,$DomainPwd
 
-if ($VM.Role -like "SCCM") {
+if ($VM.Roles -contains "SCCM") {
     if ((Get-VMHardDiskDrive -VMName $VM.VMName).Path -notcontains "$ConfigFolder\sccmusb.vhdx") {
-        Write-Verbose "Attaching the SCCM .vhdx file containing the installation files.."
+        Write-Verbose "Attaching the SCCM .vhdx file containing the installation files.." -Verbose
         Add-VMHardDiskDrive -VMName $VM.VMName -Path "$ConfigFolder\sccmusb.vhdx"
     }
 }
-
 if (((get-vm $VM.VMName).State) -like "Off") {
     Write-Verbose "[$($VM.VMName)] is turned off. Starting Machine..." -Verbose
     Start-vm -Name $VM.VMName
@@ -147,7 +142,6 @@ Write-Verbose "Windows ADK installation completed." -Verbose
 #### SQL Server
 $SQLsource = "$SourcePath\sqlserver2019"
 $SQLSYSADMINACCOUNTS = whoami.exe
-
 $SQLConfigData = @"
 [OPTIONS]
 IAcceptSQLServerLicenseTerms="True"
@@ -320,7 +314,6 @@ Write-Verbose "Installation of WSUS roles and features completed." -Verbose
 #### SCCM
 
 # Status if SCCM is already installed on the machine
-
 $SCCMStatus = Get-CimInstance Win32_Service | Where-Object {$_.Name -eq "ccmexec"}
 $SiteCode = "GBG"
 $SiteName = "Goteborg"
@@ -361,8 +354,6 @@ if (!(Test-Path $SCCMSource)){
 $DNSHostName = (Get-ADComputer -Identity $env:COMPUTERNAME).DNSHostName
 
 # define SCCM Current Branch variables
-$SiteCode = "GBG"
-$SiteName = "Goteborg"
 
 $conffile= @"
 [Identification]
@@ -403,7 +394,6 @@ SysCenterId=""
 
 [HierarchyExpansionOption]
 "@
-
 
 $SCCMConfigFile = "C:\ConfigMgrAutoSave-sccm.ini"
 
@@ -455,8 +445,6 @@ if (!($Null -eq $env:SMS_ADMIN_UI_PATH)) {
 
 
 
-#### Enable Active Directory System Discovery ####
-Write-Verbose "Enabling Active Directory System Discovery..." -Verbose
 $DomainDistinguishedName = (Get-ADDomain).DistinguishedName
 $LDAPString = "LDAP://$DomainDistinguishedName"
 Set-Location "$($SiteCode):\"
@@ -478,7 +466,6 @@ $BoundaryGroupName = "$SiteCode-BG"
 if (!(Get-CMBoundaryGroup -Name $BoundaryGroupName)) { 
     New-CMBoundaryGroup -Name $BoundaryGroupName
 }
-
 
 # Selecting the first 3 part of the ip-address (Network-Address)
 $NetworkAddress = $VM.IPAddress.Split(".")[0,1,2]
@@ -534,8 +521,6 @@ if (!(test-path $SCCMAppSourceFolderPath -ErrorAction SilentlyContinue)) {
     $ACL.Access | Where-Object {$_.IdentityReference -eq "BUILTIN\Users"} | ForEach-Object { $ACL.RemoveAccessRuleSpecific($_) }
     Set-Acl $SCCMAppSourceFolderPath $ACL
 
-
-
     # Grant Permission to the Domain Users, in this  case only ReadAndExecute
     # The permission is applied to this folder/object and sub subfolders
     $rights = "ReadAndExecute,Synchronize" #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
@@ -589,7 +574,9 @@ $AppsToDeploy.GetEnumerator() | ForEach-Object {
     New-CMApplication -Name $_.Key -AutoInstall $true
     
     # Add the MSI deployment type to the application, selecting the source path (msi file)
-    Add-CMMsiDeploymentType -ApplicationName $_.Key -ContentLocation "\\$env:COMPUTERNAME\$SCCMAppSourceFolder\$($_.Value)" -InstallationBehaviorType InstallForSystem
+    Add-CMMsiDeploymentType -ApplicationName $_.Key `
+    -ContentLocation "\\$env:COMPUTERNAME\$SCCMAppSourceFolder\$($_.Value)" `
+    -InstallationBehaviorType InstallForSystem -ForceForUnknownPublisher
     
     # Distribute the content to the Distribution Point group
     Start-CMContentDistribution -ApplicationName $_.Key -DistributionPointName $DistributionPointName -Verbose
