@@ -517,55 +517,53 @@ Set-CMBoundaryGroup -Name $BoundaryGroupName -AddSiteSystemServer $SiteSystemSer
 $SCCMAppSourceFolder = "sccm-applications"
 $SCCMAppSourceFolderPath = "c:\sccm-applications"
 if (!(test-path $SCCMAppSourceFolderPath -ErrorAction SilentlyContinue)) {
-    New-Item -Name "sccm-applications" -Path "c:\" -ItemType Directory | Out-Null
+    New-Item -Name $SCCMAppSourceFolder -Path "c:\" -ItemType Directory | Out-Null
+
+    $DomainAdmins = "$DomainNetBiosName\Domain Admins"
+    $DomainUsers = "$DomainNetBiosName\Domain Users"
+
+    # Disabling The inheritance
+    $ACL = Get-Acl -Path $SCCMAppSourceFolderPath
+    $isProtected = $true
+    $PreserveInheritance = $true
+    $ACL.SetAccessRuleProtection($isProtected,$PreserveInheritance)
+    Set-Acl -Path $SCCMAppSourceFolderPath -AclObject $ACL
+
+    # Removing the builtin Users from the folder
+    $ACL = Get-Acl -Path $SCCMAppSourceFolderPath
+    $ACL.Access | Where-Object {$_.IdentityReference -eq "BUILTIN\Users"} | ForEach-Object { $ACL.RemoveAccessRuleSpecific($_) }
+    Set-Acl $SCCMAppSourceFolderPath $ACL
+
+
+
+    # Grant Permission to the Domain Users, in this  case only ReadAndExecute
+    # The permission is applied to this folder/object and sub subfolders
+    $rights = "ReadAndExecute,Synchronize" #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
+    $inheritance = "ContainerInherit, ObjectInherit"#'ContainerInherit, ObjectInherit' #Other options: [enum]::GetValues('System.Security.AccessControl.Inheritance')
+    $propagation = "None" #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
+    $type = "allow" #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
+    $ACE = New-Object System.Security.AccessControl.FileSystemAccessRule($DomainUsers,$rights,$inheritance,$propagation,$type)
+    $Acl = Get-Acl -Path $SCCMAppSourceFolderPath
+    $Acl.AddAccessRule($ACE)
+    Set-Acl -Path $SCCMAppSourceFolderPath -AclObject $Acl
+
+    # Grant Permission to the Domain Admins, in this  case only FullControl
+    # The permission is applied to this folder/object and sub subfolders
+    $rights = "FullControl" #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
+    $inheritance = "ContainerInherit, ObjectInherit"#'ContainerInherit, ObjectInherit' #Other options: [enum]::GetValues('System.Security.AccessControl.Inheritance')
+    $propagation = "None" #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
+    $type = "allow" #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
+    $ACE = New-Object System.Security.AccessControl.FileSystemAccessRule($DomainAdmins,$rights,$inheritance,$propagation,$type)
+    $Acl = Get-Acl -Path $SCCMAppSourceFolderPath
+    $Acl.AddAccessRule($ACE)
+    Set-Acl -Path $SCCMAppSourceFolderPath -AclObject $Acl
+
+    if (!(Get-SmbShare -Name $SCCMAppSourceFolder -ErrorAction SilentlyContinue)) {
+        New-SmbShare -Name $SCCMAppSourceFolder -Path $SCCMAppSourceFolderPath `
+        -FolderEnumerationMode AccessBased -FullAccess "Everyone"
+    } else { write-host -ForegroundColor Yellow "$SCCMAppSourceFolder folder is shared already!" }
 }
 
-
-if (!(Get-SmbShare -Name $SCCMAppSourceFolder -ErrorAction SilentlyContinue)) {
-    New-SmbShare -Name $SCCMAppSourceFolder -Path $SCCMAppSourceFolderPath `
-    -FolderEnumerationMode AccessBased -FullAccess "Everyone"
-} else { write-host -ForegroundColor Yellow "$SCCMAppSourceFolder folder is shared already!" }
-
-
-
-$DomainAdmins = "$DomainNetBiosName\Domain Admins"
-$DomainUsers = "$DomainNetBiosName\Domain Users"
-
-# Disabling The inheritance
-$ACL = Get-Acl -Path $SCCMAppSourceFolderPath
-$isProtected = $true
-$PreserveInheritance = $true
-$ACL.SetAccessRuleProtection($isProtected,$PreserveInheritance)
-Set-Acl -Path $SCCMAppSourceFolderPath -AclObject $ACL
-
-# Removing the builtin Users from the folder
-$ACL = Get-Acl -Path $SCCMAppSourceFolderPath
-$ACL.Access | Where-Object {$_.IdentityReference -eq "BUILTIN\Users"} | ForEach-Object { $ACL.RemoveAccessRuleSpecific($_) }
-Set-Acl $SCCMAppSourceFolderPath $ACL
-
-
-
-# Grant Permission to the Domain Users, in this  case only ReadAndExecute
-# The permission is applied to this folder/object and sub subfolders
-$rights = "ReadAndExecute,Synchronize" #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
-$inheritance = "ContainerInherit, ObjectInherit"#'ContainerInherit, ObjectInherit' #Other options: [enum]::GetValues('System.Security.AccessControl.Inheritance')
-$propagation = "None" #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
-$type = "allow" #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
-$ACE = New-Object System.Security.AccessControl.FileSystemAccessRule($DomainUsers,$rights,$inheritance,$propagation,$type)
-$Acl = Get-Acl -Path $SCCMAppSourceFolderPath
-$Acl.AddAccessRule($ACE)
-Set-Acl -Path $SCCMAppSourceFolderPath -AclObject $Acl
-
-# Grant Permission to the Domain Users, in this  case only ReadAndExecute
-# The permission is applied to this folder/object and sub subfolders
-$rights = "FullControl" #Other options: [enum]::GetValues('System.Security.AccessControl.FileSystemRights')
-$inheritance = "ContainerInherit, ObjectInherit"#'ContainerInherit, ObjectInherit' #Other options: [enum]::GetValues('System.Security.AccessControl.Inheritance')
-$propagation = "None" #Other options: [enum]::GetValues('System.Security.AccessControl.PropagationFlags')
-$type = "allow" #Other options: [enum]::GetValues('System.Security.AccessControl.AccessControlType')
-$ACE = New-Object System.Security.AccessControl.FileSystemAccessRule($DomainAdmins,$rights,$inheritance,$propagation,$type)
-$Acl = Get-Acl -Path $SCCMAppSourceFolderPath
-$Acl.AddAccessRule($ACE)
-Set-Acl -Path $SCCMAppSourceFolderPath -AclObject $Acl
 
 Write-Host "Enter the .msi File in [$SCCMAppSourceFolderPath]. Press Enter to continue" -ForegroundColor Red
 Pause
