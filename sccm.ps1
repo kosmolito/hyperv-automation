@@ -459,7 +459,10 @@ if (!($Null -eq $env:SMS_ADMIN_UI_PATH)) {
 Write-Verbose "Enabling Active Directory System Discovery..." -Verbose
 $DomainDistinguishedName = (Get-ADDomain).DistinguishedName
 $LDAPString = "LDAP://$DomainDistinguishedName"
+Set-Location "$($SiteCode):\"
 
+# Enable Active Directory System Discovery
+Write-Verbose "Enabling Active Directory System Discovery..." -Verbose
 Set-CMDiscoveryMethod `
 -ActiveDirectorySystemDiscovery `
 -SiteCode $SiteCode `
