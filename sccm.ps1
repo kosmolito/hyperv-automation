@@ -104,10 +104,18 @@ Set-ACL -AclObject $ACL -Path "AD:$Container"
 ######################################################################################################
 #### Extending AD Schema
 
-Write-Verbose "Extend the Active Directory Schema..." -Verbose
-# Extend the Active Directroy Schema
-& "$SourcePath\MEM_Configmgr_2103\SMSSETUP\BIN\X64\extadsch.exe"
-Start-Sleep -Seconds 10
+# Extend the Active Directroy Schema if its not extended already
+$SchemaPath = (Get-ADRootDSE).schemanamingContext
+$SchemaAttributes = Get-ADObject -Filter * -searchbase $SchemaPath -Properties * | Where-Object Name -eq "MS-SMS-Site-Code"
+
+if ($SchemaAttributes) { 
+  Write-Verbose "The Schema has already been extended." -Verbose
+}
+else {
+    Write-Verbose "Extending the Active Directory Schema..." -Verbose
+    & "$SourcePath\MEM_Configmgr_2103\SMSSETUP\BIN\X64\extadsch.exe"
+    Start-Sleep -Seconds 10
+}
 
 ######################################################################################################
 ######################################################################################################
