@@ -329,7 +329,7 @@ Write-Verbose "Installation of WSUS roles and features completed." -Verbose
 ######################################################################################################
 ######################################################################################################
 #### SCCM
-
+$DNSHostName = (Get-ADComputer -Identity $env:COMPUTERNAME).DNSHostName
 # Status if SCCM is already installed on the machine
 $SCCMStatus = Get-CimInstance Win32_Service | Where-Object {$_.Name -eq "ccmexec"}
 $SiteCode = "GBG"
@@ -367,8 +367,6 @@ if (!(Test-Path $SCCMSource)){
 } else {
     Write-Verbose "Installation media for SCCM found." -Verbose
 }
-
-$DNSHostName = (Get-ADComputer -Identity $env:COMPUTERNAME).DNSHostName
 
 # define SCCM Current Branch variables
 
