@@ -36,10 +36,16 @@ Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
 $VM = $using:VM
 $DomainName = $using:DomainName
 $DomainNetbiosName = $using:DomainNetbiosName
+$SiteCode = "GBG"
+$SiteName = "Goteborg"
 
-# Make the SCCM offline VHD Disk online
-Get-Disk | Where-Object {$_.OperationalStatus -like "Offline"} | Set-Disk -IsOffline $False
-$SourcePath = ((Get-Volume -FriendlyName "sccmusb").DriveLetter + ":")
+# Make the SCCM offline VHD Disk online if its not online already
+if ((Get-Volume -FriendlyName "sccmusb" -ErrorAction SilentlyContinue)) {
+    $SourcePath = ((Get-Volume -FriendlyName "sccmusb").DriveLetter + ":")
+} else {
+    Get-Disk | Where-Object {$_.OperationalStatus -like "Offline"} | Set-Disk -IsOffline $False
+    $SourcePath = ((Get-Volume -FriendlyName "sccmusb").DriveLetter + ":")
+}
 
 ######################################################################################################
 ######################################################################################################
@@ -55,6 +61,8 @@ if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Insta
 #### Creating System Management Container and set the permissions
 
 Import-Module ADDSDeployment
+$DNSHostName = (Get-ADComputer -Identity $env:COMPUTERNAME).DNSHostName
+
 Write-Verbose "Creating [System Management] Container..." -Verbose
 # Get the distinguished name of the Active Directory domain
 $DCPath = (Get-ADDomain).DistinguishedName
@@ -121,7 +129,6 @@ else {
 ######################################################################################################
 #### Installing IIS Roles and Features, based on the XML file
 
-
 if (!((Get-WindowsFeature -Name Web-Server).InstallState -eq "Installed")) {
     Write-Verbose "Installing roles and features [IIS]..." -Verbose
     Install-WindowsFeature -ConfigurationFilePath "$SourcePath\DeploymentConfigTemplate-IIS.xml"
@@ -147,70 +154,7 @@ Write-Verbose "Windows ADK installation completed." -Verbose
 
 ######################################################################################################
 ######################################################################################################
-#### SQL Server
-$SQLsource = "$SourcePath\sqlserver2019"
-$SQLSYSADMINACCOUNTS = whoami.exe
-$SQLConfigData = @"
-[OPTIONS]
-IAcceptSQLServerLicenseTerms="True"
-IACCEPTPYTHONLICENSETERMS="True"
-ACTION="Install"
-IACCEPTROPENLICENSETERMS="True"
-SUPPRESSPRIVACYSTATEMENTNOTICE="True"
-ENU="True"
-QUIET="True"
-UpdateEnabled="False"
-USEMICROSOFTUPDATE="False"
-SUPPRESSPAIDEDITIONNOTICE="False"
-UpdateSource="MU"
-FEATURES=SQLENGINE
-HELP="False"
-INDICATEPROGRESS="False"
-X86="False"
-INSTANCENAME="MSSQLSERVER"
-INSTALLSHAREDDIR="C:\Program Files\Microsoft SQL Server"
-INSTALLSHAREDWOWDIR="C:\Program Files (x86)\Microsoft SQL Server"
-INSTANCEID="MSSQLSERVER"
-SQLTELSVCACCT="NT Service\SQLTELEMETRY"
-SQLTELSVCSTARTUPTYPE="Automatic"
-INSTANCEDIR="C:\Program Files\Microsoft SQL Server"
-AGTSVCACCOUNT="NT Service\SQLSERVERAGENT"
-AGTSVCSTARTUPTYPE="Manual"
-COMMFABRICPORT="0"
-COMMFABRICNETWORKLEVEL="0"
-COMMFABRICENCRYPTION="0"
-MATRIXCMBRICKCOMMPORT="0"
-SQLSVCSTARTUPTYPE="Automatic"
-FILESTREAMLEVEL="0"
-SQLMAXDOP="2"
-ENABLERANU="False"
-SQLCOLLATION="SQL_Latin1_General_CP1_CI_AS"
-SQLSVCACCOUNT="NT Service\MSSQLSERVER"
-SQLSVCINSTANTFILEINIT="False"
-SQLSYSADMINACCOUNTS="$SQLSYSADMINACCOUNTS"
-SQLTEMPDBFILECOUNT="2"
-SQLTEMPDBFILESIZE="8"
-SQLTEMPDBFILEGROWTH="64"
-SQLTEMPDBLOGFILESIZE="8"
-SQLTEMPDBLOGFILEGROWTH="64"
-ADDCURRENTUSERASSQLADMIN="False"
-TCPENABLED="1"
-NPENABLED="0"
-BROWSERSVCSTARTUPTYPE="Disabled"
-SQLMAXMEMORY="2147483647"
-SQLMINMEMORY="0"
-"@
-                        
-$SQLConfiginiFile="c:\SQLConfigurationFile.ini"
-
-if (Test-Path $SQLConfiginiFile){
-    Write-Verbose "Found an old Configuration file [$($SQLConfiginiFile)], removing the file..." -Verbose
-    Remove-Item -Path $SQLConfiginiFile -Force
-}
-
-Write-Verbose "Creating a New Configuration file [$($SQLConfiginiFile)]..." -Verbose
-New-Item -Path $SQLConfiginiFile -ItemType File -Value $SQLConfigData | Out-Null
-
+#### Firwall Rules & Configuration
 
 # Configure Firewall Rules for SQL and Web
 Write-Verbose "Configuring SQL Server Firewall settings..." -Verbose
@@ -271,6 +215,63 @@ Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow 
 
 Write-Verbose "Firewall Rules configuration completed." -Verbose
 
+######################################################################################################
+######################################################################################################
+#### SQL Server
+
+$SQLsource = "$SourcePath\sqlserver2019"
+$SQLSYSADMINACCOUNTS = whoami.exe
+$SQLConfigData = @"
+[OPTIONS]
+IAcceptSQLServerLicenseTerms="True"
+IACCEPTPYTHONLICENSETERMS="True"
+ACTION="Install"
+IACCEPTROPENLICENSETERMS="True"
+SUPPRESSPRIVACYSTATEMENTNOTICE="True"
+ENU="True"
+QUIET="True"
+UpdateEnabled="False"
+USEMICROSOFTUPDATE="False"
+SUPPRESSPAIDEDITIONNOTICE="False"
+UpdateSource="MU"
+FEATURES=SQLENGINE
+HELP="False"
+INDICATEPROGRESS="False"
+X86="False"
+INSTANCENAME="MSSQLSERVER"
+INSTALLSHAREDDIR="C:\Program Files\Microsoft SQL Server"
+INSTALLSHAREDWOWDIR="C:\Program Files (x86)\Microsoft SQL Server"
+INSTANCEID="MSSQLSERVER"
+SQLTELSVCACCT="NT Service\SQLTELEMETRY"
+SQLTELSVCSTARTUPTYPE="Automatic"
+INSTANCEDIR="C:\Program Files\Microsoft SQL Server"
+AGTSVCACCOUNT="NT Service\SQLSERVERAGENT"
+AGTSVCSTARTUPTYPE="Manual"
+COMMFABRICPORT="0"
+COMMFABRICNETWORKLEVEL="0"
+COMMFABRICENCRYPTION="0"
+MATRIXCMBRICKCOMMPORT="0"
+SQLSVCSTARTUPTYPE="Automatic"
+FILESTREAMLEVEL="0"
+SQLMAXDOP="2"
+ENABLERANU="False"
+SQLCOLLATION="SQL_Latin1_General_CP1_CI_AS"
+SQLSVCACCOUNT="NT Service\MSSQLSERVER"
+SQLSVCINSTANTFILEINIT="False"
+SQLSYSADMINACCOUNTS="$SQLSYSADMINACCOUNTS"
+SQLTEMPDBFILECOUNT="2"
+SQLTEMPDBFILESIZE="8"
+SQLTEMPDBFILEGROWTH="64"
+SQLTEMPDBLOGFILESIZE="8"
+SQLTEMPDBLOGFILEGROWTH="64"
+ADDCURRENTUSERASSQLADMIN="False"
+TCPENABLED="1"
+NPENABLED="0"
+BROWSERSVCSTARTUPTYPE="Disabled"
+SQLMAXMEMORY="2147483647"
+SQLMINMEMORY="0"
+"@
+
 # start the SQL installer if its not installed already
 
 # These 2 services needs exist if the SQL server is installed.
@@ -284,6 +285,17 @@ foreach ($Service in $SQLServices) {
 if ((Get-ChildItem "HKLM:\Software\Microsoft\Microsoft SQL Server" -ErrorAction SilentlyContinue) -and $ServiceCount -eq 2) {
     Write-Verbose "Microsoft SQL Server is installed already!" -Verbose } 
 else {
+
+    $SQLConfiginiFile="c:\SQLConfigurationFile.ini"
+
+    if (Test-Path $SQLConfiginiFile){
+        Write-Verbose "Found an old Configuration file [$($SQLConfiginiFile)], removing the file..." -Verbose
+        Remove-Item -Path $SQLConfiginiFile -Force
+    }
+
+    Write-Verbose "Creating a New Configuration file [$($SQLConfiginiFile)]..." -Verbose
+    New-Item -Path $SQLConfiginiFile -ItemType File -Value $SQLConfigData | Out-Null
+
 Try
 {
     if (Test-Path $SQLsource){
@@ -306,6 +318,7 @@ catch
 ######################################################################################################
 ######################################################################################################
 #### Installing WSUS Feature if its not installed already
+
 if (!((Get-WindowsFeature -Name UpdateServices).InstallState -eq "Installed")) {
 $WSUSFolder = "C:\WSUS"
 $ServerName = $Env:COMPUTERNAME
@@ -328,18 +341,15 @@ Write-Verbose "Installation of WSUS roles and features completed." -Verbose
 
 ######################################################################################################
 ######################################################################################################
-#### SCCM
-$DNSHostName = (Get-ADComputer -Identity $env:COMPUTERNAME).DNSHostName
+#### SCCM Installation
+
 # Status if SCCM is already installed on the machine
 $SCCMStatus = Get-CimInstance Win32_Service | Where-Object {$_.Name -eq "ccmexec"}
-$SiteCode = "GBG"
-$SiteName = "Goteborg"
 if (!($null -eq $SCCMStatus)) {
     Write-Verbose "SCCM is already installed on the machine!" -Verbose
 } else {
-# Change the account permissions of SQL services to the Domain Administrator
-$SQLServices = "MSSQLSERVER","SQLSERVERAGENT"
-Write-Verbose "Changing Account Permission of SQL Services and starting..." -Verbose
+    # Change the account permissions of SQL services to the Domain Administrator
+    Write-Verbose "Changing Account Permission of SQL Services and starting..." -Verbose
 foreach ($Item in $SQLServices) {
     $Service = Get-WmiObject win32_service -Filter "Name='$Item'"
     $Service.StopService() | Out-Null
@@ -451,6 +461,10 @@ catch
 }
 }
 
+######################################################################################################
+######################################################################################################
+#### SCCM Configuration
+
 # Importing the Module
 Write-Verbose "Importing the SCCM Module..." -Verbose
 if (!($Null -eq $env:SMS_ADMIN_UI_PATH)) {
@@ -458,8 +472,6 @@ if (!($Null -eq $env:SMS_ADMIN_UI_PATH)) {
 } else {
     Import-Module "C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1"
 }
-
-
 
 $DomainDistinguishedName = (Get-ADDomain).DistinguishedName
 $LDAPString = "LDAP://$DomainDistinguishedName"
@@ -528,6 +540,10 @@ Set-CMBoundaryGroup -Name $BoundaryGroupName -AddSiteSystemServer $SiteSystemSer
 
 # Start the Active Directory System Disovery, to find Devices
 Invoke-CMSystemDiscovery -Site $SiteCode
+
+######################################################################################################
+######################################################################################################
+#### SCCM Application Deployment
 
 # Create New Folder and Share the folder for the applications source
 $SCCMAppSourceFolder = "sccm-applications"
