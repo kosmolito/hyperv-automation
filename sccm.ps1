@@ -272,7 +272,18 @@ Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow 
 Write-Verbose "Firewall Rules configuration completed." -Verbose
 
 # start the SQL installer if its not installed already
-if (!(Get-ChildItem "HKLM:\Software\Microsoft\Microsoft SQL Server" -ErrorAction SilentlyContinue)) {
+
+# These 2 services needs exist if the SQL server is installed.
+$SQLServices = "MSSQLSERVER","SQLSERVERAGENT"
+$ServiceCount = 0
+foreach ($Service in $SQLServices) {
+    $ServiceState = Get-Service -Name $Service -ErrorAction SilentlyContinue
+    if ($ServiceState) { $ServiceCount++ }
+}
+
+if ((Get-ChildItem "HKLM:\Software\Microsoft\Microsoft SQL Server" -ErrorAction SilentlyContinue) -and $ServiceCount -eq 2) {
+    Write-Verbose "Microsoft SQL Server is installed already!" -Verbose } 
+else {
 Try
 {
     if (Test-Path $SQLsource){
@@ -290,8 +301,6 @@ catch
     write-Error "Something went wrong with the installation of SQL Server, aborting."
     break
 }
-} else {
-    Write-Verbose "Microsoft SQL Server is installed already!" -Verbose
 }
 
 ######################################################################################################
