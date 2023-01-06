@@ -463,7 +463,17 @@ if (!($Null -eq $env:SMS_ADMIN_UI_PATH)) {
 
 $DomainDistinguishedName = (Get-ADDomain).DistinguishedName
 $LDAPString = "LDAP://$DomainDistinguishedName"
-Set-Location "$($SiteCode):\"
+
+# If the Site Drive does not exist in the shell, Create one
+$IsSiteDriveExist = Get-PSDrive -Name $SiteCode -PSProvider "CMSite" -ErrorAction SilentlyContinue
+if ($IsSiteDriveExist) {
+    Set-Location "$($SiteCode):\"
+} else {
+    New-PSDrive -Name $SiteCode -PSProvider "CMSite" -Root $DNSHostName | Out-Null
+    Start-Sleep -Seconds 1
+    Set-Location "$($SiteCode):\"
+    Start-Sleep -Seconds 1
+}
 
 # Enable Active Directory System Discovery
 Write-Verbose "Enabling Active Directory System Discovery..." -Verbose
