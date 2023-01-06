@@ -433,16 +433,18 @@ New-Item -Path "C:\ConfigMgrSetup.log" -ItemType File -Force | Out-Null
 if (!(Get-ChildItem "HKLM:\Software\Microsoft\SMS" -ErrorAction SilentlyContinue)) {
 Write-Verbose "Starting Installation of SCCM..." -Verbose
 $SCCMSetupFile = "$SCCMSource\SMSSETUP\bin\X64\Setup.exe"
-$Parms = "  /script $SCCMConfigFile"
-$Prms = $Parms.Split(" ")
+# $Parms = "  /script $SCCMConfigFile"
+# $Prms = $Parms.Split(" ")
+$SccmArgumentList = "/script $SCCMConfigFile"
 Try
 {
-    & "$SCCMSetupFile" $Prms | Out-Null
+    Start-Process $SCCMSetupFile -ArgumentList $SccmArgumentList -Wait -NoNewWindow
+    # & "$SCCMSetupFile" -ArgumentList  $Prms | Out-Null
 }
 catch
 {
     Write-Error "Someting went wrong. Exiting!"
-break
+    break
 }
     Start-Sleep -Seconds 30
     Write-Verbose "Setup of SCCM completed." -Verbose
