@@ -355,7 +355,7 @@ $DNSHostName = (Get-ADComputer -Identity $env:COMPUTERNAME).DNSHostName
 
 # define SCCM Current Branch variables
 
-$conffile= @"
+$SCCMConfigData= @"
 [Identification]
 Action="InstallPrimarySite"
 
@@ -404,16 +404,15 @@ if (Test-Path $SCCMConfigFile){
 
 # Create file:
 Write-Verbose "Creating [$SCCMConfigFile]..." -Verbose
-New-Item -Path $SCCMConfigFile -ItemType File -Value $Conffile | Out-Null
+New-Item -Path $SCCMConfigFile -ItemType File -Value $SCCMConfigData | Out-Null
 
+# Rename the old setup log file and create a new one if the file exist already
 $SCCMSetupLogFile = "C:\ConfigMgrSetup.log"
 if (Test-Path $SCCMSetupLogFile) {
     Rename-Item -Path $SCCMSetupLogFile -NewName "c:\ConfigMgrSetup-$($using:LogDateTime).log"
 }
 
-# Opening the logs to see the setup process
 New-Item -Path "C:\ConfigMgrSetup.log" -ItemType File -Force | Out-Null
-& "$SCCMSource\SMSSETUP\TOOLS\CMTrace.exe" /"ConfigMgrSetup.log"
 
 # start the SCCM installer if its not installed already in the system
 if (!(Get-ChildItem "HKLM:\Software\Microsoft\SMS" -ErrorAction SilentlyContinue)) {
