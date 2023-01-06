@@ -514,6 +514,7 @@ Write-Verbose "Enable Client Application Installation on Sitewide Machines..." -
 Set-CMClientPushInstallation `
 -SiteCode $SiteCode `
 -EnableAutomaticClientPushInstallation $true `
+-EnableSystemTypeConfigurationManager $true `
 -InstallClientToDomainController $true
 
 
@@ -525,6 +526,8 @@ if ((Get-CMClientPushInstallation).PropLists.Values -ne (whoami.exe)) {
 $SiteSystemServer = Get-CMSiteSystemServer
 Set-CMBoundaryGroup -Name $BoundaryGroupName -AddSiteSystemServer $SiteSystemServer
 
+# Start the Active Directory System Disovery, to find Devices
+Invoke-CMSystemDiscovery -Site $SiteCode
 
 # Create New Folder and Share the folder for the applications source
 $SCCMAppSourceFolder = "sccm-applications"
