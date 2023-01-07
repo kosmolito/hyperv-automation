@@ -51,9 +51,14 @@ if ((Get-Volume -FriendlyName "sccmusb" -ErrorAction SilentlyContinue)) {
 ######################################################################################################
 #### Installing AD Feature
 
-if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {               
+if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Installed") {
+    $StartTime = Get-Date           
     Write-Verbose "Installing Active Directory Services on VM [$($VM.VMName)]" -Verbose
     Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+    $EndTime = Get-Date
+    $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
+    Write-Host "The time it took for Active Directory Installation:"
+    $ResultTime | Select-Object Hours,Minutes,Seconds
 }
 
 ######################################################################################################
@@ -130,9 +135,14 @@ else {
 #### Installing IIS Roles and Features, based on the XML file
 
 if (!((Get-WindowsFeature -Name Web-Server).InstallState -eq "Installed")) {
+    $StartTime = Get-Date
     Write-Verbose "Installing roles and features [IIS]..." -Verbose
     Install-WindowsFeature -ConfigurationFilePath "$SourcePath\DeploymentConfigTemplate-IIS.xml"
     Write-Verbose "[IIS] roles and features installation completed" -Verbose
+    $EndTime = Get-Date
+    $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
+    Write-Host "Time duration for [IIS] Roles and features installation:"
+    $ResultTime | Select-Object Hours,Minutes,Seconds
 } else {
     Write-Verbose "[IIS] roles and features are installed already!" -Verbose
 }
@@ -144,10 +154,15 @@ if (!((Get-WindowsFeature -Name Web-Server).InstallState -eq "Installed")) {
 # Install ADK Deployment Tools,  Windows Preinstallation Enviroment
 if (!(Get-ChildItem 'C:\Program Files (x86)\Windows Kits\10\Assessment and Deployment Kit' -ErrorAction SilentlyContinue)) {
 Write-Verbose "Installing Windows ADK..." -Verbose
+$StartTime = Get-Date
 Start-Process -FilePath "$SourcePath\ADK\adksetup.exe" -Wait `
 -ArgumentList "/Features OptionId.DeploymentTools OptionId.WindowsPreinstallationEnvironment OptionId.ImagingAndConfigurationDesigner OptionId.ICDConfigurationDesigner OptionId.UserStateMigrationTool /norestart /quiet /ceip off" -Verbose
 Start-Sleep -s 120
 Write-Verbose "Windows ADK installation completed." -Verbose
+$EndTime = Get-Date
+$ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
+Write-Host "Time duration for Windows ADK installation:"
+$ResultTime | Select-Object Hours,Minutes,Seconds
 } else {
     Write-Verbose "Windows ADK is installed already! Skipping the installation." -Verbose
 }
@@ -300,9 +315,14 @@ Try
 {
     if (Test-Path $SQLsource){
         Write-Verbose "Microsoft SQL Server installation started..." -Verbose
+        $StartTime = Get-Date
         $SQLSetupFile =  "$SQLsource\setup.exe"
         & $SQLSetupFile  /CONFIGURATIONFILE=$SQLConfiginiFile
         Write-Verbose "Installation of SQL Server completed." -Verbose
+        $EndTime = Get-Date
+        $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
+        Write-Host "Time duration for Microsoft SQL Server Installation:"
+        $ResultTime | Select-Object Hours,Minutes,Seconds
         }  else {
         Write-Error "Could not find the media for SQL Server"
         break
@@ -331,10 +351,15 @@ if (Test-Path $WSUSFolder){
 }
 
 Write-Verbose "Installing WSUS roles and features..." -Verbose
+$StartTime = Get-Date
 Install-WindowsFeature -ConfigurationFilePath "$SourcePath\DeploymentConfigTemplate-WSUS.xml"
 Start-Sleep -s 10
 & "C:\Program Files\Update Services\Tools\WsusUtil.exe" postinstall SQL_INSTANCE_NAME=$ServerName CONTENT_DIR=$WSUSFolder | out-file Null
 Write-Verbose "Installation of WSUS roles and features completed." -Verbose
+$EndTime = Get-Date
+$ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
+Write-Host "Time duration for WSUS roles and features Installation:"
+$ResultTime | Select-Object Hours,Minutes,Seconds
 } else {
     Write-Verbose "WSUS roles and features is installed already." -Verbose
 }
@@ -448,6 +473,7 @@ $SCCMSetupFile = "$SCCMSource\SMSSETUP\bin\X64\Setup.exe"
 $SccmArgumentList = "/script $SCCMConfigFile"
 Try
 {
+    $StartTime = Get-Date
     Start-Process $SCCMSetupFile -ArgumentList $SccmArgumentList -Wait -NoNewWindow
     # & "$SCCMSetupFile" -ArgumentList  $Prms | Out-Null
 }
@@ -458,6 +484,10 @@ catch
 }
     Start-Sleep -Seconds 30
     Write-Verbose "Setup of SCCM completed." -Verbose
+    $EndTime = Get-Date
+    $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
+    Write-Host "Time duration for SCCM Installation:"
+    $ResultTime | Select-Object Hours,Minutes,Seconds
 }
 }
 
