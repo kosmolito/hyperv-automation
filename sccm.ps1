@@ -540,6 +540,31 @@ Set-CMBoundaryGroup -Name $BoundaryGroupName -AddSiteSystemServer $SiteSystemSer
 
 # Start the Active Directory System Disovery, to find Devices
 Invoke-CMSystemDiscovery -Site $SiteCode
+Start-Sleep -Seconds 1
+
+$i = 0
+do {
+    $CMDevies = Get-CMDevice | Where-Object {$_.AdSiteName -eq "Default-First-Site-Name"}
+    Start-Sleep -Seconds 2
+    $i++
+} while (
+    # Run the loop if the Device count is 0 for 3 times maximum
+    ($i -lt 3) -xor ($CMDevies.Count -gt 0)
+)
+
+# If Devices found, check if the installation has been done, for the vm without installatio or with error code other than 0
+if ($CMDevies.Count -gt 0) {
+    $DeviceWithoutClient = $CMDevies | Where-Object {$_.LastInstallationError -ne 0}
+}
+
+# If value is not 0 run this code, meaning if its not empty
+if ($DeviceWithoutClient.Count -gt 0) {
+    # Install the Client Application on the founded devices
+    $DeviceWithoutClient | ForEach-Object { 
+    Install-CMClient -IncludeDomainController $True -AlwaysInstallClient $True -InputObject $_ -SiteCode $SiteCode -Verbose
+    }
+}
+
 
 ######################################################################################################
 ######################################################################################################
