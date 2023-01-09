@@ -227,6 +227,7 @@ foreach ($VM in $VMSelected) {
                         if (((Get-WindowsFeature -Name DHCP).InstallState) -notlike "Installed") {
                             Write-Verbose "Installing [$Role] on VM [$($VM.VMName)]" -Verbose
                             Install-WindowsFeature -Name DHCP -IncludeAllSubFeature -IncludeManagementTools
+                            Start-Sleep -Seconds 5
                         }
             
                         if (((Get-DhcpServerv4Scope).Name -notlike "staff_ipv4_scope")) {
@@ -241,26 +242,30 @@ foreach ($VM in $VMSelected) {
                         try {
 
                             # Add DHCP Scope
-                            Add-DhcpServerv4Scope -name "staff_ipv4_scope" -StartRange "$($NetworkAddress)100" -EndRange "$($NetworkAddress)200" -SubnetMask 255.255.255.0 -State Active
+                            Add-DhcpServerv4Scope `
+                            -name "staff_ipv4_scope" `
+                            -StartRange "$($NetworkAddress)100" `
+                            -EndRange "$($NetworkAddress)200" `
+                            -SubnetMask 255.255.255.0 -State Active -Verbose
 
-                            Add-DhcpServerInDC -DnsName "$($VM.DomainName)" -IPAddress "$($VM.IPAddress)"
+                            Add-DhcpServerInDC -DnsName "$($VM.DomainName)" -IPAddress "$($VM.IPAddress)" -Verbose
                 
                             # Add DNS Server, Router Gateway Options in DHCP
-                            Set-DhcpServerV4OptionValue -DnsServer "$($VM.IPAddress)" -Router "$($NetworkAddress)1"
+                            Set-DhcpServerV4OptionValue -DnsServer "$($VM.IPAddress)" -Router "$($NetworkAddress)1" -Verbose
 
                             # Set Up Lease Duration
-                            Set-DhcpServerv4Scope -ScopeId "$($VM.IPAddress)" -LeaseDuration 1.00:00:00
+                            Set-DhcpServerv4Scope -ScopeId "$($VM.IPAddress)" -LeaseDuration 1.00:00:00 -Verbose
 
                             # Set Up Dns Domain information
-                            Set-DhcpServerv4OptionValue -DnsDomain "$($VM.DomainName)" -DnsServer "$($VM.IPAddress)"
+                            Set-DhcpServerv4OptionValue -DnsDomain "$($VM.DomainName)" -DnsServer "$($VM.IPAddress)" -Verbose
 
                             # Restart DHCP Service
-                            Restart-service dhcpserver
+                            Restart-service dhcpserver -Verbose
 
-                            start-sleep -Seconds 5
+                            start-sleep -Seconds 15
 
                             # Post installation wizzard configuration
-                            Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2
+                            Set-ItemProperty –Path registry::HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ServerManager\Roles\12 –Name ConfigurationState –Value 2 -Verbose
                         }
             
                         catch {
