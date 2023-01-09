@@ -1,6 +1,11 @@
 . .\Variables.ps1
 
 $VM = $VMList | Where-Object {$_.isSelected -eq $true}
+
+$DomainName = $VM.DomainName
+$DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
+$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DomainName\$DomainAdmin,$DomainPwd
+
 function Show-Menu {
     param (
         [String]$Title = "SCCM Installation / Configuration / Deployment"
@@ -94,12 +99,14 @@ switch ($Selection)
 }
 
 { @(2,"all") -contains $_ } {
+    ######################################################################################################
+    ######################################################################################################
+    #### SCCM VM
+    
     if ($VM.Count -ne 1) {
         Write-Error "Only 1 VM can be selected!"
         Invoke-Script -ScriptItem Main
     }
-$DomainName = $VM.DomainName
-$DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
     
     If ($VM.MachineType -notlike "server") {
         Write-Host "Only [server] types of machines are allowed!" -ForegroundColor Red
