@@ -70,6 +70,26 @@ function Get-ElevatedInfo {
     }
 }
 
+Function Invoke-Script {
+    # Function to run the same script again or run the Main script
+    [CmdletBinding()]
+    param(
+    [Parameter(Mandatory)][ValidateSet("Main","ItSelf")]
+    [String]$ScriptItem
+    )
+
+    if ($ScriptItem -Like "Main") {
+        Pause
+        & "$PSScriptRoot\main.ps1"
+    } elseif ($ScriptItem -Like "ItSelf" ) {
+        # The path to running script
+        Pause
+        & $MyInvocation.PSCommandPath
+    } else {
+        Write-Error "Wrong argument Selected, only Main/Self is accepted"
+    }
+}
+
 ########################## End of Functions ##########################
 
 $LogDateTime = Get-Date -UFormat %Y-%m-%d-%H%M
