@@ -1,6 +1,19 @@
 . .\Variables.ps1
 
 $VM = $VMList | Where-Object {$_.isSelected -eq $true}
+function Show-Menu {
+    param (
+        [String]$Title = "SCCM Installation / Configuration / Deployment"
+    )
+    Clear-Host
+    Write-Host -ForegroundColor red "VM Selected"
+    $VM | Format-table -Property VMName,DomainName,IPAddress,DNSAddress,NetworkSwitches
+    Write-Host "================ $Title ================`n"
+    Write-Host "  1: Non SCCM VM Firewall & File Sharing Configuration" -ForegroundColor Green
+    Write-Host "  2: SCCM VM Installation / Configuration / Deployment" -ForegroundColor Green
+    Write-Host "  B: Back to Main Menu" -ForegroundColor Green
+    Write-Host "  Q: To quit" -ForegroundColor Green
+}
     if ($VM.Count -ne 1) {
         Write-Error "Only 1 VM can be selected!"
         Invoke-Script -ScriptItem Main
