@@ -27,6 +27,69 @@ if ( $Selection -match "All" ) {
 
 switch ($Selection) 
 {
+    ######################################################################################################
+    ######################################################################################################
+    #### Non SCCM VM LIST
+    { @(1,"all") -contains $_ } {
+
+    # Change the firewall settings for the VM other than SCCM VM
+    $NonSCCMVMList = $VMList | Where-Object {$_.Roles -notcontains "SCCM" -and $_.DomainName -like $VM.DomainName}
+    $NonSCCMVMList | Format-Table -Property VMName,DomainName,Roles | Out-Host
+    $Confirmation = Read-Host "Do you want to continue with the Firewall & Files Sharing configuration? (Y/N)"
+
+    if ($Confirmation -notlike "Y") {
+        Write-Error "Sorry, did not get correct confirmation"
+        exit
+    } else {
+
+    $NonSCCMVMList | ForEach-Object -ThrottleLimit 4 -Parallel {
+        if ((Get-VM -VMName $_.VMName).State -like "Off" ) {
+            Write-Verbose "[$($_.VMName)] is turned off. Starting the VM..."
+            Start-VM -VMName $_.VMName -Verbose
+        }
+    }
+
+    $NonSCCMVMList | ForEach-Object {
+    Invoke-VMConnectionConfirmation -VMName $_.VMName -Credential $Credential
+        Invoke-Command -VMName $_.VMName -Credential $Credential -ScriptBlock {
+
+            ## FireWall config for SCCM Client installation ##
+
+            # Retriving the active network adapter
+            $NetAdapter = Get-NetAdapter | Where-Object {$_.Status -like "Up"}
+            # Enable Files Sharing if its not enabled already
+            if (!($NetAdapter | Get-NetAdapterBinding -DisplayName "File and Printer Sharing for Microsoft Networks" | Where-Object {$_.Enabled -eq $true})) {
+                Write-Verbose "Enabling File and Printer Sharing..." -Verbose
+                $NetAdapter | Enable-NetAdapterBinding -DisplayName "File and Printer Sharing for Microsoft Networks"
+                Write-Verbose "File and Printer Sharing is enabled." -Verbose
+            } else {
+                Write-Verbose "File and Printer Sharing is enabled already" -Verbose
+            }
+
+            $NonSCCMFireWallRules = @{
+                "Client Notification" = @{
+                    Protocol = "TCP"
+                    LocalPort = 10123
+                    Direction = "Outbound"
+                }
+                "Remote Control" = @{
+                    Protocol = "TCP"
+                    LocalPort = 2701
+                    Direction = "Inbound"
+                }
+
+            }
+
+            # Create Firewall Rules if it does not exist already
+            $NonSCCMFireWallRules.GetEnumerator() | ForEach-Object {
+                if (!(Get-NetFireWallRule -DisplayName $_.Key -ErrorAction SilentlyContinue)) {
+                    Write-Verbose "Creating Firewall Rule [Name:$($_.Key) :Protocol:$($_.Value.Protocol) LocalPort:$($_.Value.LocalPort)]..." -Verbose
+                    New-NetFirewallRule -DisplayName $_.Key -Direction $_.Value.Direction -Protocol $_.Value.Protocol -LocalPort $_.Value.LocalPort -Action Allow | Out-Null
+                }
+            }
+        }
+    }
+    }
     Invoke-Script -ScriptItem ItSelf
 }
 
