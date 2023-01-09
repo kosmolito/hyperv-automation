@@ -14,6 +14,23 @@ function Show-Menu {
     Write-Host "  B: Back to Main Menu" -ForegroundColor Green
     Write-Host "  Q: To quit" -ForegroundColor Green
 }
+
+Show-Menu
+$Selection = Read-Host "Select an option from menu"
+
+
+if ( $Selection -match "All" ) {
+    $Selection = "All"
+} else {
+    $Selection = $Selection.Split(",") | ForEach-Object { Invoke-Expression $_ }
+}
+
+switch ($Selection) 
+{
+    Invoke-Script -ScriptItem ItSelf
+}
+
+{ @(2,"all") -contains $_ } {
     if ($VM.Count -ne 1) {
         Write-Error "Only 1 VM can be selected!"
         Invoke-Script -ScriptItem Main
@@ -696,6 +713,31 @@ $AppsToDeploy.GetEnumerator() | ForEach-Object {
     New-CMApplicationDeployment -CollectionName "All Desktop and Server Clients" -Name $_.Key `
     -DeployAction Install -DeployPurpose Required -UserNotification DisplayAll -AvailableDateTime (get-date) -TimeBaseOn LocalTime -Verbose
     }
+}
+
+}
+}
+
+Invoke-Script -ScriptItem ItSelf
+exit
+}
+
+"Q" 
+{
+    # Quick the program
+    exit 
+}
+
+"B" 
+{
+    # Go back to Main Menu
+    Invoke-Script -ScriptItem Main
+}
+
+Default 
+{ 
+Write-Error "Wrong Selection!"
+Invoke-Script -ScriptItem ItSelf
 }
 
 }
