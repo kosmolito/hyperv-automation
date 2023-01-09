@@ -1,25 +1,26 @@
 . .\Variables.ps1
 
 $VM = $VMList | Where-Object {$_.isSelected -eq $true}
-if ($VM.Count -ne 1) {
-    Write-Error "Only 1 VM can be selected! Exiting"
-    exit
-}
+    if ($VM.Count -ne 1) {
+        Write-Error "Only 1 VM can be selected!"
+        Invoke-Script -ScriptItem Main
+    }
 $DomainName = $VM.DomainName
 $DomainNetbiosName = $DomainName.split(".")[0].ToUpper()
+    
+    If ($VM.MachineType -notlike "server") {
+        Write-Host "Only [server] types of machines are allowed!" -ForegroundColor Red
+        Invoke-Script -ScriptItem Main
+    }
+    if (!($VM.HasJoinedDomain)) {
+        Write-Host "The VM is NOT joined any Domain, Please join the VM before continue!" -ForegroundColor Red
+        Invoke-Script -ScriptItem Main
+    }
 
-If ($VM.MachineType -notlike "server") {
-    Write-Error "Only [server] types of machines are allowed! Exiting"
-    Exit
-}
-if (!($VM.HasJoinedDomain)) {
-    Write-Error "The VM is NOT joined any Domain, Please join the VM before continue!"
-    Exit
-}
-
-$Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DomainName\$DomainAdmin,$DomainPwd
-
-if ($VM.Roles -contains "SCCM") {
+if ($VM.Roles -notcontains "SCCM") { 
+    Write-Error "You have NOT selected a server with SCCM Role!"
+    Invoke-Script -ScriptItem Main
+} else {
     if ((Get-VMHardDiskDrive -VMName $VM.VMName).Path -notcontains "$ConfigFolder\sccmusb.vhdx") {
         Write-Verbose "Attaching the SCCM .vhdx file containing the installation files.." -Verbose
         Add-VMHardDiskDrive -VMName $VM.VMName -Path "$ConfigFolder\sccmusb.vhdx"
@@ -58,7 +59,7 @@ if (((Get-WindowsFeature -Name AD-Domain-Services).InstallState) -notlike "Insta
     $EndTime = Get-Date
     $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
     Write-Host "The time it took for Active Directory Installation:"
-    $ResultTime | Select-Object Hours,Minutes,Seconds
+    $ResultTime | Format-Table -Property Hours,Minutes,Seconds | Out-Host
 }
 
 ######################################################################################################
@@ -142,7 +143,7 @@ if (!((Get-WindowsFeature -Name Web-Server).InstallState -eq "Installed")) {
     $EndTime = Get-Date
     $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
     Write-Host "Time duration for [IIS] Roles and features installation:"
-    $ResultTime | Select-Object Hours,Minutes,Seconds
+    $ResultTime | Format-Table -Property Hours,Minutes,Seconds | Out-Host
 } else {
     Write-Verbose "[IIS] roles and features are installed already!" -Verbose
 }
@@ -162,7 +163,7 @@ Write-Verbose "Windows ADK installation completed." -Verbose
 $EndTime = Get-Date
 $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
 Write-Host "Time duration for Windows ADK installation:"
-$ResultTime | Select-Object Hours,Minutes,Seconds
+$ResultTime | Format-Table -Property Hours,Minutes,Seconds | Out-Host
 } else {
     Write-Verbose "Windows ADK is installed already! Skipping the installation." -Verbose
 }
@@ -322,7 +323,7 @@ Try
         $EndTime = Get-Date
         $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
         Write-Host "Time duration for Microsoft SQL Server Installation:"
-        $ResultTime | Select-Object Hours,Minutes,Seconds
+        $ResultTime | Format-Table -Property Hours,Minutes,Seconds | Out-Host
         }  else {
         Write-Error "Could not find the media for SQL Server"
         break
@@ -359,7 +360,7 @@ Write-Verbose "Installation of WSUS roles and features completed." -Verbose
 $EndTime = Get-Date
 $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
 Write-Host "Time duration for WSUS roles and features Installation:"
-$ResultTime | Select-Object Hours,Minutes,Seconds
+$ResultTime | Format-Table -Property Hours,Minutes,Seconds | Out-Host
 } else {
     Write-Verbose "WSUS roles and features is installed already." -Verbose
 }
@@ -484,7 +485,7 @@ catch
     $EndTime = Get-Date
     $ResultTime = New-TimeSpan -Start $StartTime -End $EndTime
     Write-Host "Time duration for SCCM Installation:"
-    $ResultTime | Select-Object Hours,Minutes,Seconds
+    $ResultTime | Format-Table -Property Hours,Minutes,Seconds | Out-Host
 }
 }
 
