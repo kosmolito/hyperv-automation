@@ -747,6 +747,10 @@ if (!(test-path $SCCMAppSourceFolderPath -ErrorAction SilentlyContinue)) {
     } else { write-host -ForegroundColor Yellow "$SCCMAppSourceFolder folder is shared already!" }
 }
 
+$AppDeploymentConfirmation = Read-Host "Do you want to deploy [.msi] applications? (Y/N)"
+if ($AppDeploymentConfirmation -notlike "y") {
+    Write-Host "No confirmation received. Skipping Application Deployment"
+} else {
 
 Write-Host "Enter the .msi File in [$SCCMAppSourceFolderPath]. Press Enter to continue" -ForegroundColor Red
 Pause
