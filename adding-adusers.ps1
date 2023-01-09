@@ -104,8 +104,7 @@ switch ($selection)
         
         if (!(test-path "$ConfigFolder\random-generated-users.csv")) {
             Write-Error -Message "No file found!"
-            Pause
-            & $PSScriptRoot\adding-adusers.ps1
+            Invoke-Script -ScriptItem ItSelf
         } else {
             $UserList = import-csv -path "$ConfigFolder\random-generated-users.csv"
             if (($UserList.DomainName -like $null) -xor ($UserList.DomainName -like "") ) {
@@ -234,5 +233,4 @@ Invoke-Command -VMName $VMSelected.VMName -Credential $DomainCredential -ScriptB
     }
     Write-Verbose "User creation process finished." -Verbose
 }
-Pause
-& $PSScriptRoot\adding-adusers.ps1
+Invoke-Script -ScriptItem ItSelf
