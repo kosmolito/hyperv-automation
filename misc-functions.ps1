@@ -61,8 +61,7 @@ switch ($selection)
         }
 
         }
-        Pause
-       & $PSScriptRoot\misc-functions.ps1
+       Invoke-Script -ScriptItem ItSelf
     }
         
     "2"
@@ -78,8 +77,7 @@ switch ($selection)
         Write-Verbose "UPN Alternative added." -Verbose
 
         }
-        Pause
-        & $PSScriptRoot\misc-functions.ps1
+        Invoke-Script -ScriptItem ItSelf
     }
 
     "3"
@@ -98,12 +96,10 @@ switch ($selection)
 
         if ($DemoteConfirmation -notlike "yes") {
             Write-Host -ForegroundColor red "Sorry I did not get correct confirmation!"
-            Pause
-            & $PSScriptRoot\misc-functions.ps1
+            Invoke-Script -ScriptItem ItSelf
         } elseif ($VMSelected.count -ne 1) {
             Write-Host -ForegroundColor red "One ONE VM can be selected for this operation!"
-            Pause
-            & $PSScriptRoot\misc-functions.ps1
+            Invoke-Script -ScriptItem ItSelf
         } else {
 
 
@@ -164,8 +160,7 @@ switch ($selection)
             Write-Verbose "Cleaning Process Finished." -Verbose
         }
 
-        Pause
-        & $PSScriptRoot\misc-functions.ps1
+        Invoke-Script -ScriptItem ItSelf
 
         }
 
