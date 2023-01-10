@@ -75,15 +75,21 @@ Function Invoke-Script {
     [CmdletBinding()]
     param(
     [Parameter(Mandatory)][ValidateSet("Main","ItSelf")]
-    [String]$ScriptItem
+    [String]$ScriptItem,
+    [Parameter()]
+    [bool]$PauseBefore = $true
     )
 
     if ($ScriptItem -Like "Main") {
-        Pause
+        if ($PauseBefore -ne $False) {
+            Pause
+        }
         & "$PSScriptRoot\main.ps1"
     } elseif ($ScriptItem -Like "ItSelf" ) {
         # The path to running script
-        Pause
+        if ($PauseBefore -eq $True) {
+            Pause
+        }
         & $MyInvocation.PSCommandPath
     } else {
         Write-Error "Wrong argument Selected, only Main/Self is accepted"
