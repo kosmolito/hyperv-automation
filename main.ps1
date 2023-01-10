@@ -71,7 +71,7 @@ switch ($MenuSelected[0]) {
         $VMSelected = Read-Host "Select VM to deploy-configure, eg. 0,1 (b for back)"
 
         if ($VMSelected -like "b") {
-            & $PSScriptRoot\main.ps1
+            Invoke-Script -ScriptItem Main -PauseBefore $false
             exit
          } else {
             $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
@@ -94,7 +94,7 @@ switch ($MenuSelected[0]) {
             $MenuSelected = Read-Host "Please select the script to run`nMultiple scripts can be chosen eg. 0,2,5 (b for back)"
 
             if ($MenuSelected -like "b") {
-               & $PSScriptRoot\main.ps1
+                Invoke-Script -ScriptItem Main -PauseBefore $false
                exit
             } else {
                 $MenuSelected = $MenuSelected.split(',') | ForEach-Object {Invoke-Expression $_}
@@ -118,7 +118,7 @@ switch ($MenuSelected[0]) {
         $VMSelected = Read-Host "Select VM to configure, eg. 0,1 (b for back)"
 
         if ($VMSelected -like "b") {
-            & $PSScriptRoot\main.ps1
+            Invoke-Script -ScriptItem Main -PauseBefore $false
             exit
          } else {
             $VMSelected = $VMSelected.split(',') | ForEach-Object {Invoke-Expression $_}
@@ -137,7 +137,7 @@ switch ($MenuSelected[0]) {
             $MenuSelected = Read-Host "Please select the script to run`nMultiple scripts can be chosen eg. 0,2,5 (b for back)"
 
             if ($MenuSelected -like "b") {
-               & $PSScriptRoot\main.ps1
+                Invoke-Script -ScriptItem Main -PauseBefore $false
                exit
             } else {
                 $MenuSelected = $MenuSelected.split(',') | ForEach-Object {Invoke-Expression $_}
@@ -172,8 +172,7 @@ switch ($MenuSelected[0]) {
             
             ($ConfigFile | Where-Object {$_.HostName -like $HostName}).JSONTemplateFile = ($JSONTemplateList[$TemplateSelection]).FullName
             $ConfigFile | ConvertTo-Json | Out-File "$ConfigFolder\config.json"
-            Pause
-            & "$PSScriptRoot\main.ps1"
+            Invoke-Script -ScriptItem Main
         }
     }
 

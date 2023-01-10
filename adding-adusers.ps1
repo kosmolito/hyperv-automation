@@ -6,7 +6,7 @@ if ($VMSelected.Count -gt 1) {
     Write-Host " Warning! You have selected more than 1 AD/DC, please retry!" -ForegroundColor Yellow
     $Selection = Read-Host "(b for back)"
     switch ($Selection) {
-        "b" { & $PSScriptRoot\main.ps1 }
+        "b" { Invoke-Script -ScriptItem Main -PauseBefore $false }
         Default { exit }
     }
 
@@ -117,7 +117,7 @@ switch ($selection)
 
     "b" 
     { 
-        & $PSScriptRoot\main.ps1
+        Invoke-Script -ScriptItem Main -PauseBefore $False
         exit
     }
 

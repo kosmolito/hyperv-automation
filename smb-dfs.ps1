@@ -5,7 +5,7 @@ $VM = $VMList | Where-Object { ($_.isSelected -eq $true) }
 if ($VM.Count -lt 1) {
     Write-Error "No VM with file-server role found. Exiting!"
     exit
-    & $PSScriptRoot\main.ps1
+    Invoke-Script -ScriptItem Main -PauseBefore $false
 } else {
 
     if ($VM.MachineType -like "server" -and ($VM.HasJoinedDomain)) {

@@ -16,7 +16,7 @@ $ExistingVMList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Prope
 $VMSelected = Read-Host "Select VM to DELETE eg. 0,1, (b for back)"
 
 if ($VMSelected -like "b") {
-    & $PSScriptRoot\main.ps1
+    Invoke-Script -ScriptItem Main -PauseBefore $False
     exit
 } elseif ($ExistingVMList.count -gt 1) {
     $VMSelected = [array]$VMSelected
@@ -42,7 +42,7 @@ $ExistingVMSelected | Format-Table VMName,State,CreationTime
 $DeleteConfirmation = Read-Host "Do you really want to DELETE the machine(s)? (yes/no) (b for back)"
 
 if ($DeleteConfirmation -like "b") {
-    & $PSScriptRoot\delete-vm.ps1
+    Invoke-Script -ScriptItem ItSelf -PauseBefore $False
     exit
 } elseif ($DeleteConfirmation -notlike "yes") {
     Write-Host -ForegroundColor red "Sorry I did not get correct confirmation, EXITING!"
@@ -85,6 +85,6 @@ $BackOrExit = Read-Host "Please chose (b) for back, (e) for Exit"
 #########################################################################################################################
 ###################################### DELETING OF THE SELECTED VM IF CONFIRMED  ########################################
 switch ($BackOrExit) {
-    "b" { & $PSScriptRoot\main.ps1 }
+    "b" { Invoke-Script -ScriptItem Main -PauseBefore $False }
     "e" {exit}
 }
