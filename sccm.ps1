@@ -809,7 +809,7 @@ exit
 "B" 
 {
     # Go back to Main Menu
-    Invoke-Script -ScriptItem Main
+    Invoke-Script -ScriptItem Main -PauseBefore $false
 }
 
 Default 
