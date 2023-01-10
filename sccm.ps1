@@ -26,6 +26,10 @@ $Selection = Read-Host "Select an option from menu"
 
 if ( $Selection -match "All" ) {
     $Selection = "All"
+} elseif ( $Selection -like "Q") { 
+    $Selection = $Selection 
+} elseif ($Selection -like "B") {
+    $Selection = $Selection
 } else {
     $Selection = $Selection.Split(",") | ForEach-Object { Invoke-Expression $_ }
 }
