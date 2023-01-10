@@ -87,7 +87,7 @@ Function Invoke-Script {
         & "$PSScriptRoot\main.ps1"
     } elseif ($ScriptItem -Like "ItSelf" ) {
         # The path to running script
-        if ($PauseBefore -eq $True) {
+        if ($PauseBefore -ne $False) {
             Pause
         }
         & $MyInvocation.PSCommandPath
