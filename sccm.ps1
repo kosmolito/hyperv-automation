@@ -482,6 +482,8 @@ if (!($null -eq $SCCMStatus)) {
     Write-Verbose "Changing Account Permission of SQL Services and starting..." -Verbose
 foreach ($Item in $SQLServices) {
     $Service = Get-WmiObject win32_service -Filter "Name='$Item'"
+    # If the Service is not runned under the correct user and or is running, run this block
+    if (!($Service.StartName -like (whoami.exe) -and $Service.State -like "Running")) {
     $Service.StopService() | Out-Null
     Start-Sleep -Seconds 5
     $Service.Change($null,$null,$null,$null,$null,$null,$SQLSYSADMINACCOUNTS,$using:ServerPwdPlainText,$null,$null,$null) | Out-Null
@@ -494,6 +496,7 @@ foreach ($Item in $SQLServices) {
         Set-Service -Name $Item -Status Running
         Start-Sleep -Seconds 5
     }
+}
 }
 Write-Verbose "SQL Services Permission & Status OK." -Verbose
 
