@@ -64,13 +64,18 @@ switch ($Selection)
 
             ## FireWall config for SCCM Client installation ##
 
-            # Retriving the active network adapter
-            $NetAdapter = Get-NetAdapter | Where-Object {$_.Status -like "Up"}
             # Enable Files Sharing if its not enabled already
-            if (!($NetAdapter | Get-NetAdapterBinding -DisplayName "File and Printer Sharing for Microsoft Networks" | Where-Object {$_.Enabled -eq $true})) {
+            $FilePrintingSharingStatus = (Get-NetFirewallRule -DisplayGroup "File and Printer Sharing")
+            $FilePrintingSharingStatusCount = 0
+            $FilePrintingSharingStatus | ForEach-Object {
+                if ($_.Enabled -eq $false) {
+                    $FilePrintingSharingStatusCount++
+                }
+            }
+
+            if ($FilePrintingSharingStatusCount -gt 0 ) {
                 Write-Verbose "Enabling File and Printer Sharing..." -Verbose
-                $NetAdapter | Enable-NetAdapterBinding -DisplayName "File and Printer Sharing for Microsoft Networks"
-                Write-Verbose "File and Printer Sharing is enabled." -Verbose
+                Set-NetFirewallRule -DisplayGroup "File and Printer Sharing" -Enabled True -Profile Any
             } else {
                 Write-Verbose "File and Printer Sharing is enabled already" -Verbose
             }
