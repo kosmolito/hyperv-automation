@@ -49,6 +49,22 @@ On the first deployment you will be asked to enter the path for sysprep images. 
 
 This is done for each machine and the script is looking for hostname and in that way differentiating the path of sysprep images and the path where to store the new deployed VM.
 
+## Screenshots
+
+![Alt text](/screenshots/01_main-menu.jpg?raw=true)
+![Alt text](/screenshots/02_new_vm_list_to_create.jpg?raw=true)
+![Alt text](/screenshots/03_vm_deployment_network_configuration.jpg?raw=true)
+![Alt text](/screenshots/03_vm_deployment_network_configuration_2.jpg?raw=true)
+![Alt text](/screenshots/04_existing_vm_list_to_select.jpg?raw=true)
+![Alt text](/screenshots/05_roles_features_installatio_and_configuration.jpg?raw=true)
+![Alt text](/screenshots/05_roles_features_installatio_and_configuration_2.jpg?raw=true)
+![Alt text](/screenshots/06_creating_ad_users.jpg?raw=true)
+![Alt text](/screenshots/07_joining_vm_to_domain.jpg?raw=true)
+![Alt text](/screenshots/08_dfs_smb_folder_deployment_and_configuration.jpg?raw=true)
+![Alt text](/screenshots/08_dfs_smb_folder_deployment_and_configuration_2.jpg?raw=true)
+![Alt text](/screenshots/09_vm_deletion.jpg?raw=true)
+![Alt text](/screenshots/10_vm_template_from_json_file.jpg?raw=true)
+
 # Contributions
 
 Feel free to send pull requests or fill out issues when you encounter them. I'm also open to adding direct maintainers/contributors and working together!
