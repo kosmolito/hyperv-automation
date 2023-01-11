@@ -174,4 +174,3 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
 
 $VMList | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
 Write-Verbose "VM Creation Process Completed." -Verbose
-Invoke-Script -ScriptItem Main
