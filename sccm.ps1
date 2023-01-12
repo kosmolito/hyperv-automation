@@ -62,22 +62,26 @@ switch ($Selection)
     Invoke-VMConnectionConfirmation -VMName $_.VMName -Credential $Credential
         Invoke-Command -VMName $_.VMName -Credential $Credential -ScriptBlock {
 
-            ## FireWall config for SCCM Client installation ##
+            ## FireWall config for SCCM Client push installation ##
 
-            # Enable Files Sharing if its not enabled already
-            $FilePrintingSharingStatus = (Get-NetFirewallRule -DisplayGroup "File and Printer Sharing")
-            $FilePrintingSharingStatusCount = 0
-            $FilePrintingSharingStatus | ForEach-Object {
-                if ($_.Enabled -eq $false) {
-                    $FilePrintingSharingStatusCount++
+            # Enable Files Sharing, WMI and network discovery if its not enabled already
+            $Services = ("File and Printer Sharing","Windows Management Instrumentation (WMI)",”network discovery”)
+            $Services | ForEach-Object {
+                $Status = (Get-NetFirewallRule -DisplayGroup $_)
+                $StatusCount = 0
+                $Status | ForEach-Object {
+                    if ($_.Enabled -like "False") {
+                        $StatusCount++
+                    }
                 }
-            }
 
-            if ($FilePrintingSharingStatusCount -gt 0 ) {
-                Write-Verbose "Enabling File and Printer Sharing..." -Verbose
-                Set-NetFirewallRule -DisplayGroup "File and Printer Sharing" -Enabled True -Profile Any
-            } else {
-                Write-Verbose "File and Printer Sharing is enabled already" -Verbose
+                if ($StatusCount -gt 0 ) {
+                    Write-Verbose "Enabling [$($_)]..." -Verbose
+                    Set-NetFirewallRule -DisplayGroup $_ -Enabled True -Profile Any
+                    Write-Verbose "[$($_)] enabled." -Verbose
+                } else {
+                    Write-Verbose "[$($_)] is enabled already" -Verbose
+                }
             }
 
             $NonSCCMFireWallRules = @{
