@@ -52,5 +52,9 @@ $VMToExport | ForEach-Object {
         Start-Sleep -Seconds 1
     }
 
+    if (Test-Path ("$VMExportPath\$($_.VMName)")) {
+        Write-Error "The folder ["$VMExportPath\$($_.VMName)"] already exist! skipping [$($_.VMName)]"
+        Invoke-Script -ScriptItem ItSelf
+        exit
 }
 Invoke-Script -ScriptItem ItSelf
