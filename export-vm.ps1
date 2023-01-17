@@ -11,3 +11,23 @@ if ($VMSelected -like "b") {
 } elseif ($VMSelected -like "e") {
     exit
 }
+$VMSelected = $VMSelected.split(",")
+$VMSelected | ForEach-Object {
+
+    # If the selection is not a digit, trough an error and reload the script
+    if ($_ -notmatch "\d" ) {
+        write-Error "Only Numbers Allowed"
+        Invoke-Script -ScriptItem ItSelf
+        exit
+    }
+
+    # If the selection is out of index of available VM, through an errror and reload the script
+    $VMSelected = $VMSelected | ForEach-Object { Invoke-Expression $_ }
+    $VMSelected | ForEach-Object {
+        if ($_ -gt ($ExistingVMList.Count -1)) {
+            Write-Error "The selection was out of index! Try again."
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        }
+    }
+}
