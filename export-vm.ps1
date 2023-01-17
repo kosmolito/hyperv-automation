@@ -42,3 +42,15 @@ if ($VMExportPath -like "b") {
     Invoke-Script -ScriptItem ItSelf -PauseBefore $false
     exit
 }
+
+$VMToExport | ForEach-Object {
+
+    if ($_.State -like "Running") {
+        Write-Host "[$($_.VMName)] is in RUNNING state. Press Enter to turn off the VM"
+        Pause
+        Stop-VM -VMName $_.VMName -Force -Verbose
+        Start-Sleep -Seconds 1
+    }
+
+}
+Invoke-Script -ScriptItem ItSelf
