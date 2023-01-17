@@ -31,3 +31,14 @@ $VMSelected | ForEach-Object {
         }
     }
 }
+
+$VMToExport = $ExistingVMList[$VMSelected]
+Write-Host "VM Selected to export" -ForegroundColor Red
+$VMToExport | Format-Table Name,State
+
+$VMExportPath = Read-Host "Specify the path where you want to export the VM(s), (b) for back"
+
+if ($VMExportPath -like "b") {
+    Invoke-Script -ScriptItem ItSelf -PauseBefore $false
+    exit
+}
