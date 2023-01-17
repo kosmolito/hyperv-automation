@@ -171,7 +171,7 @@ switch ($MenuSelected[0]) {
         if ($TemplateSelection -like "B") {
             Invoke-Script -ScriptItem Main -PauseBefore $false
             exit
-        } 
+        }
         $TemplateSelection = [int32]$TemplateSelection
         if (($JSONTemplateSelection -cle -1) -xor ($JSONTemplateSelection -gt ($JSONTemplateList.Count -1)) ) {
             Write-Error "Wrong option entered! Exiting"
@@ -182,6 +182,13 @@ switch ($MenuSelected[0]) {
             Write-Host "The template is set to: $(($ConfigFile | Where-Object {$_.HostName -like $HostName}).JSONTemplateFile)" -ForegroundColor green
             Invoke-Script -ScriptItem Main
         }
+    }
+
+    "4"
+    {
+        Clear-Host
+        & $PSScriptRoot\export-vm.ps1
+        exit
     }
 
     Default {exit}
