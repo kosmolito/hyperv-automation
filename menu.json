@@ -15,6 +15,10 @@
     {
       "Option": "Change the Template File",
       "isSelected": false
+    },
+    {
+      "Option": "Export VM",
+      "isSelected": false
     }
   ],
   [
