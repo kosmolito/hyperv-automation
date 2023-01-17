@@ -52,9 +52,18 @@ $VMToExport | ForEach-Object {
         Start-Sleep -Seconds 1
     }
 
+    $VHD = Get-VHD -Path $_.HardDrives.Path
+    $VHD | Out-Host
     if (Test-Path ("$VMExportPath\$($_.VMName)")) {
         Write-Error "The folder ["$VMExportPath\$($_.VMName)"] already exist! skipping [$($_.VMName)]"
         Invoke-Script -ScriptItem ItSelf
         exit
+    } elseif ($VHD.VhdType -like "Differencing") {
+        Write-Error "differencing VHD type not supported! Skipping [$($_.VMName)]"
+        Invoke-Script -ScriptItem ItSelf
+        exit
+    } else {
+        Export-VM -Name $_.VMName -Path $VMExportPath -Verbose
+    }
 }
 Invoke-Script -ScriptItem ItSelf
