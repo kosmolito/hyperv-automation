@@ -56,6 +56,8 @@ elseif (($ConfigFile.Hostname -match $HostName).count -gt 1) {
         ServerTemplateGuiPath = $TempServerTemplateGuiPath
         ClientTemplatePath = $TempClientTemplatePath
         VMSwitchedConfigured = $False
+        VHDType = "Differencing"
+        DefaultNonDifferencingVHDDisk = "60GB"
     }
     $ConfigFile = [array]$ConfigFile + [array]$TempHost
     $ConfigFile | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\config.json"
