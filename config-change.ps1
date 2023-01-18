@@ -21,3 +21,20 @@ function Show-Menu {
 }
 
 Show-Menu
+$Selection = Read-Host "Select an option"
+
+switch ($Selection) {
+
+    "1" 
+    {
+        $Option = Read-Host "specify the folder where you want to save VM"
+        if ( (Get-Item $Option).Attributes -notlike "Directory" ) {
+            Write-Error "[$($Option)] is not a folder!"
+        } else {
+            $MyConfig.VMPath = $Option
+            $ConfigFile | ConvertTo-Json | Out-File "$ConfigFolder\config.json"
+        }
+    }
+
+    Default {}
+}
