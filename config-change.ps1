@@ -117,5 +117,31 @@ switch ($Selection) {
         }
     }
 
+    "6" 
+    {
+        Clear-Host
+        Write-Host "Current Template File" 
+        Write-Host "$(($ConfigFile | Where-Object {$_.HostName -like $HostName}).JSONTemplateFile)`n" -ForegroundColor Green
+        $JSONTemplateList = Get-ChildItem -Path $ConfigFolder | Where-Object {$_.Name -Match ".json$" -and $_.Name -like "*template*"}
+        Write-Host -ForegroundColor red "Template Files to Select" -NoNewline
+        $JSONTemplateList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Name | Out-Host
+        $TemplateSelection = Read-Host "Select a Template from the list (B for back)"
+
+        if ($TemplateSelection -like "B") {
+            Invoke-Script -ScriptItem ItSelf -PauseBefore $false
+            exit
+        }
+        $TemplateSelection = [int32]$TemplateSelection
+        if (($JSONTemplateSelection -cle -1) -xor ($JSONTemplateSelection -gt ($JSONTemplateList.Count -1)) ) {
+            Write-Error "Wrong option entered!"
+            Invoke-Script -ScriptItem ItSelf
+        } else {
+            ($ConfigFile | Where-Object {$_.HostName -like $HostName}).JSONTemplateFile = ($JSONTemplateList[$TemplateSelection]).FullName
+            $ConfigFile | ConvertTo-Json | Out-File "$ConfigFolder\config.json"
+            Write-Host "The template is set to: $(($ConfigFile | Where-Object {$_.HostName -like $HostName}).JSONTemplateFile)" -ForegroundColor green
+            Invoke-Script -ScriptItem Main
+        }
+    }
+
     Default {}
 }
