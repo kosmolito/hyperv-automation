@@ -36,5 +36,60 @@ switch ($Selection) {
         }
     }
 
+    "2" 
+    { 
+        if (!(Test-Path $Option)) {
+            Write-Error "The File does not exist!"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        } elseif ((Get-Item $Option).Extension -notlike ".vhdx") {
+            Write-Error "Only .vhdx files are accepted!"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        } else {
+            $MyConfig.ServerTemplateCorePath = $Option
+            $ConfigFile | ConvertTo-Json | Out-File "$ConfigFolder\config.json"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        }
+
+    }
+
+    "3" 
+    {  
+        if (!(Test-Path $Option)) {
+            Write-Error "The File does not exist!"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        } elseif ((Get-Item $Option).Extension -notlike ".vhdx") {
+            Write-Error "Only .vhdx files are accepted!"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        } else {
+            $MyConfig.ServerTemplateGuiPath = $Option
+            $ConfigFile | ConvertTo-Json | Out-File "$ConfigFolder\config.json"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        }
+    }
+
+    "4" 
+    {  
+        if (!(Test-Path $Option)) {
+            Write-Error "The File does not exist!"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        } elseif ((Get-Item $Option).Extension -notlike ".vhdx") {
+            Write-Error "Only .vhdx files are accepted!"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        } else {
+            $MyConfig.ClientTemplatePath = $Option
+            $ConfigFile | ConvertTo-Json | Out-File "$ConfigFolder\config.json"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        }
+    }
+
     Default {}
 }
