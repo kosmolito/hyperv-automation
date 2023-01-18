@@ -105,6 +105,8 @@ $VMPath = ($MyConfig).VMPath
 $ServerTemplateCorePath = ($MyConfig).ServerTemplateCorePath
 $ServerTemplateGuiPath = ($MyConfig).ServerTemplateGuiPath
 $ClientTemplatePath = ($MyConfig).ClientTemplatePath
+$VHDType = ($MyConfig).VHDType
+$DiskSize = ($MyConfig).DefaultNonDifferencingVHDDisk
 
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     Write-Verbose "Starting VM Creation Process...." -Verbose
@@ -132,7 +134,11 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     }
 
     # Provision New VM
-    $VHD = New-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx") -ParentPath $TemplatePath -Differencing
+    if ($VHDType -notlike "Differencing") {
+        $VHD = New-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx") -ParentPath $TemplatePath -SizeBytes $DiskSize -Dynamic
+    } else {
+        $VHD = New-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx") -ParentPath $TemplatePath -Differencing
+    }
 
     Write-Verbose "Deploying VM [$($VM.VMName)]" -Verbose
     new-vm -Name $VM.VMName -Path $VMPath  -VHDPath $VHD.Path -BootDevice VHD -Generation 2
