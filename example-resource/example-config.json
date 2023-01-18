@@ -6,7 +6,9 @@
     "ServerTemplateGuiPath": "D:\\hyper-v\\TEMPLATES\\srv-19\\sysprep-srv19.vhdx",
     "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\win-10-pro\\sysprep_win10pro.vhdx",
     "VMSwitchedConfigured": true,
-    "JSONTemplateFile": "C:\\git\\DESKWIN10PRO-ha-config\\org-template-machines.json"
+    "JSONTemplateFile": "C:\\git\\DESKWIN10PRO-ha-config\\org-template-machines.json",
+    "VHDType": "Differencing",
+    "DefaultNonDifferencingVHDDisk": "60GB"
   },
   {
     "HostName": "DESKWIN10PRO",
@@ -15,6 +17,8 @@
     "ServerTemplateGuiPath": "D:\\hyper-v\\TEMPLATES\\sysprep-srv19.vhdx",
     "ClientTemplatePath": "D:\\hyper-v\\TEMPLATES\\sysprep-win10pro.vhdx",
     "VMSwitchedConfigured": true,
-    "JSONTemplateFile": "C:\\git\\DESKWIN10PRO-ha-config\\org-template-machines.json"
+    "JSONTemplateFile": "C:\\git\\DESKWIN10PRO-ha-config\\org-template-machines.json",
+    "VHDType": "Differencing",
+    "DefaultNonDifferencingVHDDisk": "60GB"
   }
 ]
