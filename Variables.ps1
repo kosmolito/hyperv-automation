@@ -97,7 +97,7 @@ Function Invoke-Script {
 }
 
 ########################## End of Functions ##########################
-
+$ErrorActionPreference = [System.Management.Automation.ActionPreference]::Stop
 $LogDateTime = Get-Date -UFormat %Y-%m-%d-%H%M
 $HostName = $Env:COMPUTERNAME
 $ConfigFolder = ((Get-Location).Path | ForEach-Object { Split-Path -Path $_ -Parent }) + "\$HostName-ha-config"
@@ -151,6 +151,8 @@ if (!(test-path $ConfigFolder)) {
             ClientTemplatePath = $TempClientTemplatePath
             VMSwitchedConfigured = $False
             JSONTemplateFile = "$ConfigFolder\template-machines.json"
+            VHDType = "Differencing"
+            DefaultNonDifferencingVHDDisk = "60GB"
 
         }
         $ConfigFile = [array]$ConfigFile + [array]$TempHost
