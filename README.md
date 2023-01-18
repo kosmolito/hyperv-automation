@@ -20,7 +20,7 @@ The idea of this project is to speed up the VM deployments. Instead of creating 
     * The conversion of .JSON file in Powershell earlier than 7 is different, causing nasty problems.
 * .vhdx sysprep images.
 
-The scripts are deploying the VM as differencing disk and the parent disk needs to be present at all time. This can be changed in vm-deployments.ps1 file.
+The scripts are deploying the VM as differencing disk and the parent disk needs to be present at all time. This can be changed in the menu.
 
 ## Post deployment requirements
 
