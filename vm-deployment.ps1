@@ -100,11 +100,11 @@ if (($ConfigFile | Where-Object HostName -like $HostName).VMSwitchedConfigured -
 ($ConfigFile | Where-Object HostName -like $HostName).VMSwitchedConfigured = $True
 $ConfigFile | ConvertTo-Json | Out-File -Path "$ConfigFolder\config.json"
 }
-
-$VMPath = ($ConfigFile | Where-Object {$_.HostName -like $HostName}).VMPath
-$ServerTemplateCorePath = ($ConfigFile | Where-Object {$_.HostName -like $HostName}).ServerTemplateCorePath
-$ServerTemplateGuiPath = ($ConfigFile | Where-Object {$_.HostName -like $HostName}).ServerTemplateGuiPath
-$ClientTemplatePath = ($ConfigFile | Where-Object {$_.HostName -like $HostName}).ClientTemplatePath
+$MyConfig = $ConfigFile | Where-Object {$_.HostName -like $HostName}
+$VMPath = ($MyConfig).VMPath
+$ServerTemplateCorePath = ($MyConfig).ServerTemplateCorePath
+$ServerTemplateGuiPath = ($MyConfig).ServerTemplateGuiPath
+$ClientTemplatePath = ($MyConfig).ClientTemplatePath
 
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     Write-Verbose "Starting VM Creation Process...." -Verbose
