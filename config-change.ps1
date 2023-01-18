@@ -91,5 +91,31 @@ switch ($Selection) {
         }
     }
 
+    "5" 
+    {
+        $VHDTypes = [PSCustomObject]@{ Type = "Differencing" },[PSCustomObject]@{ Type = "Dynamic" }
+
+        $VHDTypes | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Type | Out-Host
+        $Option = Read-Host "Select VHD Type option from above (0/1)"
+        
+        if ($Option -like "b") {
+            Invoke-Script -ScriptItem ItSelf -PauseBefore $false
+            exit
+        }
+        
+        if ($Option -notmatch "\d") {
+            "Only Numbers allowed"
+        } elseif ( ($Option -gt ($VHDTypes.Count - 1)) -or ($Option -lt 0) ) {
+            write-error "Selection Out of index!"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        } else {
+            $MyConfig.VHDType = $VHDTypes[$Option].Type
+            $ConfigFile | ConvertTo-Json | Out-File "$ConfigFolder\config.json"
+            Invoke-Script -ScriptItem ItSelf
+            exit
+        }
+    }
+
     Default {}
 }
