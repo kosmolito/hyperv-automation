@@ -137,7 +137,11 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
 
     # Provision New VM
     if ($VHDType -notlike "Differencing") {
-        $VHD = New-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx") -ParentPath $TemplatePath -SizeBytes $DiskSize -Dynamic
+        New-Item -ItemType Directory -Path ($VMPath + "\" + $VM.VMName)
+        Copy-Item -Path $TemplatePath -Destination ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx") -Verbose
+        Set-ItemProperty -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx") -Name IsReadOnly -Value $False | Out-Null
+        Start-Sleep -Seconds 2
+        $VHD = Get-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx")
     } else {
         $VHD = New-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx") -ParentPath $TemplatePath -Differencing
     }
