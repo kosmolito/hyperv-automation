@@ -35,8 +35,6 @@ General notes
             $VHD = ($VMPath + "\" + $VMName + "DATA" + $Num + ".vhdx")
         }
 
-
-
         $NewVHD = New-VHD -Path $VHD -SizeBytes $DiskSize -Dynamic
         Write-Verbose "Attaching [$($NewVHD.Path)] Disk to [$($VMName)]" -Verbose
         Add-VMHardDiskDrive -VMName $VMName -Path $VHD
@@ -152,8 +150,6 @@ if (!(test-path $ConfigFolder)) {
             VMSwitchedConfigured = $False
             JSONTemplateFile = "$ConfigFolder\template-machines.json"
             VHDType = "Differencing"
-            DefaultNonDifferencingVHDDisk = "60GB"
-
         }
         $ConfigFile = [array]$ConfigFile + [array]$TempHost
         $ConfigFile | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\config.json"
@@ -228,7 +224,10 @@ $DomainName = $Credentials.DomainName
 $DomainNetbiosName = $DomainName.Split(".")[0]
 
 $ClientLocalAdmin = $Credentials.ClientLocalAdmin
-$ClientLocalPwd = ConvertTo-SecureString $Credentials.ClientLocalPwd -AsPlainText -Force
+# if password for client is is not empty
+if (!($Credentials.ClientLocalPwd -like "")) {
+    $ClientLocalPwd = ConvertTo-SecureString $Credentials.ClientLocalPwd -AsPlainText -Force
+}
 $ClientCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ClientLocalAdmin, $ClientLocalPwd
 
 $ServerLocalAdmin = $Credentials.ServerLocalAdmin

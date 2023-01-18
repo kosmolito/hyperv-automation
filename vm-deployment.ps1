@@ -108,7 +108,6 @@ $ServerTemplateCorePath = ($MyConfig).ServerTemplateCorePath
 $ServerTemplateGuiPath = ($MyConfig).ServerTemplateGuiPath
 $ClientTemplatePath = ($MyConfig).ClientTemplatePath
 $VHDType = ($MyConfig).VHDType
-$DiskSize = ($MyConfig).DefaultNonDifferencingVHDDisk
 
 foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     Write-Verbose "Starting VM Creation Process...." -Verbose
@@ -135,7 +134,7 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     exit
     }
 
-    # Provision New VM
+    # Deploy New VM
     if ($VHDType -notlike "Differencing") {
         New-Item -ItemType Directory -Path ($VMPath + "\" + $VM.VMName)
         Copy-Item -Path $TemplatePath -Destination ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + ".vhdx") -Verbose
