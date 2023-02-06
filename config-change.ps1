@@ -28,8 +28,8 @@ switch ($Selection) {
     "1" 
     {
         $Option = Read-Host "specify the folder where you want to save VM"
-        if ( (Get-Item $Option).Attributes -notlike "Directory" ) {
-            Write-Error "[$($Option)] is not a folder!"
+        if ( (Get-Item $Option -ErrorAction SilentlyContinue).Attributes -notlike "Directory" ) {
+            Write-Host -ForegroundColor Yellow "[$($Option)] is not a folder!"
         } else {
             $MyConfig.VMPath = $Option
             $ConfigFile | ConvertTo-Json | Out-File "$ConfigFolder\config.json"
@@ -38,12 +38,13 @@ switch ($Selection) {
 
     "2" 
     { 
-        if (!(Test-Path $Option)) {
-            Write-Error "The File does not exist!"
+        $Option = Read-Host "specify the path to the .vhdx file for the server template (Core)"
+        if (!(Test-Path $Option -ErrorAction SilentlyContinue)) {
+            write-host -ForegroundColor Yellow "The file does not exist!"
             Invoke-Script -ScriptItem ItSelf
             exit
-        } elseif ((Get-Item $Option).Extension -notlike ".vhdx") {
-            Write-Error "Only .vhdx files are accepted!"
+        } elseif ((Get-Item $Option -ErrorAction SilentlyContinue).Extension -notlike ".vhdx") {
+            Write-Host -ForegroundColor Yellow "Only .vhdx files are accepted!"
             Invoke-Script -ScriptItem ItSelf
             exit
         } else {
@@ -57,12 +58,13 @@ switch ($Selection) {
 
     "3" 
     {  
-        if (!(Test-Path $Option)) {
-            Write-Error "The File does not exist!"
+        $Option = Read-Host "specify the path to the .vhdx file for the server template (GUI)"
+        if (!(Test-Path $Option -ErrorAction SilentlyContinue)) {
+            Write-Host -ForegroundColor Yellow "The file does not exist!"
             Invoke-Script -ScriptItem ItSelf
             exit
-        } elseif ((Get-Item $Option).Extension -notlike ".vhdx") {
-            Write-Error "Only .vhdx files are accepted!"
+        } elseif ((Get-Item $Option -ErrorAction SilentlyContinue).Extension -notlike ".vhdx") {
+            Write-Host -ForegroundColor Yellow "Only .vhdx files are accepted!"
             Invoke-Script -ScriptItem ItSelf
             exit
         } else {
@@ -75,12 +77,13 @@ switch ($Selection) {
 
     "4" 
     {  
-        if (!(Test-Path $Option)) {
-            Write-Error "The File does not exist!"
+        $Option = Read-Host "specify the path to the .vhdx file for the client template"
+        if (!(Test-Path $Option -ErrorAction SilentlyContinue)) {
+            Write-Host -ForegroundColor Yellow "The file does not exist!"
             Invoke-Script -ScriptItem ItSelf
             exit
-        } elseif ((Get-Item $Option).Extension -notlike ".vhdx") {
-            Write-Error "Only .vhdx files are accepted!"
+        } elseif ((Get-Item $Option -ErrorAction SilentlyContinue).Extension -notlike ".vhdx") {
+            Write-Host -ForegroundColor Yellow "Only .vhdx files are accepted!"
             Invoke-Script -ScriptItem ItSelf
             exit
         } else {
@@ -106,7 +109,7 @@ switch ($Selection) {
         if ($Option -notmatch "\d") {
             "Only Numbers allowed"
         } elseif ( ($Option -gt ($VHDTypes.Count - 1)) -or ($Option -lt 0) ) {
-            write-error "Selection Out of index!"
+            Write-Host -ForegroundColor Yellow "Selection Out of index!"
             Invoke-Script -ScriptItem ItSelf
             exit
         } else {
@@ -133,7 +136,7 @@ switch ($Selection) {
         }
         $TemplateSelection = [int32]$TemplateSelection
         if (($JSONTemplateSelection -cle -1) -xor ($JSONTemplateSelection -gt ($JSONTemplateList.Count -1)) ) {
-            Write-Error "Wrong option entered!"
+            Write-Host -ForegroundColor Yellow "Wrong option entered!"
             Invoke-Script -ScriptItem ItSelf
         } else {
             ($ConfigFile | Where-Object {$_.HostName -like $HostName}).JSONTemplateFile = ($JSONTemplateList[$TemplateSelection]).FullName
