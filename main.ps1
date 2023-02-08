@@ -31,7 +31,7 @@ $VMList = Get-Content -Path "$ConfigFolder\inventory.json" | ConvertFrom-Json
 foreach ($VM in $TemplateMachines) {
     $VM.isSelected = $false
 }
-$TemplateMachines | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\template-machines.json"
+$TemplateMachines | ConvertTo-Json | Out-File -FilePath $JSONTemplatePath
 
 if (!($VMList -like $Null)) {
     foreach ($VM in $VMList) {
@@ -66,7 +66,7 @@ switch ($MenuSelected[0]) {
     { 
         Clear-Host
         Write-Host -ForegroundColor red "New VM To Deploy"
-        $TemplateMachines | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},VMName,DomainName,isCore,IPAddress,Roles,NonOSHardDrivs
+        $TemplateMachines | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},VMName,DomainName,isCore,IPAddress,DNSAddress,Roles,NonOSHardDrivs
         # Select the script to run and Convert the string array to int array
         $VMSelected = Read-Host "Select VM to deploy-configure, eg. 0,1 (b for back)"
 
@@ -81,15 +81,15 @@ switch ($MenuSelected[0]) {
         foreach ($VM in $TemplateMachines[$VMSelected]) {
             $VM.isSelected = $True
         }
-        $TemplateMachines | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\template-machines.json"
-        $TemplateMachines[$VMSelected] | Format-table -Property VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
+        $TemplateMachines | ConvertTo-Json | Out-File -FilePath $JSONTemplatePath
+        $TemplateMachines[$VMSelected] | Format-table -Property VMName,MachineType,isCore,IPAddress,DNSAddress,NonOSHardDrivs,Roles
         $VMList = [array]$VMList + [array]$TemplateMachines[$VMSelected] | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
 
 
             Clear-Host
             Write-Host -ForegroundColor red "New VM Selected To Deploy"
             Write-Host "You can change and save the JSON inventory file to desired values before continue" -ForegroundColor Yellow
-            $TemplateMachines[$VMSelected] | Format-table VMName,DomainName,isCore,IPAddress,Roles,NonOSHardDrivs
+            $TemplateMachines[$VMSelected] | Format-table VMName,DomainName,isCore,IPAddress,DNSAddress,Roles,NonOSHardDrivs
             $Menu[1] | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Option | Out-Host
             $MenuSelected = Read-Host "Please select the script to run`nMultiple scripts can be chosen eg. 0,2,5 (b for back)"
 
@@ -114,7 +114,7 @@ switch ($MenuSelected[0]) {
         Write-Host -ForegroundColor red "Existing VM To Configure"
         ## This field is is entered in order to add "INDEX" column to the object
         ## ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}} is for 
-        $VMList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},VMName,DomainName,isCore,IPAddress,Roles,NonOSHardDrivs
+        $VMList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},VMName,DomainName,isCore,IPAddress,DNSAddress,Roles,NonOSHardDrivs
         $VMSelected = Read-Host "Select VM to configure, eg. 0,1 (b for back)"
 
         if ($VMSelected -like "b") {
@@ -128,7 +128,7 @@ switch ($MenuSelected[0]) {
             $VM.isSelected = $True
         }
         $VMList | ConvertTo-Json | Out-File -FilePath "$ConfigFolder\inventory.json"
-        $VMList[$VMSelected] | Format-table -Property VMName,MachineType,isCore,IPAddress,NonOSHardDrivs,Roles
+        $VMList[$VMSelected] | Format-table -Property VMName,MachineType,isCore,IPAddress,DNSAddress,NonOSHardDrivs,Roles
 
             Clear-Host
             Write-Host -ForegroundColor red "Existing VM Selected To Configure"
