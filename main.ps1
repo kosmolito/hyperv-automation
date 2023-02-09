@@ -132,7 +132,7 @@ switch ($MenuSelected[0]) {
 
             Clear-Host
             Write-Host -ForegroundColor red "Existing VM Selected To Configure"
-            $VMList[$VMSelected] | Format-table -Property VMName,DomainName,IPAddress,Roles
+            $VMList[$VMSelected] | Format-table -Property VMName,DomainName,IPAddress,DNSAddress,Roles
             $Menu[1][1..$Menu[1].Length] | ForEach-Object {$index=1} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Option | Out-Host
             $MenuSelected = Read-Host "Please select the script to run`nMultiple scripts can be chosen eg. 0,2,5 (b for back)"
 
