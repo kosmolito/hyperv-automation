@@ -30,7 +30,7 @@
     "SubMaskBit": "24",
     "Path": "",
     "HardDrives": [],
-    "NonOSHardDrivs": [],
+    "DataHDD": [],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
@@ -71,7 +71,7 @@
     "SubMaskBit": "24",
     "Path": "",
     "HardDrives": [],
-    "NonOSHardDrivs": [],
+    "DataHDD": [],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
@@ -112,7 +112,7 @@
     "MachineType": "server",
     "Path": "",
     "HardDrives": [],
-    "NonOSHardDrivs": [],
+    "DataHDD": [],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
@@ -153,7 +153,7 @@
     "MachineType": "server",
     "Path": "",
     "HardDrives": [],
-    "NonOSHardDrivs": [],
+    "DataHDD": [],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
@@ -193,7 +193,7 @@
     "SubMaskBit": "24",
     "Path": "",
     "HardDrives": [],
-    "NonOSHardDrivs": [],
+    "DataHDD": [],
     "ComputerName": "",
     "ProcessorCount": 2,
     "MemoryStartup": 2147483648,
@@ -218,7 +218,7 @@
     "NetworkSwitches": [
       "pfLAN1"
     ],
-    "NonOSHardDrivs": [
+    "DataHDD": [
       2,
       "20GB"
     ],
@@ -262,7 +262,7 @@
     "NetworkSwitches": [
       "pfLAN1"
     ],
-    "NonOSHardDrivs": [
+    "DataHDD": [
       2,
       "20GB"
     ],
@@ -307,7 +307,7 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "NonOSHardDrivs": [],
+    "DataHDD": [],
     "NonOSDriveLetter": "",
     "VMId": "",
     "Path": "",
@@ -339,7 +339,7 @@
       "192.168.10.10"
     ],
     "SubMaskBit": "24",
-    "NonOSHardDrivs": [],
+    "DataHDD": [],
     "NonOSDriveLetter": "",
     "VMId": "",
     "Path": "",

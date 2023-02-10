@@ -163,16 +163,16 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     $VM.HasJoinedDomain = $False
 
     # If both index 0 and index 1 on the machine is filled, create the hard-drives then
-    if ($($VM.NonOSHardDrivs[0]) -and $($VM.NonOSHardDrivs[1]) ) {
+    if ($($VM.DataHDD[0]) -and $($VM.DataHDD[1]) ) {
         Write-Verbose "Creating Non OS VHD.... for $($VM.VMName)" -Verbose
-        $HardDriveAmount = [int32]$VM.NonOSHardDrivs[0]
-        $HardDriveSize = [UInt64]$VM.NonOSHardDrivs[1]
+        $HardDriveAmount = [int32]$VM.DataHDD[0]
+        $HardDriveSize = [UInt64]$VM.DataHDD[1]
 
         for ($i = 0; $i -lt $HardDriveAmount; $i++) {
             ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + "DATA" + $i + ".vhdx")
-            $NonOSHardDrive = New-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + "DATA" + $i + ".vhdx") -SizeBytes $HardDriveSize -Dynamic
-            Write-Verbose "Attaching [$($NonOSHardDrive.Path)] Disk to [$($VM.VMName)]" -Verbose
-            Add-VMHardDiskDrive -VMName $VM.VMName -Path $NonOSHardDrive.Path
+            $DataHDD = New-VHD -Path ($VMPath + "\" + $VM.VMName + "\" + $VM.VMName + "DATA" + $i + ".vhdx") -SizeBytes $HardDriveSize -Dynamic
+            Write-Verbose "Attaching [$($DataHDD.Path)] Disk to [$($VM.VMName)]" -Verbose
+            Add-VMHardDiskDrive -VMName $VM.VMName -Path $DataHDD.Path
         }
     }
 
