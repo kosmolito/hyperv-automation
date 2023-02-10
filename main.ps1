@@ -149,26 +149,13 @@ switch ($MenuSelected[0]) {
             $Menu[1][$MenuSelected] | Format-Table option
 
     }
-    "2" 
-    {
-        Clear-Host
-        & $PSScriptRoot\delete-vm.ps1
-        exit
-    }
 
-    "3" 
-    {
-        & "$PSScriptRoot\config-change.ps1"
-        exit
-    }
+    "2" { Clear-Host;& $PSScriptRoot\delete-vm.ps1;exit }
 
-    "4"
-    {
-        Clear-Host
-        & $PSScriptRoot\export-vm.ps1
-        exit
-    }
+    "3" { Clear-Host;& "$PSScriptRoot\config-change.ps1";exit }
 
+    "4" { Clear-Host;& "$PSScriptRoot\export-vm.ps1";exit }
+    
     Default {exit}
 }
 
