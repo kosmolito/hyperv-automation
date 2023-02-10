@@ -26,6 +26,4 @@ for ($i = 0; $i -lt $UserAmount; $i++) {
 		SecurityGroups = "SEC_$($RAWGeneralSecurityGroup)" + "," + "SEC_$($SecurityGroup[$RandomSecurityGroup])"
 		OU = $OU[$RandomOU]
 		} | Export-Csv -Path $RandomCsvFilePath -Append -Encoding ASCII
-	$UserList = import-csv -Path $RandomCsvFilePath
 	}
-$UserList = Import-Csv -Path $RandomCsvFilePath
