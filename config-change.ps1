@@ -146,16 +146,9 @@ switch ($Selection) {
         }
     }
 
-    "b" 
-    {
-        Invoke-Script -ScriptItem Main -PauseBefore $false
-        exit
-    } 
+    "b" { Invoke-Script -ScriptItem Main -PauseBefore $false;exit } 
     
-    "e" 
-    {
-        exit
-    }
+    "e" { exit }
 
     Default {}
 }

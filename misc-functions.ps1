@@ -166,11 +166,7 @@ switch ($selection)
 
     }
 
-    "b" 
-    { 
-        Invoke-Script -ScriptItem Main -PauseBefore $false
-        exit
-    }
+    "b" { Invoke-Script -ScriptItem Main -PauseBefore $false;exit }
 
     "q" { exit }
 

@@ -812,22 +812,12 @@ Invoke-Script -ScriptItem ItSelf
 exit
 }
 
-"Q" 
-{
     # Quick the program
-    exit 
-}
+"Q" { exit }
 
-"B" 
-{
     # Go back to Main Menu
-    Invoke-Script -ScriptItem Main -PauseBefore $false
-}
+"B" { Invoke-Script -ScriptItem Main -PauseBefore $false }
 
-Default 
-{ 
-Write-Error "Wrong Selection!"
-Invoke-Script -ScriptItem ItSelf
-}
+Default { Write-Host "Wrong Selection!" -ForegroundColor Red; Invoke-Script -ScriptItem ItSelf }
 
 }
