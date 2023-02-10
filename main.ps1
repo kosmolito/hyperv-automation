@@ -33,7 +33,7 @@ foreach ($VM in $TemplateMachines) {
 }
 $TemplateMachines | ConvertTo-Json | Out-File -FilePath $JSONTemplatePath
 
-if (!($VMList -like $Null)) {
+if (!( $Null -like $VMList )) {
     foreach ($VM in $VMList) {
         $VM.isSelected = $false
     }
@@ -112,8 +112,6 @@ switch ($MenuSelected[0]) {
     {
         Clear-Host
         Write-Host -ForegroundColor red "Existing VM To Configure"
-        ## This field is is entered in order to add "INDEX" column to the object
-        ## ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}} is for 
         $VMList | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},VMName,DomainName,isCore,IPAddress,DNSAddress,Roles,NonOSHardDrivs
         $VMSelected = Read-Host "Select VM to configure, eg. 0,1 (b for back)"
 
