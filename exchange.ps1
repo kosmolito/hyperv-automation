@@ -232,6 +232,20 @@ switch ($Selection) {
                 Write-Verbose "/PrepareSchema & /PrepareAD are already completed." -Verbose
             }
         
+            # Check if Exchange Server 2019 is installed already and if not, install it
+            try {
+                Add-PSSnapin Microsoft.Exchange.Management.PowerShell.SnapIn -ErrorAction stop
+                Write-Verbose "Exchange Server 2019 is already installed." -Verbose
+            }
+            catch {
+                $LogFile = "$($LogFolder)\exchange-server-installation.log"
+                Write-Verbose "Installing Exchange Server 2019..." -Verbose
+                .\setup.exe /IAcceptExchangeServerLicenseTerms_DiagnosticDataOFF /Role:Mailbox /InstallWindowsComponents /OrganizationName:$($DCNetBIOSName) /TargetDir:$($ExchangeFolder) /LogFolderPath:$($LogFile)
+                Write-Verbose "Exchange Server 2019 installed successfully." -Verbose
+                Write-Verbose "Restarting [$($VM.VMName)]..."
+                Restart-Computer -Force
+            }
+        }
     }
     "Q" 
     {
