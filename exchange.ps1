@@ -58,6 +58,17 @@ switch ($Selection) {
 
     "2" 
     {  
+
+        if ($VM.HasJoinedDomain -eq $false) {
+            Write-Warning "[$($VM.VMName)] is not joined to the domain."
+            $Answer = Read-Host "$($VM.VMName) is not joined to the domain. Do you want to join [$($VM.VMName)] to the domain [$($VM.DomainName)]? (y/n)"
+            if ($Answer -like "y") {
+                & .\join-domain.ps1
+            } else {
+                Write-Host "Skipping $($VM.Name)"
+                Invoke-Script -ScriptItem Main
+            }
+        }
     }
     "Q" 
     {
