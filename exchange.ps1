@@ -75,6 +75,33 @@ switch ($Selection) {
             Start-VM -VMName $VM.VMName
             Start-Sleep -Seconds 2
         }        
+        
+        Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
+        $RestartNeeded = Invoke-Command -VMName $VM.VMName -Credential $Credential -ScriptBlock {
+        
+            $VM = $using:VM
+            $LogFolder = "$($env:USERPROFILE)\Desktop\logs"
+            if (!(Test-Path $LogFolder)) {
+                New-Item -ItemType Directory -Path $LogFolder | Out-Null
+            }
+            $ExchangePreReqFolder = "C:\exchange-prereq"
+
+            ########################################
+            ############## DOTNET 4.8 ##############
+        
+            # Check if dotnet 4.8 is installed, 528040 is the build number for dotnet 4.8
+            $IsDotNet48Installed = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full").Release -ge 528040
+        
+            if (!($IsDotNet48Installed)) {
+                Write-Verbose "Installing Dotnet 4.8..." -Verbose
+                $LogFile = "$($LogFolder)\DotNET48-Install"
+                Start-Process "$($ExchangePreReqFolder)\ndp48.exe" -ArgumentList "/install /quiet /norestart /log $($LogFile)" -NoNewWindow -Wait
+                Start-Sleep -Seconds 5
+                write-verbose "Dotnet 4.8 installed successfully" -Verbose
+            } else {
+                write-verbose "Dotnet 4.8 or newer version is already installed" -Verbose 
+            }
+        }
     }
     "Q" 
     {
