@@ -197,6 +197,24 @@ switch ($Selection) {
                 } else {
                     Write-Verbose "URL Rewrite is already installed." -Verbose
         }
+        
+
+            Set-Location "$($ExchISODriveLetter):\"
+            ####################################################################
+            ############## Unified Communications Managed API 4.0 ##############
+        
+            # Check if Unified Communications Managed API 4.0 is installed
+            $IsUCMAv4Installed = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{ED98ABF5-B6BF-47ED-92AB-1CDCAB964447}" -ErrorAction SilentlyContinue).DisplayVersion
+            if ($IsUCMAv4Installed -notlike "5.0.8308.0") {
+                $LogFile = "$($LogFolder)\ucma.htm"
+                Write-Verbose "Installing Unified Communications Managed API 4.0..." -Verbose
+                Start-Process "$($ExchISODriveLetter):\UCMARedist\setup.exe" -ArgumentList "/q /log $($LogFile)" -NoNewWindow -Wait
+                Start-Sleep -Seconds 2
+            } else {
+                Write-Verbose "Unified Communications Managed API 4.0 is already installed." -Verbose
+            }
+        
+        
     }
     "Q" 
     {
