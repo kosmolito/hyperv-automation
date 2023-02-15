@@ -12,7 +12,8 @@ The idea of this project is to speed up the VM deployments. Instead of creating 
 - [x] Creating Storage Pool with SMB and DFS shares
 - [x] Demoting a Domain Controller
 - [x] Ability to chose JSON VM Template file
-- [x] SCCM (2103) Installation & Application Deployment (05-01-2023) 
+- [x] SCCM (2103) Installation & Application Deployment (05-01-2023)
+- [x] Microsoft Exchange Server 2109 Deployment (15-02-2023)
 
 ## requirements
 
