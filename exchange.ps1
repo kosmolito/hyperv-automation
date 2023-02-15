@@ -119,6 +119,13 @@ switch ($Selection) {
                 Windows-Identity-Foundation, RSAT-ADDS
                 $RequiredFeatures
             }
+            if ($RequiredFeatures.RestartNeeded -like "yes") {
+                Restart-Computer -Force
+            }
+        
+            # Return the value of $RequiredFeatures.RestartNeeded to the parent scriptblock:
+            return $RequiredFeatures.RestartNeeded
+        }
         }
     }
     "Q" 
