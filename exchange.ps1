@@ -69,6 +69,12 @@ switch ($Selection) {
                 Invoke-Script -ScriptItem Main
             }
         }
+        
+        if ((Get-VM -VMName $VM.VMName).State -ne "Running") {
+            Write-Verbose "Starting [$($VM.VMName)]..." -Verbose
+            Start-VM -VMName $VM.VMName
+            Start-Sleep -Seconds 2
+        }        
     }
     "Q" 
     {
