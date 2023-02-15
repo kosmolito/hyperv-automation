@@ -21,3 +21,34 @@ function Show-Menu {
     Write-Host "  B: Back to Main Menu" -ForegroundColor Green
     Write-Host "  Q: To quit" -ForegroundColor Green
 }
+
+Show-Menu
+$Selection = Read-Host "Select an option from menu"
+
+switch ($Selection) {
+
+    "1" 
+    {
+    }
+
+    "2" 
+    {  
+    }
+    "Q" 
+    {
+        # Quit the program
+        exit 
+    }
+    
+    "B" 
+    {
+        # Go back to Main Menu
+        Invoke-Script -ScriptItem Main -PauseBefore $false
+    }
+    
+    Default 
+    { 
+    Write-Host "Wrong Selection!" -ForegroundColor Red
+    Invoke-Script -ScriptItem ItSelf
+    }
+    }
