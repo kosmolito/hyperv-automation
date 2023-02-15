@@ -215,6 +215,23 @@ switch ($Selection) {
             }
         
         
+            $ExchangeADObjects = (get-adObject -Filter * | Where-Object {$_.DistinguishedName -match "Exchange"}).Count
+        
+            # Check if "Exchange" AD Objects exists already and if not (at least 24 objects), run /PrepareSchema & /PrepareAD
+            if ($ExchangeADObjects -lt 24) {
+                Write-Verbose "Running /PrepareSchema..." -Verbose
+                .\setup.exe /IAcceptExchangeServerLicenseTerms_DiagnosticDataOFF /PrepareSchema
+                Start-Sleep -Seconds 5
+                Write-Verbose "/PrepareSchema completed." -Verbose
+        
+                Write-Verbose "Running /PrapareAD..." -Verbose
+                .\setup.exe /IAcceptExchangeServerLicenseTerms_DiagnosticDataOFF /PrepareAD /OrganizationName:$($DCNetBIOSName)
+                Start-Sleep -Seconds 5
+                Write-Verbose "/PrepareAD completed." -Verbose
+            } else {
+                Write-Verbose "/PrepareSchema & /PrepareAD are already completed." -Verbose
+            }
+        
     }
     "Q" 
     {
