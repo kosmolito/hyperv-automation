@@ -246,6 +246,7 @@ switch ($Selection) {
                 Restart-Computer -Force
             }
         }
+    Invoke-Script -ScriptItem ItSelf
     }
     "Q" 
     {
