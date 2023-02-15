@@ -26,6 +26,7 @@ function Show-Menu {
     Write-Host "2: Specifying the .csv file to import." -ForegroundColor Green
     Write-Host "3: Random generate users" -ForegroundColor green
     Write-Host "4: Import from last random generate file" -ForegroundColor Green
+    Write-Host "5: Import from list of .csv in config folder" -ForegroundColor Green
     Write-Host "B: Back to main menu" -ForegroundColor Green
     Write-Host "Q: To quit." -ForegroundColor Green
 
@@ -107,6 +108,30 @@ switch ($selection)
             Invoke-Script -ScriptItem ItSelf
         } else {
             $UserList = import-csv -path "$ConfigFolder\random-generated-users.csv"
+            if (($null -like $UserList.DomainName) -xor ($UserList.DomainName -like "") ) {
+                $UserDomainName = Read-Host "No Domain Found! Specify the domain/upn eg. mstile.se"
+                $UserList = $UserList | Select-Object *, @{n=”DomainName”;e={$UserDomainName}}
+            }
+        }
+
+     }
+
+     "5" {
+
+        # Showing the .csv file from the config folder
+        $CsvFiles = Get-ChildItem -path $ConfigFolder -include *.csv -Recurse
+        $CsvFiles | ForEach-Object {$index=0} {$_; $index++} | Format-Table -Property @{Label="Index";Expression={$index}},Name
+        $CsvSelection =  Read-Host -Prompt "Select ONE of the .csv file (B) for back to menu"
+        if ($CsvSelection -eq "b") {
+            Invoke-Script -ScriptItem ItSelf
+        } else { $CsvSelection = [int32]$CsvSelection }
+
+        if (!(Test-Path $CsvFiles[$CsvSelection].FullName -ErrorAction SilentlyContinue)) {
+            Write-Host "No file found!" -ForegroundColor Red
+            Invoke-Script -ScriptItem ItSelf
+        } else {
+            $UserList = import-csv -path $CsvFiles[$CsvSelection].FullName
+            $UserList
             if (($null -like $UserList.DomainName) -xor ($UserList.DomainName -like "") ) {
                 $UserDomainName = Read-Host "No Domain Found! Specify the domain/upn eg. mstile.se"
                 $UserList = $UserList | Select-Object *, @{n=”DomainName”;e={$UserDomainName}}
