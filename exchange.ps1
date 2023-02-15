@@ -168,6 +168,20 @@ switch ($Selection) {
 
             # Drive Letter for the Exchange Installation ISO
             $ExchISODriveLetter = (Get-Volume | Where-Object {$_.DriveType -like "CD-ROM" -and $_.FileSystemLabel -like $ISOVolumeName}).DriveLetter
+        
+            #############################################
+            ############## VISUAL C++ 2013 ##############
+        
+            # Check if Visual C++ 2013 is installed
+            $IsVisualC2013Installed = (Get-ItemProperty "HKLM:\SOFTWARE\Wow6432Node\Microsoft\VisualStudio\12.0\VC\Runtimes\x64" -ErrorAction SilentlyContinue).Installed -eq 1
+        
+            if (!($IsVisualC2013Installed)) {
+                $LogFile = "$($LogFolder)\visualcplusplus.log"
+                Write-Verbose "Installing Visual C++ 2013..." -Verbose
+                start-process "$($ExchangePreReqFolder)\vcredist_x64.exe" -ArgumentList "/install /quiet /norestart /log $($LogFile)" -NoNewWindow -Wait
+                Start-Sleep -Seconds 2
+            } else {
+                Write-Verbose "Visual C++ 2013 is already installed." -Verbose
         }
         }
     }
