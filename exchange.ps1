@@ -126,6 +126,16 @@ switch ($Selection) {
             # Return the value of $RequiredFeatures.RestartNeeded to the parent scriptblock:
             return $RequiredFeatures.RestartNeeded
         }
+        
+        
+        # Wait for the server to restart if required:
+        if ($RestartNeeded.Value -like "yes") {
+            Write-Verbose "Waiting for the server to restart..."
+            Start-Sleep -Seconds 15
+        } else {
+            Start-Sleep -Seconds 2
+        }
+        
         }
     }
     "Q" 
