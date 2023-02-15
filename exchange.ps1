@@ -182,7 +182,7 @@ switch ($Selection) {
                 Start-Sleep -Seconds 2
             } else {
                 Write-Verbose "Visual C++ 2013 is already installed." -Verbose
-        }
+            }
         
             #########################################
             ############## URL Rewrite ##############
@@ -196,7 +196,7 @@ switch ($Selection) {
                     Write-Verbose "URL Rewrite installed." -Verbose
                 } else {
                     Write-Verbose "URL Rewrite is already installed." -Verbose
-        }
+                }
         
 
             Set-Location "$($ExchISODriveLetter):\"
@@ -265,4 +265,4 @@ switch ($Selection) {
     Write-Host "Wrong Selection!" -ForegroundColor Red
     Invoke-Script -ScriptItem ItSelf
     }
-    }
+}
