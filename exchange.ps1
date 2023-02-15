@@ -7,3 +7,17 @@ if ($VM.HasJoinedDomain -eq $false) {
 } else {
     $Credential = $DomainCredential
 }
+
+function Show-Menu {
+    param (
+        [String]$Title = "Microsoft Exchange 2019 Deployment"
+    )
+    Clear-Host
+    Write-Host -ForegroundColor red "VM Selected"
+    $VM | Format-table -Property VMName,DomainName,IPAddress
+    Write-Host "================ $Title ================`n"
+    Write-Host "  1: Copy over the required files from localhost to [$($VM.VMName)]" -ForegroundColor Green
+    Write-Host "  2: Install Microsoft Exchange 2019" -ForegroundColor Green
+    Write-Host "  B: Back to Main Menu" -ForegroundColor Green
+    Write-Host "  Q: To quit" -ForegroundColor Green
+}
