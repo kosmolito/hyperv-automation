@@ -38,7 +38,7 @@ switch ($selection)
         
     "1" { 
         # Do nothing and get the user info from variable.ps1 file
-        if (($UserList.DomainName -like $null) -or ($UserList.DomainName -like "") ) {
+        if (($null -like $UserList.DomainName) -or ($UserList.DomainName -like "") ) {
             $UserDomainName = Read-Host "No Domain Found! Specify the domain/upn eg. mstile.se"
             $UserList = $UserList | Select-Object *, @{n=”DomainName”;e={$UserDomainName}}
         }
@@ -56,7 +56,7 @@ switch ($selection)
     } else { 
         $UserList = import-csv -path $NewCsvFile
 
-        if (($UserList.DomainName -like $null) -or ($UserList.DomainName -like "") ) {
+        if (($null -like $UserList.DomainName) -or ($UserList.DomainName -like "") ) {
             $UserDomainName = Read-Host "No Domain Found! Specify the domain/upn eg. mstile.se"
             $UserList = $UserList | Select-Object *, @{n=”DomainName”;e={$UserDomainName}}
         }
@@ -107,7 +107,7 @@ switch ($selection)
             Invoke-Script -ScriptItem ItSelf
         } else {
             $UserList = import-csv -path "$ConfigFolder\random-generated-users.csv"
-            if (($UserList.DomainName -like $null) -xor ($UserList.DomainName -like "") ) {
+            if (($null -like $UserList.DomainName) -xor ($UserList.DomainName -like "") ) {
                 $UserDomainName = Read-Host "No Domain Found! Specify the domain/upn eg. mstile.se"
                 $UserList = $UserList | Select-Object *, @{n=”DomainName”;e={$UserDomainName}}
             }
