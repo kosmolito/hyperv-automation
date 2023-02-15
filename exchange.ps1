@@ -183,6 +183,19 @@ switch ($Selection) {
             } else {
                 Write-Verbose "Visual C++ 2013 is already installed." -Verbose
         }
+        
+            #########################################
+            ############## URL Rewrite ##############
+        
+                # Check if URL Rewrite is installed
+                $IsRewriteInstalled = (Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{9BCA2118-F753-4A1E-BCF3-5A820729965C}" -ErrorAction SilentlyContinue).DisplayVersion
+                if ($IsRewriteInstalled -notlike "7.2.1993") {
+                    $LogFile = "$($LogFolder)\rewrite.log"
+                    Write-Verbose "Installing URL Rewrite..." -Verbose
+                    start-process -FilePath msiexec.exe -ArgumentList "/i $($ExchangePreReqFolder)\rewrite_amd64_en-US.msi /quiet /norestart /log $($LogFile)" -NoNewWindow -Wait
+                    Write-Verbose "URL Rewrite installed." -Verbose
+                } else {
+                    Write-Verbose "URL Rewrite is already installed." -Verbose
         }
     }
     "Q" 
