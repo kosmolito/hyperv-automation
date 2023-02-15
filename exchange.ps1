@@ -136,6 +136,39 @@ switch ($Selection) {
             Start-Sleep -Seconds 2
         }
         
+        
+        Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $DomainCredential
+        Invoke-Command -VMName $VM.VMName -Credential $DomainCredential -ScriptBlock {
+        
+            $VM = $using:VM
+            $DCNetBIOSName = $VM.DomainName.Split(".")[0].ToUpper()
+            $LogFolder = "$($env:USERPROFILE)\Desktop\logs"
+            if (!(Test-Path $LogFolder)) {
+                New-Item -ItemType Directory -Path $LogFolder | Out-Null
+            }
+            $ExchangePreReqFolder = "C:\exchange-prereq"
+        
+            # Get the Hard Drive for the Exchange Installation, which is not initialized, partitioned or formatted, 
+            # then initialize it, partition it and format it if it is not already initialized, partitioned or formatted:
+        
+            $VolumeName = "ExchDrive"
+            if ((Get-Volume).FileSystemLabel -notcontains $VolumeName) {
+                Write-Verbose "Initializing, partitioning and formatting the hard drive for Exchange Installation..." -Verbose
+                $ExchHDD = Get-Disk | Where-Object {$_.PartitionStyle -like "RAW"}
+                $ExchHDD | Initialize-Disk -PartitionStyle GPT -PassThru | New-Partition -AssignDriveLetter -UseMaximumSize | Format-Volume -FileSystem NTFS -NewFileSystemLabel $VolumeName | Out-Null
+            }
+            
+            # Drive Letter for where the Exchange will be installed
+            $ExchDriveLetter = (Get-Volume | Where-Object {$_.FileSystemLabel -like $VolumeName}).DriveLetter
+            $ExchangeFolder = "$($ExchDriveLetter):\Microsoft\Exchange Server\V15"
+
+
+            # Mount the Exchange Installation ISO:
+            $ISOVolumeName = "EXCHANGESERVER2019-X64-CU12"
+
+            # Drive Letter for the Exchange Installation ISO
+            $ExchISODriveLetter = (Get-Volume | Where-Object {$_.DriveType -like "CD-ROM" -and $_.FileSystemLabel -like $ISOVolumeName}).DriveLetter
+        }
         }
     }
     "Q" 
