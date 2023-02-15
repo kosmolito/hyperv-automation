@@ -27,8 +27,33 @@ $Selection = Read-Host "Select an option from menu"
 
 switch ($Selection) {
 
+    # Attach necessary files to VM
     "1" 
     {
+        if ((Get-VM -VMName $VM.VMName).State -ne "Running") {
+            Write-Verbose "Starting [$($VM.VMName)]..." -Verbose
+            Start-VM -VMName $VM.VMName
+            Start-Sleep -Seconds 2
+        }
+
+        Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $Credential
+        Enable-VMIntegrationService -Name "Guest Service Interface" -VMName $VM.VMName
+
+        $PreReqFiles = Get-ChildItem -Path "$($ConfigFolder)\exchange2019\exchange-prereq"
+        foreach ($File in $PreReqFiles) {
+            Write-Verbose "Copying [$($File.Name)] to [$($VM.VMName)]..." -Verbose
+            Copy-VMFile -Name $VM.VMName -SourcePath $File.FullName -DestinationPath "C:\exchange-prereq\$($File.Name)" -CreateFullPath -FileSource Host -Force
+            Write-Verbose "Filed copied successfully." -Verbose
+        }
+
+        $Exchange2019ISO = "$($ConfigFolder)\exchange2019\ExchangeServer2019.ISO"
+        if ((Get-VMDvdDrive -VMName $VM.VMName).Path -notcontains $Exchange2019ISO) {
+            Write-Verbose "Mounting Exchange 2019 ISO to [$($VM.VMName)]..." -Verbose
+            Add-VMDvdDrive -VMName $VM.VMName -Path $Exchange2019ISO
+        } else {
+            Write-Verbose "Exchange 2019 ISO is already mounted on [$($VM.VMName)]." -Verbose
+        }
+        Invoke-Script -ScriptItem ItSelf
     }
 
     "2" 
