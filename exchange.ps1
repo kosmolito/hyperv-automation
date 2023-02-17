@@ -139,6 +139,63 @@ switch ($Selection) {
         
         Invoke-VMConnectionConfirmation -VMName $VM.VMName -Credential $DomainCredential
         Invoke-Command -VMName $VM.VMName -Credential $DomainCredential -ScriptBlock {
+
+                        # Configure Firewall Rules for Exchange Server 2019
+            Write-Verbose "Configuring Exchange Server 2019 Firewall settings..." -Verbose
+
+            $FireWallRules = @{
+                "Encrypted web connections" = @{
+                    Protocol = "TCP"
+                    LocalPort = 443
+                    Direction = "Inbound"
+                }
+                "Unencrypted web connections" = @{
+                    Protocol = "TCP"
+                    LocalPort = 80
+                    Direction = "Inbound"
+                }
+                # # IMAP4 Is Disabled by default
+                # "IMAP4 clients" = @{
+                #     Protocol = "TCP"
+                #     LocalPort = 143,993
+                #     Direction = "Inbound"
+                # }
+                # # POP3 Is Disabled by default
+                # "POP3 clients" = @{
+                #     Protocol = "TCP"
+                #     LocalPort = 110,995
+                #     Direction = "Inbound"
+                # }
+                "SMTP clients (authenticated)"= @{
+                    Protocol = "TCP"
+                    LocalPort = 587
+                    Direction = "Inbound"
+                }
+                "Outbound mail"= @{
+                    Protocol = "TCP"
+                    LocalPort = 25
+                    Direction = "Outbound"
+                }
+                "DNS"= @{
+                    Protocol = "any"
+                    LocalPort = 53
+                }
+            }
+
+            # Create Firewall Rules if it does not exist already
+            $FireWallRules.GetEnumerator() | ForEach-Object {
+                if (!(Get-NetFireWallRule -DisplayName $_.Key -ErrorAction SilentlyContinue)) {
+                    Write-Verbose "Creating Firewall Rule [Name:$($_.Key) :Protocol:$($_.Value.Protocol) LocalPort:$($_.Value.LocalPort)]..." -Verbose
+                    if ($_.Value.Protocol -like "Any") {
+                        New-NetFirewallRule -DisplayName $_.Key -Direction Inbound -Protocol TCP -LocalPort $_.Value.LocalPort -Action Allow | Out-Null
+                        New-NetFirewallRule -DisplayName $_.Key -Direction Inbound -Protocol UDP -LocalPort $_.Value.LocalPort -Action Allow | Out-Null
+                    } else {
+                        New-NetFirewallRule -DisplayName $_.Key -Direction Inbound -Protocol $_.Value.Protocol -LocalPort $_.Value.LocalPort -Action Allow | Out-Null
+                    }
+                } else {
+                    Write-Verbose "Firewall Rule [Name:$($_.Key) :Protocol:$($_.Value.Protocol) LocalPort:$($_.Value.LocalPort)] already exists." -Verbose
+                }
+            }
         
             $VM = $using:VM
             $DCNetBIOSName = $VM.DomainName.Split(".")[0].ToUpper()
