@@ -33,7 +33,7 @@ foreach ($VM in $TemplateMachines) {
 }
 $TemplateMachines | ConvertTo-Json | Out-File -FilePath $JSONTemplatePath
 
-if (!( $Null -like $VMList )) {
+if (!( $VMList -like $Null )) {
     foreach ($VM in $VMList) {
         $VM.isSelected = $false
     }
