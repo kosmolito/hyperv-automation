@@ -152,7 +152,8 @@ foreach ($VM in $VMList | Where-Object {$_.isSelected -eq $true}) {
     $VM.CreationTime = $LogDateTime
     Set-VMProcessor $VM.VMName -Count $VM.ProcessorCount
     Set-VMMemory $VM.VMName -DynamicMemoryEnabled $true -MinimumBytes $VM.MemoryMinimum -StartupBytes $VM.MemoryStartup -MaximumBytes $VM.MemoryMaximum
-    Set-VM -Name $VM.VMName -CheckpointType Disabled
+    Set-VM -Name $VM.VMName -CheckpointType Production
+    Set-VM -Name $VM.VMName -AutomaticCheckpointsEnabled $False
     Set-VMFirmware $VM.VMName -EnableSecureBoot Off
 
     Remove-VMNetworkAdapter -VMName $VM.VMName -Name "Network Adapter"

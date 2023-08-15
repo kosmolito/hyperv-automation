@@ -5,6 +5,7 @@ $VM = $VMList | Where-Object {$_.isSelected -eq $true -and $_.Roles -contains "E
 if ($VM.HasJoinedDomain -eq $false) {
     $Credential = $ServerLocalCredential
 } else {
+    $DomainCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList "$($VM.DomainName)\$DomainAdmin", $DomainPwd
     $Credential = $DomainCredential
 }
 
